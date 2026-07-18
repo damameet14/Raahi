@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="en">
+
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,22 +10,98 @@
       content="Raahi helps teams share commutes, lower travel costs, and reduce emissions."
     />
     <title>Raahi — Enterprise Carpooling</title>
+    <link rel="icon" href="assets/raahi-logo.png?v=1" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/tokens.css?v=11" />
-    <link rel="stylesheet" href="css/animations.css?v=11" />
-    <link rel="stylesheet" href="css/style.css?v=11" />
+    <link rel="stylesheet" href="css/tokens.css?v=26" />
+    <link rel="stylesheet" href="css/animations.css?v=26" />
+    <link rel="stylesheet" href="css/style.css?v=26" />
+    <script src="js/main.js?v=26" defer></script>
   </head>
-  <body>
+
+
+  <body class="is-preloading">
+
+    <div
+      class="site-preloader"
+      data-site-preloader
+      role="progressbar"
+      aria-label="Loading Raahi"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <div class="preloader-content">
+        <p class="preloader-kicker">ENTERPRISE CARPOOLING PLATFORM</p>
+        <svg
+          class="preloader-wordmark"
+          viewBox="0 0 1200 300"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <mask
+              id="preloader-wave-mask"
+              x="0"
+              y="0"
+              width="1200"
+              height="300"
+              maskUnits="userSpaceOnUse"
+            >
+              <rect width="1200" height="300" fill="black" />
+              <g class="preloader-wave-level">
+                <path
+                  class="preloader-wave-shape"
+                  fill="white"
+                  d="M-800 104 C-650 44 -500 164 -350 104 S-50 44 100 104 S400 164 550 104 S850 44 1000 104 S1300 164 1450 104 S1750 44 1900 104 L1900 420 L-800 420 Z"
+                />
+              </g>
+            </mask>
+          </defs>
+
+          <text
+            class="preloader-wordmark-base"
+            x="600"
+            y="226"
+            text-anchor="middle"
+          >RAAHI</text>
+          <text
+            class="preloader-wordmark-filled"
+            x="600"
+            y="226"
+            text-anchor="middle"
+            mask="url(#preloader-wave-mask)"
+          >
+            <tspan class="preloader-wordmark-primary">RAA</tspan><tspan class="preloader-wordmark-accent">HI</tspan>
+          </text>
+        </svg>
+
+        <div class="preloader-status" aria-hidden="true">
+          <span>LOADING</span>
+          <span data-preloader-progress>0%</span>
+        </div>
+      </div>
+    </div>
+
     <header class="site-header" data-site-header>
       <nav class="navigation frame" aria-label="Main navigation">
         <a class="brand" href="#top" aria-label="Raahi home">
-          <span class="brand-mark" aria-hidden="true">S</span>
-          <span>Raahi</span>
+          <span class="brand-mark" aria-hidden="true">
+            <img
+              class="brand-mark-image"
+              src="assets/raahi-logo.png?v=1"
+              alt=""
+              width="66"
+              height="66"
+            />
+          </span>
+          <span class="brand-wordmark">
+            <span>RAA</span><span class="brand-wordmark-accent">HI</span>
+          </span>
         </a>
 
         <button
@@ -42,12 +120,16 @@
           <a href="#how-it-works">How it works</a>
           <a href="#demo">Live tracking</a>
           <a href="#about">Impact</a>
+          <a class="navigation-sign-in" href="#demo">Sign in</a>
           <a class="navigation-call-to-action" href="#contact">Let's commute!</a>
         </div>
       </nav>
     </header>
 
+
     <main id="top">
+
+
       <section class="hero frame" id="platform" aria-labelledby="hero-title">
         <div class="hero-meta">
           <p>Enterprise carpooling platform</p>
@@ -75,11 +157,15 @@
         <div class="hero-corner-label" aria-hidden="true">RAAHI / 2026</div>
       </section>
 
+
+
       <section
         class="statistics frame reveal"
         aria-label="Raahi activity"
         data-statistics-section
       >
+
+
         <article class="statistic-card" style="--statistics-delay: 60ms">
           <div class="statistic-value">
             <strong data-statistic-value="48">48</strong>
@@ -87,6 +173,8 @@
           </div>
           <span class="statistic-label">Employees<br />onboarded</span>
         </article>
+
+
         <article class="statistic-card" style="--statistics-delay: 130ms">
           <div class="statistic-value">
             <strong data-statistic-value="163">163</strong>
@@ -94,6 +182,8 @@
           </div>
           <span class="statistic-label">Shared rides<br />this month</span>
         </article>
+
+
         <article class="statistic-card" style="--statistics-delay: 200ms">
           <div class="statistic-value">
             <strong data-statistic-value="22">22</strong>
@@ -101,11 +191,15 @@
           </div>
           <span class="statistic-label">Vehicles<br />registered</span>
         </article>
+
+
         <div class="statistics-message" style="--statistics-delay: 270ms">
           <span>RAAHI IN MOTION</span>
           <p>Less traffic.<br /><strong>More together.</strong></p>
         </div>
       </section>
+
+
 
       <section class="content-section frame" id="features" aria-labelledby="features-title">
         <div class="section-index reveal">
@@ -416,40 +510,66 @@
       </section>
     </main>
 
-    <footer class="site-footer frame">
-      <div class="footer-top">
-        <div>
-          <p class="micro-label">SHARE YOUR COMMUTE</p>
-          <p>Cut costs. Cut emissions.<br />Make the journey better.</p>
-        </div>
-        <div class="footer-link-groups">
-          <div>
-            <span>PLATFORM</span>
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How it works</a>
+    <footer class="site-footer frame reveal">
+      <div class="footer-main">
+        <div class="footer-navigation-area">
+          <p class="micro-label">EXPLORE RAAHI</p>
+          <div class="footer-link-groups">
+            <div>
+              <span>PLATFORM</span>
+              <a href="#features">Features</a>
+              <a href="#how-it-works">How it works</a>
+            </div>
+            <div>
+              <span>COMPANY</span>
+              <a href="#about">Why Raahi</a>
+              <a href="#demo">Live view</a>
+            </div>
           </div>
-          <div>
-            <span>COMPANY</span>
-            <a href="#about">About</a>
-            <a href="mailto:hello@raahi.work">Contact</a>
-          </div>
         </div>
-        <a class="footer-circle-link" href="#top" aria-label="Back to top">↑</a>
+
+        <div class="footer-contact-area">
+          <p class="micro-label">LET'S TALK</p>
+          <h2>Still have questions?</h2>
+          <form
+            class="footer-contact-form"
+            action="mailto:hello@raahi.work"
+            method="post"
+            enctype="text/plain"
+          >
+            <label class="visually-hidden" for="footer-email">Your email address</label>
+            <input
+              id="footer-email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              autocomplete="email"
+              required
+            />
+            <button class="footer-send-button" type="submit">Send</button>
+            <button class="footer-arrow-button" type="submit" aria-label="Send email">→</button>
+          </form>
+        </div>
       </div>
 
-      <div class="footer-wordmark" aria-hidden="true">RAAHI</div>
+      <div class="footer-wordmark" aria-hidden="true">
+        <span>RAA</span><span class="footer-wordmark-accent">HI</span>
+      </div>
 
       <div class="footer-bottom">
-        <span>© 2026 RAAHI</span>
+        <span>© 2026 RAAHI. ALL RIGHTS RESERVED.</span>
         <div>
           <a href="#contact">PRIVACY POLICY</a>
           <a href="#contact">TERMS OF USE</a>
           <a href="mailto:hello@raahi.work">CONTACT</a>
         </div>
-        <span>BENGALURU / INDIA</span>
+        <div class="footer-location">
+          <span>BENGALURU / INDIA</span>
+          <a class="footer-back-to-top" href="#top" aria-label="Back to top">↑</a>
+        </div>
       </div>
     </footer>
 
-    <script src="js/main.js?v=11"></script>
+
   </body>
 </html>

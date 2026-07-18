@@ -32,6 +32,8 @@ The following foundations are locked. Do not change them for an individual page 
 | `--color-primary` | `#17251B` | Primary text, headings, and high-emphasis icons |
 | `--color-secondary` | `#647069` | Supporting text, metadata, and inactive information |
 | `--color-border` | `#E1E7E2` | Dividers, outlines, frames, and subtle shadows |
+| `--color-neutral-button` | `#E6E9E7` | Distinct low-emphasis actions such as header sign-in |
+| `--color-neutral-button-hover` | `#D9DEDB` | Hover and focus surface for neutral actions |
 | `--color-accent` | `#32B45C` | Primary actions, selected states, links, focus, and brand accents |
 | `--color-on-accent` | `#FFFFFF` | Text and icons placed on the accent color |
 
@@ -132,10 +134,24 @@ Components must work fluidly between breakpoints; do not design only for the exa
 - Sticky, white, and visually light.
 - Minimum desktop height: `96px`.
 - Place the Raahi mark on the left and the navigation inside a soft-surface pill on the right.
-- Brand mark: a `34px` green circle with a clear white symbol or letter.
+- Brand mark: use the supplied `assets/raahi-logo.png` inside a borderless `40px` visual crop so its route-shaped `R` remains legible without altering the source image.
+- Brand wordmark: use uppercase `RAAHI`; keep `RAA` in the primary dark color and set the final `HI` in the green accent.
+- Vertically center the logo and wordmark on one line with a `10px` gap and a compact `1` line-height.
+- Place a gray `Sign in` pill immediately before the green primary action so account access stays visually distinct.
 - Use a green pill for the single highest-priority header action.
 - Keep the navigation compact and calm; avoid full-width dark bars.
 - On smaller screens, simplify or collapse navigation without changing the visual language.
+
+### Preloader
+
+- Use a full-screen white overlay with one inset light frame so loading remains consistent with the page shell.
+- Center an oversized uppercase `RAAHI` wordmark. The inactive layer uses the border color; the active layer fills `RAA` with the primary dark color and `HI` with the green accent.
+- Reveal the active wordmark from bottom to top through a continuously moving curved wave.
+- Show an uppercase JetBrains Mono `LOADING` label and a green percentage aligned beneath the wordmark.
+- Run the staged progress for at least `1600ms`, advancing only to `92%` until the browser reports that the page is loaded. Complete the remaining `8%` over `260ms`, then remove the overlay with a `580ms` upward wipe.
+- Keep a `720ms` exit fallback so the overlay can never trap the page if a browser misses the CSS animation event.
+- Keep page scrolling locked until the exit wipe has finished and the overlay is removed.
+- Skip the animated loader entirely when reduced motion is requested.
 
 ### Buttons
 
@@ -218,9 +234,12 @@ Components must work fluidly between breakpoints; do not design only for the exa
 
 ### Footer
 
-- Use the soft-surface background.
-- Combine a large editorial Raahi wordmark with compact navigation and legal information.
-- Use light dividers and micro typography for metadata.
+- Use a soft-surface container with `48px` rounded top corners on desktop and `32px` on mobile.
+- Place compact two-column navigation on the left and a “Still have questions?” email form on the right.
+- Use a white pill input, green Send pill, and green circular arrow action.
+- Match the hero wordmark exactly: use adjacent `RAA` and green `HI` spans with `-0.09em` tracking and no additional manual gap.
+- Separate copyright, policy links, location, and back-to-top control with one light divider.
+- Use light dividers and JetBrains Mono micro typography for metadata.
 - The footer should feel like a calm visual conclusion, not a second navigation header.
 
 ## 5. Motion and interaction
@@ -239,6 +258,7 @@ Approved motion:
 - Statistics accent line: reveal from `scaleX(0)` over `620ms`.
 - Impact word wall: stagger each line upward over `500ms`.
 - Impact preview: fade and enter from `translateX(-24px)` with a subtle `-1.5deg` rotation when its matching statement becomes active.
+- Footer: tie the wordmark stretch directly and linearly to scroll progress. Begin at `scaleY(0.1)` when the wordmark reaches the bottom of the viewport and slowly reach `scaleY(1)` exactly at the page’s maximum scroll position, using the bottom edge as the transform origin. Keep the wordmark fully opaque so the interaction reads as a stretch rather than a fade, and reverse it naturally when the user scrolls backward.
 - Hover transitions: approximately `200ms`.
 - Button active state: quick scale to `0.98`.
 
