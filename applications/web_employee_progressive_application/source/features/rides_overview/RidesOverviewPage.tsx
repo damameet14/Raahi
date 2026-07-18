@@ -6,17 +6,20 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
-import { BottomNavigationBar } from "../../shared_user_interface_infrastructure/layout/BottomNavigationBar";
 import {
   listMyPassengerBookings,
   listMyDriverBookings,
   listMyRideRequests,
   listMyRideOffers,
+  cancelRideRequest,
+  cancelRideOffer,
 } from "../../shared_user_interface_infrastructure/backend_communication/employee_ride_api";
+import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
 import { TripStatusPill } from "../../shared_user_interface_infrastructure/reusable_components/TripStatusPill";
 import { UpcomingRideCard } from "../upcoming_rides/UpcomingRideCard";
 import {
@@ -35,7 +38,14 @@ const TABS: Array<{ id: RidesTab; label: string }> = [
 
 export function RidesOverviewPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<RidesTab>("upcoming");
+  // The id of the request/offer currently showing its inline cancel
+  // confirmation, and the one whose cancel call is in flight.
+  const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(
+    null,
+  );
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const passengerBookingsQuery = useQuery({
     queryKey: ["passenger-bookings"],
@@ -62,9 +72,40 @@ export function RidesOverviewPage() {
   ]);
   const groupedUpcoming = groupBookingsByDate(upcomingBookings);
 
+  async function handleCancelRequest(rideRequestId: string) {
+    setCancellingId(rideRequestId);
+    try {
+      await cancelRideRequest(rideRequestId);
+      await queryClient.invalidateQueries({ queryKey: ["my-ride-requests"] });
+      toast.success("Request withdrawn");
+    } catch (error) {
+      toast.error(
+        extractApiErrorMessage(error, "Could not withdraw the request"),
+      );
+    } finally {
+      setCancellingId(null);
+      setConfirmingCancelId(null);
+    }
+  }
+
+  async function handleCancelOffer(rideOfferId: string) {
+    setCancellingId(rideOfferId);
+    try {
+      await cancelRideOffer(rideOfferId);
+      await queryClient.invalidateQueries({ queryKey: ["my-ride-offers"] });
+      await queryClient.invalidateQueries({ queryKey: ["driver-bookings"] });
+      toast.success("Ride cancelled");
+    } catch (error) {
+      toast.error(extractApiErrorMessage(error, "Could not cancel the ride"));
+    } finally {
+      setCancellingId(null);
+      setConfirmingCancelId(null);
+    }
+  }
+
   return (
-    <div className="min-h-screen pb-24">
-      <EmployeeAppHeader title="My Rides" />
+    <div className="min-h-screen pb-10">
+      <EmployeeAppHeader title="My Rides" leftAction="menu" />
 
       <div className="flex gap-1 border-b border-[color:var(--color-border-primary)] px-4">
         {TABS.map((tab) => (
@@ -146,6 +187,17 @@ export function RidesOverviewPage() {
                       {request.is_recurring ? " · R" : ""}
                     </p>
                   )}
+                  {request.status === "PENDING" && (
+                    <InlineCancelControl
+                      label="Cancel request"
+                      confirmLabel="Withdraw this request?"
+                      isConfirming={confirmingCancelId === request.id}
+                      isBusy={cancellingId === request.id}
+                      onStart={() => setConfirmingCancelId(request.id)}
+                      onKeep={() => setConfirmingCancelId(null)}
+                      onConfirm={() => handleCancelRequest(request.id)}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -182,6 +234,18 @@ export function RidesOverviewPage() {
                     {offer.seats_available}/{offer.seats_total} seats free
                     {offer.is_recurring ? " · R" : ""}
                   </p>
+                  {(offer.journey_status === "OPEN" ||
+                    offer.journey_status === "FULL") && (
+                    <InlineCancelControl
+                      label="Cancel ride"
+                      confirmLabel="Cancel this ride for all passengers?"
+                      isConfirming={confirmingCancelId === offer.id}
+                      isBusy={cancellingId === offer.id}
+                      onStart={() => setConfirmingCancelId(offer.id)}
+                      onKeep={() => setConfirmingCancelId(null)}
+                      onConfirm={() => handleCancelOffer(offer.id)}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -189,8 +253,62 @@ export function RidesOverviewPage() {
             <EmptyState message="No ride offers yet" />
           ))}
       </div>
+    </div>
+  );
+}
 
-      <BottomNavigationBar />
+interface InlineCancelControlProps {
+  label: string;
+  confirmLabel: string;
+  isConfirming: boolean;
+  isBusy: boolean;
+  onStart: () => void;
+  onKeep: () => void;
+  onConfirm: () => void;
+}
+
+/** A two-step cancel control: a link that expands into a confirm row. */
+function InlineCancelControl({
+  label,
+  confirmLabel,
+  isConfirming,
+  isBusy,
+  onStart,
+  onKeep,
+  onConfirm,
+}: InlineCancelControlProps) {
+  if (!isConfirming) {
+    return (
+      <button
+        type="button"
+        onClick={onStart}
+        className="mt-3 text-xs font-semibold text-rose-600"
+      >
+        {label}
+      </button>
+    );
+  }
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 border-t border-[color:var(--color-border-primary)] pt-3">
+      <span className="text-xs font-medium text-rose-600">{confirmLabel}</span>
+      <div className="flex shrink-0 gap-2">
+        <button
+          type="button"
+          onClick={onKeep}
+          disabled={isBusy}
+          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-secondary"
+        >
+          Keep
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isBusy}
+          className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+        >
+          {isBusy ? "Cancelling…" : "Confirm"}
+        </button>
+      </div>
     </div>
   );
 }

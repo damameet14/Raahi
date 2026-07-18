@@ -75,6 +75,15 @@ export async function bookOffer(
   return response.data;
 }
 
+export async function cancelRideRequest(
+  rideRequestId: string,
+): Promise<RideRequest> {
+  const response = await employeeApiClient.post<RideRequest>(
+    `/api/v1/rides/requests/${rideRequestId}/cancel`,
+  );
+  return response.data;
+}
+
 export async function listMyRideRequests(): Promise<RideRequest[]> {
   const response = await employeeApiClient.get<RideRequest[]>(
     "/api/v1/rides/requests/mine",
@@ -156,6 +165,13 @@ export async function cancelBooking(
 ): Promise<RideBooking> {
   const response = await employeeApiClient.post<RideBooking>(
     `/api/v1/rides/bookings/${rideBookingId}/cancel`,
+  );
+  return response.data;
+}
+
+export async function cancelRideOffer(rideOfferId: string): Promise<RideOffer> {
+  const response = await employeeApiClient.post<RideOffer>(
+    `/api/v1/rides/offers/${rideOfferId}/cancel`,
   );
   return response.data;
 }

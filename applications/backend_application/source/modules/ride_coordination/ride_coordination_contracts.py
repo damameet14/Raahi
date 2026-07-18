@@ -207,6 +207,8 @@ class RideBookingResponse(BaseModel):
     ride_request_id: str
     ride_offer_id: str
     trip_status: str
+    ride_offer_journey_status: str
+    ride_offer_departure_window_start_time: str | None
     seats_booked: int
     fare_amount: float
     otp_code: str | None

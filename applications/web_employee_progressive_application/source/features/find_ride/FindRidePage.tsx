@@ -1,9 +1,9 @@
 /**
- * Find a Ride (screens 1A–1C).
- *
- * Step 1A — enter trip details. Step 1B — confirm route and fare. Step 1B.1 —
- * pick from matching offers (or see the "you'll be notified" message). Step 1C
- * — Select Ride books the offer and opens the confirmed ride's details.
+ * Find a Ride (screens 1A–1C) — presented as a popup sheet over Home, not a
+ * full screen. Step 1A — enter trip details. Step 1B — confirm route and
+ * fare. Step 1B.1 — pick from matching offers (or see the "you'll be
+ * notified" message). Step 1C — Select Ride books the offer and opens the
+ * confirmed ride's details.
  */
 
 import { useState } from "react";
@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 
-import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
+import { BottomSheet } from "../../shared_user_interface_infrastructure/reusable_components/BottomSheet";
 import { useEmployeeProfileQuery } from "../../shared_user_interface_infrastructure/employee_profile/useEmployeeProfileQuery";
 import { LocationSelectorField } from "../../shared_user_interface_infrastructure/maps/LocationSelectorField";
 import { RoutePreviewMap } from "../../shared_user_interface_infrastructure/maps/RoutePreviewMap";
@@ -57,20 +57,24 @@ export function FindRidePage() {
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
+  function closeSheet() {
+    navigate("/home");
+  }
+
   // Prefill source with the employee's saved home once the profile loads.
   const profile = profileQuery.data;
   if (profile && source === null && profile.home_latitude != null) {
     setSource({
       latitude: profile.home_latitude,
       longitude: profile.home_longitude as number,
-      label: "Home",
+      label: profile.home_address_label ?? "Home",
     });
   }
   if (profile && destination === null && profile.office_latitude != null) {
     setDestination({
       latitude: profile.office_latitude,
       longitude: profile.office_longitude as number,
-      label: "Office",
+      label: profile.office_address_label ?? "Office",
     });
   }
 
@@ -146,11 +150,37 @@ export function FindRidePage() {
   }
 
   return (
-    <div className="min-h-screen pb-28">
-      <EmployeeAppHeader title="Find a Ride" leftAction="close" />
-
+    <BottomSheet
+      isOpen
+      onClose={closeSheet}
+      title="Find a Ride"
+      footer={
+        step === "details" ? (
+          <PrimaryButton onClick={handleConfirmRequest} isLoading={isBusy}>
+            Confirm Request
+          </PrimaryButton>
+        ) : step === "fareConfirm" ? (
+          <div className="flex gap-3">
+            <PrimaryButton variant="secondary" onClick={closeSheet}>
+              Cancel
+            </PrimaryButton>
+            <PrimaryButton onClick={handleConfirmFare} isLoading={isBusy}>
+              Ok, find rides
+            </PrimaryButton>
+          </div>
+        ) : step === "offers" && matchingOffers.length > 0 ? (
+          <PrimaryButton
+            onClick={handleSelectRide}
+            isLoading={isBusy}
+            disabled={!selectedOfferId}
+          >
+            Select Ride
+          </PrimaryButton>
+        ) : undefined
+      }
+    >
       {step === "details" && (
-        <div className="flex flex-col gap-4 px-4 py-4">
+        <div className="flex flex-col gap-4">
           <LocationSelectorField
             label="Pickup"
             value={source}
@@ -202,19 +232,11 @@ export function FindRidePage() {
             selectedDays={recurringDays}
             onDaysChange={setRecurringDays}
           />
-
-          <PrimaryButton
-            onClick={handleConfirmRequest}
-            isLoading={isBusy}
-            className="mt-2"
-          >
-            Confirm Request
-          </PrimaryButton>
         </div>
       )}
 
       {step === "fareConfirm" && source && destination && fareEstimate && (
-        <div className="flex flex-col gap-4 px-4 py-4">
+        <div className="flex flex-col gap-4">
           <button
             type="button"
             onClick={() => setStep("details")}
@@ -241,22 +263,11 @@ export function FindRidePage() {
               {seats > 1 ? "s" : ""}
             </p>
           </div>
-          <div className="flex gap-3">
-            <PrimaryButton
-              variant="secondary"
-              onClick={() => navigate("/home")}
-            >
-              Cancel
-            </PrimaryButton>
-            <PrimaryButton onClick={handleConfirmFare} isLoading={isBusy}>
-              Ok, find rides
-            </PrimaryButton>
-          </div>
         </div>
       )}
 
       {step === "offers" && (
-        <div className="flex flex-col gap-4 px-4 py-4">
+        <div className="flex flex-col gap-4">
           {matchingOffers.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[color:var(--color-border-secondary)] bg-surface-secondary p-6 text-center">
               <p className="text-sm font-medium">
@@ -268,7 +279,7 @@ export function FindRidePage() {
               <PrimaryButton
                 variant="secondary"
                 className="mt-4"
-                onClick={() => navigate("/home")}
+                onClick={closeSheet}
               >
                 Back to home
               </PrimaryButton>
@@ -289,19 +300,10 @@ export function FindRidePage() {
                   />
                 ))}
               </div>
-              <div className="fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[color:var(--color-border-primary)] bg-white p-4">
-                <PrimaryButton
-                  onClick={handleSelectRide}
-                  isLoading={isBusy}
-                  disabled={!selectedOfferId}
-                >
-                  Select Ride
-                </PrimaryButton>
-              </div>
             </>
           )}
         </div>
       )}
-    </div>
+    </BottomSheet>
   );
 }

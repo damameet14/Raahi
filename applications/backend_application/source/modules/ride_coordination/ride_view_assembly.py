@@ -30,6 +30,9 @@ from source.modules.ride_coordination.ride_matching_service import (
     MatchedOffer,
     MatchedRequest,
 )
+from source.modules.ride_coordination.ride_status_definitions import (
+    RideOfferJourneyStatus,
+)
 from source.modules.ride_coordination.ride_coordination_repository import (
     get_ride_request_by_id,
     get_ride_offer_by_id,
@@ -171,6 +174,14 @@ def build_ride_booking_response(
         ride_request_id=ride_booking.ride_request_id,
         ride_offer_id=ride_booking.ride_offer_id,
         trip_status=ride_booking.trip_status,
+        ride_offer_journey_status=(
+            ride_offer.journey_status
+            if ride_offer is not None
+            else RideOfferJourneyStatus.CANCELLED.value
+        ),
+        ride_offer_departure_window_start_time=(
+            ride_offer.departure_window_start_time if ride_offer is not None else None
+        ),
         seats_booked=ride_booking.seats_booked,
         fare_amount=ride_booking.fare_amount,
         otp_code=ride_booking.otp_code if include_otp_code else None,

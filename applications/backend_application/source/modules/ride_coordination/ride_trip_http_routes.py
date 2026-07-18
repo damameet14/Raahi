@@ -28,6 +28,7 @@ from source.modules.ride_coordination.trip_lifecycle_service import (
     complete_booking_trip,
     complete_journey,
     cancel_booking,
+    cancel_ride_offer,
     record_driver_location,
     get_latest_driver_location,
     JourneyNotStartableError,
@@ -35,6 +36,8 @@ from source.modules.ride_coordination.trip_lifecycle_service import (
     IncorrectBookingOtpError,
     BookingNotAwaitingPickupError,
     BookingNotCancellableError,
+    JourneyNotCancellableError,
+    JourneyTooCloseToDepartureError,
 )
 from source.modules.ride_coordination.ride_view_assembly import (
     build_ride_booking_response,
@@ -222,6 +225,39 @@ def start_ride_journey(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="This journey cannot be started in its current state",
+        )
+    return RideOfferResponse.model_validate(ride_offer)
+
+
+@ride_trip_router.post(
+    "/offers/{ride_offer_id}/cancel",
+    response_model=RideOfferResponse,
+    summary="Driver withdraws their offered journey before it starts",
+)
+def cancel_my_ride_offer(
+    ride_offer_id: str,
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Cancel the driver's own offer and every booking still awaiting pickup."""
+    ride_offer = _load_offer_owned_by_driver(
+        database_session=database_session,
+        ride_offer_id=ride_offer_id,
+        employee=employee,
+    )
+    try:
+        ride_offer = cancel_ride_offer(
+            database_session=database_session, ride_offer=ride_offer
+        )
+    except JourneyNotCancellableError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This journey can no longer be cancelled",
+        )
+    except JourneyTooCloseToDepartureError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Rides can only be cancelled at least 2 hours before departure",
         )
     return RideOfferResponse.model_validate(ride_offer)
 

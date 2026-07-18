@@ -1,17 +1,17 @@
 /**
- * Offer a Ride (screens 2A–2C).
- *
- * Step 2A — publish trip details from the driver's vehicle. Step 2B.1 — pick
- * matching passenger requests within the vehicle's remaining seats (or see the
- * "you'll be notified" message). Step 2C — Confirm accepts the selected
- * requests onto the offer and the journey appears under My Rides.
+ * Offer a Ride (screens 2A–2C) — presented as a popup sheet over Home, not a
+ * full screen. Step 2A — publish trip details from the driver's vehicle.
+ * Step 2B.1 — pick matching passenger requests within the vehicle's
+ * remaining seats (or see the "you'll be notified" message). Step 2C —
+ * Confirm accepts the selected requests onto the offer and the journey
+ * appears under My Rides.
  */
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
+import { BottomSheet } from "../../shared_user_interface_infrastructure/reusable_components/BottomSheet";
 import { useEmployeeProfileQuery } from "../../shared_user_interface_infrastructure/employee_profile/useEmployeeProfileQuery";
 import { LocationSelectorField } from "../../shared_user_interface_infrastructure/maps/LocationSelectorField";
 import { PrimaryButton } from "../../shared_user_interface_infrastructure/reusable_components/PrimaryButton";
@@ -55,19 +55,23 @@ export function OfferRidePage() {
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
   const [isBusy, setIsBusy] = useState(false);
 
+  function closeSheet() {
+    navigate("/home");
+  }
+
   const profile = profileQuery.data;
   if (profile && source === null && profile.home_latitude != null) {
     setSource({
       latitude: profile.home_latitude,
       longitude: profile.home_longitude as number,
-      label: "Home",
+      label: profile.home_address_label ?? "Home",
     });
   }
   if (profile && destination === null && profile.office_latitude != null) {
     setDestination({
       latitude: profile.office_latitude,
       longitude: profile.office_longitude as number,
-      label: "Office",
+      label: profile.office_address_label ?? "Office",
     });
   }
   if (vehicles.length > 0 && selectedVehicleId === "") {
@@ -163,11 +167,28 @@ export function OfferRidePage() {
   }
 
   return (
-    <div className="min-h-screen pb-28">
-      <EmployeeAppHeader title="Offer a Ride" leftAction="close" />
-
+    <BottomSheet
+      isOpen
+      onClose={closeSheet}
+      title="Offer a Ride"
+      footer={
+        step === "details" ? (
+          <PrimaryButton onClick={handleConfirmOffer} isLoading={isBusy}>
+            Confirm
+          </PrimaryButton>
+        ) : step === "requests" && matchingRequests.length > 0 ? (
+          <PrimaryButton onClick={handleConfirmSelection} isLoading={isBusy}>
+            {selectedRequestIds.length > 0
+              ? `Confirm ${selectedRequestIds.length} passenger${
+                  selectedRequestIds.length > 1 ? "s" : ""
+                }`
+              : "Confirm"}
+          </PrimaryButton>
+        ) : undefined
+      }
+    >
       {step === "details" && (
-        <div className="flex flex-col gap-4 px-4 py-4">
+        <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
             Vehicle
             <select
@@ -234,19 +255,11 @@ export function OfferRidePage() {
             selectedDays={recurringDays}
             onDaysChange={setRecurringDays}
           />
-
-          <PrimaryButton
-            onClick={handleConfirmOffer}
-            isLoading={isBusy}
-            className="mt-2"
-          >
-            Confirm
-          </PrimaryButton>
         </div>
       )}
 
       {step === "requests" && (
-        <div className="flex flex-col gap-4 px-4 py-4">
+        <div className="flex flex-col gap-4">
           {matchingRequests.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[color:var(--color-border-secondary)] bg-surface-secondary p-6 text-center">
               <p className="text-sm font-medium">
@@ -258,7 +271,7 @@ export function OfferRidePage() {
               <PrimaryButton
                 variant="secondary"
                 className="mt-4"
-                onClick={() => navigate("/home")}
+                onClick={closeSheet}
               >
                 Back to home
               </PrimaryButton>
@@ -283,19 +296,10 @@ export function OfferRidePage() {
                   />
                 ))}
               </div>
-              <div className="fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[color:var(--color-border-primary)] bg-white p-4">
-                <PrimaryButton onClick={handleConfirmSelection} isLoading={isBusy}>
-                  {selectedRequestIds.length > 0
-                    ? `Confirm ${selectedRequestIds.length} passenger${
-                        selectedRequestIds.length > 1 ? "s" : ""
-                      }`
-                    : "Confirm"}
-                </PrimaryButton>
-              </div>
             </>
           )}
         </div>
       )}
-    </div>
+    </BottomSheet>
   );
 }

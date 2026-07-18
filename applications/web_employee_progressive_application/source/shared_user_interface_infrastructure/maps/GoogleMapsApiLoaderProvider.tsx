@@ -11,7 +11,14 @@ import { useJsApiLoader, type Libraries } from "@react-google-maps/api";
 import { readGoogleMapsApiKey } from "./services/googleMapsConfiguration";
 
 // Must be a stable reference so the loader does not reinitialize on re-render.
-const REQUIRED_MAPS_LIBRARIES: Libraries = ["places", "geocoding", "maps"];
+// Only "places" is valid on the classic bootstrap `libraries=` URL parameter
+// that useJsApiLoader uses — "geocoding"/"maps" are newer names meant for
+// google.maps.importLibrary() only. Passing them here silently breaks the
+// places library (autocomplete predictions never resolve), which is why the
+// reference implementation in the google-map-api-components branch loads
+// only ["places"]. google.maps.Geocoder ships with the core script and does
+// not require an entry in this list.
+const REQUIRED_MAPS_LIBRARIES: Libraries = ["places"];
 
 interface GoogleMapsApiLoaderContextValue {
   isLoaded: boolean;

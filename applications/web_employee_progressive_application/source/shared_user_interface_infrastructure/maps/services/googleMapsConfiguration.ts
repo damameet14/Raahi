@@ -21,6 +21,12 @@ export function readGoogleMapsApiKey(): string {
 /** Default map center for the demo deployment (Noida, Delhi NCR). */
 export const DEFAULT_MAP_CENTER = { lat: 28.6139, lng: 77.209 };
 
-/** Region bias used for place autocomplete suggestions. */
+/**
+ * Region bias used for place autocomplete suggestions. The radius must stay
+ * within the Places API (New) limit of 50 km for a `locationBias` circle —
+ * a larger value makes `AutocompleteSuggestion.fetchAutocompleteSuggestions`
+ * fail with HTTP 400 (INVALID_ARGUMENT), which is why suggestions returned
+ * nothing. 40 km keeps a wide bias while staying safely under the cap.
+ */
 export const PLACES_LOCATION_BIAS_CENTER = { lat: 28.6139, lng: 77.209 };
-export const PLACES_LOCATION_BIAS_RADIUS_METERS = 60_000;
+export const PLACES_LOCATION_BIAS_RADIUS_METERS = 40_000;

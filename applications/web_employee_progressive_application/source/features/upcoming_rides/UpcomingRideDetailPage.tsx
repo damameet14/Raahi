@@ -17,6 +17,7 @@ import { TripStatusPill } from "../../shared_user_interface_infrastructure/reusa
 import {
   startJourney,
   cancelBooking,
+  cancelRideOffer,
 } from "../../shared_user_interface_infrastructure/backend_communication/employee_ride_api";
 import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
 import { useBookingLookup } from "./useBookingLookup";
@@ -75,6 +76,48 @@ export function UpcomingRideDetailPage() {
       setIsCancelling(false);
     }
   }
+
+  async function handleCancelOffer() {
+    if (!booking) {
+      return;
+    }
+    setIsCancelling(true);
+    try {
+      await cancelRideOffer(booking.ride_offer_id);
+      await queryClient.invalidateQueries({ queryKey: ["driver-bookings"] });
+      await queryClient.invalidateQueries({ queryKey: ["passenger-bookings"] });
+      toast.success("Ride cancelled");
+      navigate("/rides", { replace: true });
+    } catch (error) {
+      toast.error(extractApiErrorMessage(error, "Could not cancel this ride"));
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  const DRIVER_CANCELLATION_CUTOFF_HOURS = 2;
+  const isJourneyNotStarted =
+    booking.ride_offer_journey_status === "OPEN" ||
+    booking.ride_offer_journey_status === "FULL";
+  // Passenger may cancel any time until the driver starts the journey.
+  const canPassengerCancel =
+    role === "passenger" &&
+    booking.trip_status === "BOOKED" &&
+    isJourneyNotStarted;
+  // Driver may cancel only while more than 2 hours remain before the offer's
+  // departure. When the departure time is unknown (older backend without the
+  // field) we let the button through and rely on the server to enforce it.
+  const hoursUntilDeparture = booking.ride_offer_departure_window_start_time
+    ? (new Date(
+        `${booking.travel_date}T${booking.ride_offer_departure_window_start_time}`,
+      ).getTime() -
+        Date.now()) /
+      3_600_000
+    : Number.POSITIVE_INFINITY;
+  const canDriverCancel =
+    role === "driver" &&
+    isJourneyNotStarted &&
+    hoursUntilDeparture >= DRIVER_CANCELLATION_CUTOFF_HOURS;
 
   return (
     <div className="min-h-screen pb-10">
@@ -156,12 +199,14 @@ export function UpcomingRideDetailPage() {
           </button>
         )}
 
-        {role === "passenger" && booking.trip_status === "BOOKED" && (
+        {(canPassengerCancel || canDriverCancel) && (
           <div className="rounded-2xl border border-rose-200 p-4">
             {isConfirmingCancel ? (
               <>
                 <p className="mb-3 text-center text-sm font-medium text-rose-600">
-                  Cancel this ride? This can't be undone.
+                  {role === "driver"
+                    ? "Cancel this ride for all passengers? This can't be undone."
+                    : "Cancel this ride? This can't be undone."}
                 </p>
                 <div className="flex gap-3">
                   <PrimaryButton
@@ -171,7 +216,12 @@ export function UpcomingRideDetailPage() {
                   >
                     Keep ride
                   </PrimaryButton>
-                  <PrimaryButton onClick={handleCancelRide} isLoading={isCancelling}>
+                  <PrimaryButton
+                    onClick={
+                      role === "driver" ? handleCancelOffer : handleCancelRide
+                    }
+                    isLoading={isCancelling}
+                  >
                     Yes, cancel
                   </PrimaryButton>
                 </div>

@@ -281,6 +281,40 @@ def list_my_ride_requests(
 
 
 @ride_discovery_router.post(
+    "/requests/{ride_request_id}/cancel",
+    response_model=RideRequestResponse,
+    summary="Withdraw a pending ride request",
+)
+def cancel_my_ride_request(
+    ride_request_id: str,
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Withdraw the current passenger's own request while it is still pending.
+
+    Once a request has been matched to an offer it is no longer withdrawn
+    here — the resulting booking is cancelled through the booking cancel
+    route instead.
+    """
+    ride_request = get_ride_request_by_id(
+        database_session, ride_request_id, employee.organization_id
+    )
+    if ride_request is None or ride_request.passenger_employee_id != employee.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ride request not found"
+        )
+    if ride_request.status != RideRequestStatus.PENDING.value:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Only a pending request can be withdrawn",
+        )
+    ride_request.status = RideRequestStatus.CANCELLED.value
+    database_session.commit()
+    database_session.refresh(ride_request)
+    return RideRequestResponse.model_validate(ride_request)
+
+
+@ride_discovery_router.post(
     "/offers",
     response_model=CreateRideOfferResponse,
     status_code=status.HTTP_201_CREATED,

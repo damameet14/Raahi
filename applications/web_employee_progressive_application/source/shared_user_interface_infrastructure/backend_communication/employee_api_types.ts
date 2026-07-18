@@ -143,6 +143,8 @@ export interface RideBooking {
   ride_request_id: string;
   ride_offer_id: string;
   trip_status: string;
+  ride_offer_journey_status: string;
+  ride_offer_departure_window_start_time: string | null;
   seats_booked: number;
   fare_amount: number;
   otp_code: string | null;
