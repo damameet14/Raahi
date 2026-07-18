@@ -184,6 +184,7 @@ def build_ride_booking_response(
         ),
         seats_booked=ride_booking.seats_booked,
         fare_amount=ride_booking.fare_amount,
+        payment_status=ride_booking.payment_status,
         otp_code=ride_booking.otp_code if include_otp_code else None,
         is_otp_verified=ride_booking.is_otp_verified,
         travel_date=ride_offer.travel_date if ride_offer else ride_request.travel_date,

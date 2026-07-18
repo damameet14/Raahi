@@ -166,7 +166,25 @@ _Original plan:_
   `GET /wallet/transactions`, recharge order/verify endpoints.
 - Add booking `payment_status` column (`UNPAID|PAID`) via schema-additions.
 
-## Phase 3 — Payments & Wallet (PWA frontend)
+## Phase 3 — Payments & Wallet (PWA frontend)  ✅ DONE
+
+**Status:** committed. `backend_communication/employee_payment_api.ts` mirrors the
+new endpoints (fare payments + wallet) with typed contracts.
+`features/payments/razorpayCheckout.ts` loads Razorpay Checkout on demand and
+wraps it typed. `PayFareDialog` is a BottomSheet method chooser (Wallet/UPI/Card/
+Cash): Cash+Wallet settle directly, Card+UPI open Checkout then verify server-side.
+`PaymentsPage` (replaces the `/payment-methods` placeholder) is passenger-centric —
+lists completed **UNPAID** passenger bookings to pay, a wallet shortcut, and a
+receipts list (paid vs earned, keyed off the profile id). `WalletPage` (`/wallet`)
+shows balance, quick-amount Razorpay recharge, and the transaction ledger. Ride
+History gained a Paid/Unpaid pill. Backend `RideBookingResponse` now carries
+`payment_status` (contract + `ride_view_assembly`), and the frontend `RideBooking`
+type matches; `VITE_RAZORPAY_KEY_ID` added to `vite-env.d.ts`. Verified: `tsc -b`
+clean and `vite build` green (1792 modules); backend still imports (75 routes) and
+tests pass. Role ambiguity avoided by driving "fares to pay" from the
+passenger-only bookings endpoint rather than the merged history list.
+
+_Original plan:_
 
 - Replace the payments placeholder route. On a **completed** ride detail:
   method chooser (Cash / Card / UPI / Wallet) → Razorpay Checkout (script

@@ -65,18 +65,34 @@ function HistoryCard({ booking }: { booking: RideBooking }) {
         <span className="truncate">{booking.drop_label ?? "Destination"}</span>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-text-secondary">
+      <div className="mt-3 grid grid-cols-3 items-center gap-2 text-xs text-text-secondary">
         <span className="flex items-center gap-1">
           <IndianRupee size={13} /> {booking.fare_amount.toFixed(0)}
         </span>
         <span className="flex items-center gap-1">
           <Clock size={13} /> {booking.completed_at ? "Completed" : "Recorded"}
         </span>
+        <PaymentStatusPill paymentStatus={booking.payment_status} />
       </div>
       <p className="mt-2 text-xs text-text-muted">
         {booking.vehicle_make_and_model} · {booking.vehicle_number}
       </p>
     </article>
+  );
+}
+
+function PaymentStatusPill({ paymentStatus }: { paymentStatus: string }) {
+  const isPaid = paymentStatus === "PAID";
+  return (
+    <span
+      className={`justify-self-end rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+        isPaid
+          ? "bg-raahi-50 text-raahi-700"
+          : "bg-surface-secondary text-text-secondary"
+      }`}
+    >
+      {isPaid ? "Paid" : "Unpaid"}
+    </span>
   );
 }
 

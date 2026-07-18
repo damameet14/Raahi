@@ -149,6 +149,7 @@ export interface RideBooking {
   ride_offer_departure_window_start_time: string | null;
   seats_booked: number;
   fare_amount: number;
+  payment_status: string;
   otp_code: string | null;
   is_otp_verified: boolean;
   travel_date: string;

@@ -19,6 +19,8 @@ import { VehicleManagementPage } from "./features/vehicle_management/VehicleMana
 import { SavedPlacesPage } from "./features/saved_places/SavedPlacesPage";
 import { RideHistoryPage } from "./features/ride_history/RideHistoryPage";
 import { EmployeeReportsPage } from "./features/reports_and_analytics/EmployeeReportsPage";
+import { PaymentsPage } from "./features/payments/PaymentsPage";
+import { WalletPage } from "./features/wallet/WalletPage";
 import { IntegrationPlaceholderPage } from "./features/integration_placeholders/IntegrationPlaceholderPage";
 
 export function ApplicationRouter() {
@@ -47,10 +49,8 @@ export function ApplicationRouter() {
         <Route path="/saved-places" element={<SavedPlacesPage />} />
         <Route path="/ride-history" element={<RideHistoryPage />} />
         <Route path="/reports" element={<EmployeeReportsPage />} />
-        <Route
-          path="/payment-methods"
-          element={<IntegrationPlaceholderPage kind="payments" />}
-        />
+        <Route path="/payment-methods" element={<PaymentsPage />} />
+        <Route path="/wallet" element={<WalletPage />} />
         <Route path="/chat" element={<IntegrationPlaceholderPage kind="chat" />} />
       </Route>
 

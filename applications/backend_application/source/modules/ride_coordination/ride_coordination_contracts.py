@@ -211,6 +211,7 @@ class RideBookingResponse(BaseModel):
     ride_offer_departure_window_start_time: str | None
     seats_booked: int
     fare_amount: float
+    payment_status: str
     otp_code: str | None
     is_otp_verified: bool
     travel_date: date
