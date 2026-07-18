@@ -8,6 +8,7 @@ import {
   Users,
   Car,
   BarChart3,
+  CreditCard,
   Settings,
   UserCircle,
   LogOut,
@@ -19,6 +20,7 @@ const navigationMenuItems = [
   { path: '/employees', label: 'Employees', icon: Users },
   { path: '/vehicles', label: 'Vehicles', icon: Car },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
+  { path: '/payments', label: 'Payments', icon: CreditCard },
   { path: '/settings', label: 'Settings', icon: Settings },
   { path: '/profile', label: 'Profile', icon: UserCircle },
 ];

@@ -18,6 +18,7 @@ import { VehicleListPage } from './features/vehicle_management/VehicleListPage';
 import { ReportsOverviewPage } from './features/reports_and_analytics/ReportsOverviewPage';
 import { CompanySettingsPage } from './features/company_settings/CompanySettingsPage';
 import { AdministratorProfilePage } from './features/administrator_profile/AdministratorProfilePage';
+import { PaymentHistory } from './features/payment_processing/PaymentHistory';
 
 export function ApplicationRouter() {
   return (
@@ -35,6 +36,7 @@ export function ApplicationRouter() {
             <Route path="/employees" element={<EmployeeListPage />} />
             <Route path="/vehicles" element={<VehicleListPage />} />
             <Route path="/reports" element={<ReportsOverviewPage />} />
+            <Route path="/payments" element={<PaymentHistory />} />
             <Route path="/settings" element={<CompanySettingsPage />} />
             <Route path="/profile" element={<AdministratorProfilePage />} />
             <Route path="/change-password" element={<RequiredPasswordChangePage />} />

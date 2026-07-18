@@ -28,6 +28,7 @@ from source.modules.employee_management.employee_record_model import EmployeeRec
 from source.modules.vehicle_management.vehicle_record_model import VehicleRecord  # noqa: F401
 from source.modules.trip_statistics.trip_record_model import TripRecord  # noqa: F401
 from source.modules.company_settings.company_settings_record_model import CompanySettingsRecord  # noqa: F401
+from source.modules.payment_processing.payment_record_model import PaymentRecord  # noqa: F401
 
 # Import routers
 from source.modules.administrator_authentication.administrator_authentication_http_routes import (
@@ -53,6 +54,9 @@ from source.modules.dashboard_statistics.dashboard_statistics_http_routes import
 )
 from source.modules.administrator_profile.administrator_profile_http_routes import (
     administrator_profile_router,
+)
+from source.modules.payment_processing.payment_processing_http_routes import (
+    payment_processing_router,
 )
 
 from source.database_seed.seed_demo_data import seed_demo_data
@@ -149,6 +153,7 @@ app.include_router(company_settings_router)
 app.include_router(trip_statistics_router)
 app.include_router(dashboard_statistics_router)
 app.include_router(administrator_profile_router)
+app.include_router(payment_processing_router)
 
 
 @app.get("/api/v1/health", tags=["Health"])

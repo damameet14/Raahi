@@ -87,3 +87,7 @@ yarn-error.log*
 .project-index/
 
 raahi-google*
+applications/whatsapp_server/.wwebjs_auth/
+applications/whatsapp_server/.wwebjs_cache/
+applications/agent_server/data/chatbot.sqlite3
+applications/agent_server/vector_db/faiss/
