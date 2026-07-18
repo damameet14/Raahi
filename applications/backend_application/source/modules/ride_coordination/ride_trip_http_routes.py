@@ -11,6 +11,10 @@ from source.modules.employee_management.current_employee_http_dependency import 
 from source.modules.ride_coordination.ride_status_definitions import (
     RideRequestStatus,
     RideOfferJourneyStatus,
+    RideBookingTripStatus,
+)
+from source.modules.ride_coordination.geospatial_distance_calculation import (
+    calculate_straight_line_distance_kilometers,
 )
 from source.modules.ride_coordination.ride_coordination_repository import (
     get_ride_offer_by_id,
@@ -52,6 +56,7 @@ from source.modules.ride_coordination.ride_coordination_contracts import (
     PostDriverLocationRequest,
     DriverLocationResponse,
     BookingTrackingResponse,
+    EmployeeRideReportSummaryResponse,
 )
 
 ride_trip_router = APIRouter(
@@ -89,6 +94,50 @@ def _load_booking_for_participant(
             status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found"
         )
     return ride_booking
+
+
+def _estimate_booking_distance_kilometers(
+    *, database_session: Session, employee: EmployeeRecord, ride_booking
+) -> float:
+    """Return the booking distance from its request estimate or coordinates."""
+    ride_request = get_ride_request_by_id(
+        database_session, ride_booking.ride_request_id, employee.organization_id
+    )
+    if (
+        ride_request is not None
+        and ride_request.estimated_distance_kilometers is not None
+    ):
+        return float(ride_request.estimated_distance_kilometers)
+
+    return calculate_straight_line_distance_kilometers(
+        first_latitude=ride_booking.pickup_latitude,
+        first_longitude=ride_booking.pickup_longitude,
+        second_latitude=ride_booking.drop_latitude,
+        second_longitude=ride_booking.drop_longitude,
+    )
+
+
+def _list_completed_bookings_for_employee(
+    *, database_session: Session, employee: EmployeeRecord
+):
+    """Return completed bookings where the employee is passenger or driver."""
+    completed_statuses = [RideBookingTripStatus.COMPLETED.value]
+    passenger_bookings = list_bookings_for_passenger(
+        database_session=database_session,
+        organization_id=employee.organization_id,
+        passenger_employee_id=employee.id,
+        trip_statuses=completed_statuses,
+    )
+    driver_bookings = list_bookings_for_driver(
+        database_session=database_session,
+        organization_id=employee.organization_id,
+        driver_employee_id=employee.id,
+        trip_statuses=completed_statuses,
+    )
+    unique_bookings = {
+        booking.id: booking for booking in [*passenger_bookings, *driver_bookings]
+    }
+    return list(unique_bookings.values())
 
 
 # ── Driver accepts matching requests (Offer flow 2C) ──────────────────
@@ -200,6 +249,85 @@ def list_my_driver_bookings(
 
 
 # ── Trip lifecycle ────────────────────────────────────────────────────
+
+@ride_trip_router.get(
+    "/history",
+    response_model=list[RideBookingResponse],
+    summary="Completed rides for the authenticated employee",
+)
+def list_my_ride_history(
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Return completed bookings where the employee was passenger or driver."""
+    completed_bookings = _list_completed_bookings_for_employee(
+        database_session=database_session, employee=employee
+    )
+    return [
+        build_ride_booking_response(
+            database_session=database_session,
+            organization_id=employee.organization_id,
+            ride_booking=booking,
+            include_otp_code=booking.passenger_employee_id == employee.id,
+        )
+        for booking in completed_bookings
+    ]
+
+
+@ride_trip_router.get(
+    "/reports/summary",
+    response_model=EmployeeRideReportSummaryResponse,
+    summary="Employee ride report summary",
+)
+def get_my_ride_report_summary(
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Return employee-specific analytics derived from completed bookings."""
+    completed_bookings = _list_completed_bookings_for_employee(
+        database_session=database_session, employee=employee
+    )
+
+    total_distance_kilometers = sum(
+        _estimate_booking_distance_kilometers(
+            database_session=database_session,
+            employee=employee,
+            ride_booking=booking,
+        )
+        for booking in completed_bookings
+    )
+    passenger_spend_amount = sum(
+        booking.fare_amount
+        for booking in completed_bookings
+        if booking.passenger_employee_id == employee.id
+    )
+    driver_earning_amount = sum(
+        booking.fare_amount
+        for booking in completed_bookings
+        if booking.driver_employee_id == employee.id
+    )
+    seats_shared_as_driver = sum(
+        booking.seats_booked
+        for booking in completed_bookings
+        if booking.driver_employee_id == employee.id
+    )
+    total_fare_amount = passenger_spend_amount + driver_earning_amount
+    completed_trip_count = len(completed_bookings)
+
+    return EmployeeRideReportSummaryResponse(
+        completed_trips=completed_trip_count,
+        total_distance_kilometers=round(total_distance_kilometers, 2),
+        total_fare_amount=round(total_fare_amount, 2),
+        passenger_spend_amount=round(passenger_spend_amount, 2),
+        driver_earning_amount=round(driver_earning_amount, 2),
+        seats_shared_as_driver=seats_shared_as_driver,
+        average_fare_per_trip=(
+            round(total_fare_amount / completed_trip_count, 2)
+            if completed_trip_count > 0
+            else 0
+        ),
+    )
+
 
 @ride_trip_router.post(
     "/offers/{ride_offer_id}/start",

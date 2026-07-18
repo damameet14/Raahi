@@ -20,6 +20,8 @@ export interface VehicleSummary {
   model: string;
   vehicle_number: string;
   maximum_passengers: number;
+  fuel_type: string;
+  color: string | null;
 }
 
 export interface EmployeeProfile {
@@ -185,4 +187,22 @@ export interface BookingTracking {
   driver_full_name: string;
   vehicle_make_and_model: string;
   vehicle_number: string;
+}
+
+export interface SavedPlace {
+  id: string;
+  label: string;
+  address_label: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export interface EmployeeRideReportSummary {
+  completed_trips: number;
+  total_distance_kilometers: number;
+  total_fare_amount: number;
+  passenger_spend_amount: number;
+  driver_earning_amount: number;
+  seats_shared_as_driver: number;
+  average_fare_per_trip: number;
 }

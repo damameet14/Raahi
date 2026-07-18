@@ -13,7 +13,11 @@ shares the FastAPI backend with the administration portal.
 - Home with the Upcoming Rides summary and the Find/Offer Ride actions.
 - Find a Ride (1A–1C), Offer a Ride (2A–2C), My Rides overview, ride detail,
   and the ongoing ride with 5-second live tracking and OTP handling.
+- Employee vehicle management, saved places, ride history, and personal
+  reports backed by completed ride bookings.
 - Google Maps place selection, route preview, and live-tracking rendering.
+- Drawer placeholders for payment methods and chat while teammate-owned
+  integrations are in progress.
 - Service-worker registration and manifest for installability/offline shell.
 
 ## Responsibilities not owned
@@ -21,7 +25,7 @@ shares the FastAPI backend with the administration portal.
 - All business rules, matching, fare, and persistence (backend
   `ride_coordination` and related modules).
 - Administration portal concerns.
-- Payments, wallet, ride history, and reports (future).
+- Payment processing, wallet settlement, and chat transport.
 
 ## Internal responsibility map
 

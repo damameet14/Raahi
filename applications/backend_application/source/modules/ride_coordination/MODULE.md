@@ -16,6 +16,7 @@ offer, the per-booking OTP-gated trip lifecycle, and live location tracking.
 - Trip lifecycle: journey start, per-booking OTP verification at pickup, trip
   and journey completion.
 - Recording and serving the driver's live location during an active journey.
+- Employee ride history and personal report summaries from completed bookings.
 
 ## Responsibilities not owned
 
@@ -24,7 +25,7 @@ offer, the per-booking OTP-gated trip lifecycle, and live location tracking.
   employee_self_service).
 - Vehicle records (vehicle_management).
 - Fare/matching configuration values (company_settings).
-- Payments, wallet, ride history, and reporting (future modules).
+- Payments, wallet, and chat transport.
 
 ## Public operations (HTTP)
 
@@ -41,6 +42,8 @@ Prefix `/api/v1/rides`, all requiring an authenticated EMPLOYEE.
   (OTP included).
 - `GET /bookings/as-driver` — bookings where the caller is the driver
   (OTP withheld).
+- `GET /history` - completed bookings where the caller was passenger or driver.
+- `GET /reports/summary` - employee-only ride metrics from completed bookings.
 - `POST /offers/{id}/start` — start the journey (1D/2C).
 - `POST /bookings/{id}/verify-otp` — driver verifies pickup OTP.
 - `POST /bookings/{id}/complete`, `POST /offers/{id}/complete`.

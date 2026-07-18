@@ -28,6 +28,11 @@ import {
   Search,
   Car,
   ListChecks,
+  WalletCards,
+  History,
+  MapPinned,
+  BarChart3,
+  MessageCircle,
 } from "lucide-react";
 
 import { useEmployeeAuthentication } from "../authentication_state/EmployeeAuthenticationContext";
@@ -45,6 +50,12 @@ const DRAWER_NAVIGATION_ITEMS = [
   { to: "/find-ride", label: "Find a Ride", icon: Search },
   { to: "/offer-ride", label: "Offer a Ride", icon: Car },
   { to: "/rides", label: "My Rides", icon: ListChecks },
+  { to: "/vehicles", label: "My Vehicle", icon: Car },
+  { to: "/payment-methods", label: "Payment Methods", icon: WalletCards },
+  { to: "/ride-history", label: "Ride History", icon: History },
+  { to: "/saved-places", label: "Saved Places", icon: MapPinned },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/chat", label: "Chat", icon: MessageCircle },
 ];
 
 export function EmployeeAppHeader({
@@ -160,7 +171,7 @@ export function EmployeeAppHeader({
               the app frame on wide screens. */}
           <div className="relative h-full w-full max-w-[480px]">
             <nav
-              className="animate-fade-in absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col p-4 shadow-2xl"
+              className="animate-fade-in absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col overflow-y-auto p-4 shadow-2xl"
               style={{ backgroundColor: "#ffffff" }}
             >
               <div className="mb-6 flex items-center justify-between">

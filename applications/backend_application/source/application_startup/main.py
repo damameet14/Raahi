@@ -32,6 +32,7 @@ from source.modules.ride_coordination.ride_request_record_model import RideReque
 from source.modules.ride_coordination.ride_offer_record_model import RideOfferRecord  # noqa: F401
 from source.modules.ride_coordination.ride_booking_record_model import RideBookingRecord  # noqa: F401
 from source.modules.ride_coordination.live_location_ping_record_model import LiveLocationPingRecord  # noqa: F401
+from source.modules.employee_self_service.saved_place_record_model import SavedPlaceRecord  # noqa: F401
 
 # Import routers
 from source.modules.administrator_authentication.administrator_authentication_http_routes import (

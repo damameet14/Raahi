@@ -15,6 +15,11 @@ import { RidesOverviewPage } from "./features/rides_overview/RidesOverviewPage";
 import { UpcomingRideDetailPage } from "./features/upcoming_rides/UpcomingRideDetailPage";
 import { OngoingRidePage } from "./features/ongoing_ride/OngoingRidePage";
 import { ProfileManagementPage } from "./features/profile_management/ProfileManagementPage";
+import { VehicleManagementPage } from "./features/vehicle_management/VehicleManagementPage";
+import { SavedPlacesPage } from "./features/saved_places/SavedPlacesPage";
+import { RideHistoryPage } from "./features/ride_history/RideHistoryPage";
+import { EmployeeReportsPage } from "./features/reports_and_analytics/EmployeeReportsPage";
+import { IntegrationPlaceholderPage } from "./features/integration_placeholders/IntegrationPlaceholderPage";
 
 export function ApplicationRouter() {
   return (
@@ -38,6 +43,15 @@ export function ApplicationRouter() {
         />
         <Route path="/ongoing/:rideBookingId" element={<OngoingRidePage />} />
         <Route path="/profile" element={<ProfileManagementPage />} />
+        <Route path="/vehicles" element={<VehicleManagementPage />} />
+        <Route path="/saved-places" element={<SavedPlacesPage />} />
+        <Route path="/ride-history" element={<RideHistoryPage />} />
+        <Route path="/reports" element={<EmployeeReportsPage />} />
+        <Route
+          path="/payment-methods"
+          element={<IntegrationPlaceholderPage kind="payments" />}
+        />
+        <Route path="/chat" element={<IntegrationPlaceholderPage kind="chat" />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

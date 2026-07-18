@@ -6,6 +6,7 @@ import type {
   CreateRideOfferResult,
   CreateRideRequestResult,
   DriverLocation,
+  EmployeeRideReportSummary,
   FareEstimateResponse,
   RideBooking,
   RideOffer,
@@ -200,6 +201,20 @@ export async function getBookingTracking(
 ): Promise<BookingTracking> {
   const response = await employeeApiClient.get<BookingTracking>(
     `/api/v1/rides/bookings/${rideBookingId}/tracking`,
+  );
+  return response.data;
+}
+
+export async function listMyRideHistory(): Promise<RideBooking[]> {
+  const response = await employeeApiClient.get<RideBooking[]>(
+    "/api/v1/rides/history",
+  );
+  return response.data;
+}
+
+export async function getMyRideReportSummary(): Promise<EmployeeRideReportSummary> {
+  const response = await employeeApiClient.get<EmployeeRideReportSummary>(
+    "/api/v1/rides/reports/summary",
   );
   return response.data;
 }

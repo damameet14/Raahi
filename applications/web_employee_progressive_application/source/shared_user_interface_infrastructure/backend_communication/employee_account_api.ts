@@ -4,6 +4,7 @@ import { employeeApiClient } from "./employee_api_client";
 import type {
   AuthenticationTokensResponse,
   EmployeeProfile,
+  SavedPlace,
   VehicleSummary,
 } from "./employee_api_types";
 
@@ -41,6 +42,24 @@ export interface RegisterVehiclePayload {
   fuel_type?: string;
   color?: string | null;
 }
+
+export interface UpdateVehiclePayload {
+  make?: string;
+  model?: string;
+  vehicle_number?: string;
+  maximum_passengers?: number;
+  fuel_type?: string;
+  color?: string | null;
+}
+
+export interface SavePlacePayload {
+  label: string;
+  address_label: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export type UpdateSavedPlacePayload = Partial<SavePlacePayload>;
 
 export async function loginEmployee(
   email: string,
@@ -98,4 +117,58 @@ export async function registerMyVehicle(
     payload,
   );
   return response.data;
+}
+
+export async function listMyVehicles(): Promise<VehicleSummary[]> {
+  const response = await employeeApiClient.get<VehicleSummary[]>(
+    "/api/v1/employee/vehicles",
+  );
+  return response.data;
+}
+
+export async function updateMyVehicle(
+  vehicleId: string,
+  payload: UpdateVehiclePayload,
+): Promise<VehicleSummary> {
+  const response = await employeeApiClient.put<VehicleSummary>(
+    `/api/v1/employee/vehicles/${vehicleId}`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function deleteMyVehicle(vehicleId: string): Promise<void> {
+  await employeeApiClient.delete(`/api/v1/employee/vehicles/${vehicleId}`);
+}
+
+export async function listMySavedPlaces(): Promise<SavedPlace[]> {
+  const response = await employeeApiClient.get<SavedPlace[]>(
+    "/api/v1/employee/saved-places",
+  );
+  return response.data;
+}
+
+export async function createMySavedPlace(
+  payload: SavePlacePayload,
+): Promise<SavedPlace> {
+  const response = await employeeApiClient.post<SavedPlace>(
+    "/api/v1/employee/saved-places",
+    payload,
+  );
+  return response.data;
+}
+
+export async function updateMySavedPlace(
+  savedPlaceId: string,
+  payload: UpdateSavedPlacePayload,
+): Promise<SavedPlace> {
+  const response = await employeeApiClient.put<SavedPlace>(
+    `/api/v1/employee/saved-places/${savedPlaceId}`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function deleteMySavedPlace(savedPlaceId: string): Promise<void> {
+  await employeeApiClient.delete(`/api/v1/employee/saved-places/${savedPlaceId}`);
 }

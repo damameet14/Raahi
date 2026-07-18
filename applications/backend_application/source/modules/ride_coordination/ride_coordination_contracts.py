@@ -237,6 +237,18 @@ class AcceptRideRequestsResponse(BaseModel):
     bookings: list[RideBookingResponse]
 
 
+class EmployeeRideReportSummaryResponse(BaseModel):
+    """Employee-only report metrics derived from completed ride bookings."""
+
+    completed_trips: int
+    total_distance_kilometers: float
+    total_fare_amount: float
+    passenger_spend_amount: float
+    driver_earning_amount: float
+    seats_shared_as_driver: int
+    average_fare_per_trip: float
+
+
 # ── Live trip tracking ────────────────────────────────────────────────
 
 class PostDriverLocationRequest(BaseModel):

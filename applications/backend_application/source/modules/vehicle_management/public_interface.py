@@ -15,6 +15,10 @@ class DuplicateVehicleNumberError(Exception):
     """Raised when a vehicle number already exists within the organization."""
 
 
+class VehicleUpdateConflictError(Exception):
+    """Raised when an updated vehicle number conflicts within the organization."""
+
+
 def register_vehicle_for_owner(
     *,
     database_session: Session,
@@ -71,6 +75,53 @@ def retrieve_vehicles_for_owner(
         .order_by(VehicleRecord.created_at.desc())
         .all()
     )
+
+
+def update_vehicle_for_owner(
+    *,
+    database_session: Session,
+    organization_id: str,
+    owner_employee_id: str,
+    vehicle: VehicleRecord,
+    update_data: dict,
+) -> VehicleRecord:
+    """Update an employee-owned vehicle while preserving organization scope."""
+    if (
+        vehicle.organization_id != organization_id
+        or vehicle.owner_employee_id != owner_employee_id
+    ):
+        raise ValueError("Vehicle does not belong to the employee")
+
+    for field_name, field_value in update_data.items():
+        if field_value is not None:
+            setattr(vehicle, field_name, field_value)
+    try:
+        database_session.commit()
+    except IntegrityError as integrity_error:
+        database_session.rollback()
+        raise VehicleUpdateConflictError(vehicle.vehicle_number) from integrity_error
+    database_session.refresh(vehicle)
+    return vehicle
+
+
+def deactivate_vehicle_for_owner(
+    *,
+    database_session: Session,
+    organization_id: str,
+    owner_employee_id: str,
+    vehicle: VehicleRecord,
+) -> VehicleRecord:
+    """Soft-delete an employee-owned vehicle so historical rides keep references."""
+    if (
+        vehicle.organization_id != organization_id
+        or vehicle.owner_employee_id != owner_employee_id
+    ):
+        raise ValueError("Vehicle does not belong to the employee")
+
+    vehicle.status = "INACTIVE"
+    database_session.commit()
+    database_session.refresh(vehicle)
+    return vehicle
 
 
 def retrieve_vehicle_by_id(
