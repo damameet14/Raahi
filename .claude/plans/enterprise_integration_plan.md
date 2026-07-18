@@ -81,7 +81,23 @@ agent-chatbot handlers (`agentClient`, `handlers`) and add
 
 Deps: add `apscheduler` to `requirements.txt` (httpx already present; email uses stdlib).
 
-## Phase 1 — Email service wired to admin employee provisioning
+## Phase 1 — Email service wired to admin employee provisioning  ✅ DONE
+
+**Status:** committed. Added `shared_infrastructure/application_configuration_dependency.py`
+(`get_application_configuration`, an `lru_cache` FastAPI dependency so routes
+inject config without importing the entry-point singleton). The
+`create_employee` and `reset_employee_password` routes in
+`employee_management_http_routes.py` now inject configuration and call
+`send_employee_temporary_password_notification` through a local best-effort
+helper (`_notify_employee_temporary_password`) that swallows/logs any failure
+so a notification error never surfaces as an HTTP error after provisioning has
+committed. The welcome/temporary-password email template already existed from
+Phase 0. Payment email templates are deferred to Phase 5 where they are first
+consumed (avoids dead code). Verified: routes + app import OK (65 routes), and
+a log-only/best-effort notification send returns without raising even when SMTP
+is unreachable.
+
+_Original plan:_
 
 - Templates: temporary-password/welcome email, payment pending/success/failed.
 - Trigger the temp-password email from the employee-creation and

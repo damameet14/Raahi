@@ -1,10 +1,17 @@
 """HTTP routes for employee management CRUD operations."""
 
+import logging
 import math
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from source.application_startup.application_configuration import (
+    ApplicationConfiguration,
+)
 from source.application_startup.database_connection import get_database_session
+from source.shared_infrastructure.application_configuration_dependency import (
+    get_application_configuration,
+)
 from source.shared_infrastructure.current_authenticated_user_dependency import (
     AuthenticatedUserContext,
     extract_authenticated_user,
@@ -12,6 +19,9 @@ from source.shared_infrastructure.current_authenticated_user_dependency import (
 )
 from source.shared_infrastructure.user_account_role import UserAccountRole
 from source.shared_infrastructure.pagination_contracts import PaginatedResponse
+from source.modules.notifications.public_interface import (
+    send_employee_temporary_password_notification,
+)
 from source.modules.employee_management.employee_management_contracts import (
     CreateEmployeeRequest,
     CreateEmployeeResponse,
@@ -32,10 +42,39 @@ from source.modules.employee_management.employee_account_provisioning import (
     EmployeeLoginAccountMissingError,
 )
 
+logger = logging.getLogger(__name__)
+
 employee_management_router = APIRouter(
     prefix="/api/v1/employees",
     tags=["Employee Management"],
 )
+
+
+def _notify_employee_temporary_password(
+    *,
+    configuration: ApplicationConfiguration,
+    full_name: str,
+    login_email: str,
+    temporary_password: str,
+) -> None:
+    """Best-effort welcome/credentials notification; never breaks the request.
+
+    Provisioning has already committed by the time this runs, so a failing
+    notification channel must not surface as an HTTP error to the admin.
+    """
+    try:
+        send_employee_temporary_password_notification(
+            configuration=configuration,
+            full_name=full_name,
+            login_email=login_email,
+            temporary_password=temporary_password,
+        )
+    except Exception as notification_error:  # noqa: BLE001 - best-effort
+        logger.warning(
+            "Temporary-password notification to %s failed safely: %s",
+            login_email,
+            notification_error,
+        )
 
 
 @employee_management_router.get(
@@ -85,6 +124,7 @@ def create_employee(
         require_roles([UserAccountRole.COMPANY_ADMIN, UserAccountRole.SUPER_ADMIN])
     ),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(get_application_configuration),
 ):
     """Create an employee and its EMPLOYEE login account.
 
@@ -103,6 +143,12 @@ def create_employee(
             status_code=status.HTTP_409_CONFLICT,
             detail="A login account already exists for this email address",
         )
+    _notify_employee_temporary_password(
+        configuration=configuration,
+        full_name=employee.full_name,
+        login_email=employee.email,
+        temporary_password=temporary_password,
+    )
     return CreateEmployeeResponse(
         **EmployeeResponse.model_validate(employee).model_dump(),
         temporary_password=temporary_password,
@@ -120,6 +166,7 @@ def reset_employee_password(
         require_roles([UserAccountRole.COMPANY_ADMIN, UserAccountRole.SUPER_ADMIN])
     ),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(get_application_configuration),
 ):
     """Reset an employee to a new temporary password and force a change."""
     employee = retrieve_employee_record_by_id(
@@ -140,6 +187,12 @@ def reset_employee_password(
             status_code=status.HTTP_409_CONFLICT,
             detail="Employee has no login account to reset",
         )
+    _notify_employee_temporary_password(
+        configuration=configuration,
+        full_name=employee.full_name,
+        login_email=employee.email,
+        temporary_password=temporary_password,
+    )
     return ResetEmployeePasswordResponse(
         employee_id=employee.id,
         temporary_password=temporary_password,
