@@ -86,6 +86,8 @@ _DEVELOPMENT_SCHEMA_ADDITIONS: dict[str, dict[str, str]] = {
         "office_latitude": "FLOAT",
         "office_longitude": "FLOAT",
         "onboarding_completed": "BOOLEAN NOT NULL DEFAULT FALSE",
+        "home_address_label": "VARCHAR(500)",
+        "office_address_label": "VARCHAR(500)",
     },
     "company_settings_records": {
         "pickup_match_radius_kilometers": "FLOAT NOT NULL DEFAULT 2.0",

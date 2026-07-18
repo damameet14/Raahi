@@ -29,6 +29,17 @@ class SubmitOnboardingRequest(BaseModel):
     office_address_label: str | None = Field(default=None, max_length=500)
 
 
+class UpdateEmployeeAddressesRequest(BaseModel):
+    """Request for an employee to update their saved home/office addresses."""
+
+    home_latitude: float = Field(..., ge=-90, le=90)
+    home_longitude: float = Field(..., ge=-180, le=180)
+    home_address_label: str | None = Field(default=None, max_length=500)
+    office_latitude: float = Field(..., ge=-90, le=90)
+    office_longitude: float = Field(..., ge=-180, le=180)
+    office_address_label: str | None = Field(default=None, max_length=500)
+
+
 class RegisterVehicleRequest(BaseModel):
     """Request for an employee to register one of their own vehicles."""
 
@@ -67,7 +78,9 @@ class EmployeeProfileResponse(BaseModel):
     onboarding_completed: bool
     home_latitude: float | None
     home_longitude: float | None
+    home_address_label: str | None
     office_latitude: float | None
     office_longitude: float | None
+    office_address_label: str | None
     vehicles: list[VehicleSummary]
     can_offer_ride: bool

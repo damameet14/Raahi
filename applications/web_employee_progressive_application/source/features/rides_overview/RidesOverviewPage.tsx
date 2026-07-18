@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 
 import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
+import { BottomNavigationBar } from "../../shared_user_interface_infrastructure/layout/BottomNavigationBar";
 import {
   listMyPassengerBookings,
   listMyDriverBookings,
@@ -62,7 +63,7 @@ export function RidesOverviewPage() {
   const groupedUpcoming = groupBookingsByDate(upcomingBookings);
 
   return (
-    <div className="min-h-screen pb-10">
+    <div className="min-h-screen pb-24">
       <EmployeeAppHeader title="My Rides" />
 
       <div className="flex gap-1 border-b border-[color:var(--color-border-primary)] px-4">
@@ -188,6 +189,8 @@ export function RidesOverviewPage() {
             <EmptyState message="No ride offers yet" />
           ))}
       </div>
+
+      <BottomNavigationBar />
     </div>
   );
 }

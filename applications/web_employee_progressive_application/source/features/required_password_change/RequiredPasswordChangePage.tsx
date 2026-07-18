@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { changeEmployeePassword } from "../../shared_user_interface_infrastructure/backend_communication/employee_account_api";
 import { useEmployeeAuthentication } from "../../shared_user_interface_infrastructure/authentication_state/EmployeeAuthenticationContext";
 import { PrimaryButton } from "../../shared_user_interface_infrastructure/reusable_components/PrimaryButton";
+import { PasswordField } from "../../shared_user_interface_infrastructure/reusable_components/PasswordField";
 import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
 
 export function RequiredPasswordChangePage() {
@@ -76,32 +77,5 @@ export function RequiredPasswordChangePage() {
         </PrimaryButton>
       </form>
     </div>
-  );
-}
-
-function PasswordField({
-  label,
-  value,
-  onChange,
-  autoComplete,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  autoComplete: string;
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-xs font-semibold text-text-secondary">
-      {label}
-      <input
-        type="password"
-        required
-        autoComplete={autoComplete}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="rounded-xl border border-[color:var(--color-border-primary)] bg-white px-3 py-3 text-sm text-text-primary outline-none focus:border-raahi-500"
-        placeholder="••••••••"
-      />
-    </label>
   );
 }

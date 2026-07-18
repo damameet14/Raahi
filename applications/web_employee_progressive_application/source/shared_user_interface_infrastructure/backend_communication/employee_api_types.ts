@@ -35,8 +35,10 @@ export interface EmployeeProfile {
   onboarding_completed: boolean;
   home_latitude: number | null;
   home_longitude: number | null;
+  home_address_label: string | null;
   office_latitude: number | null;
   office_longitude: number | null;
+  office_address_label: string | null;
   vehicles: VehicleSummary[];
   can_offer_ride: boolean;
 }

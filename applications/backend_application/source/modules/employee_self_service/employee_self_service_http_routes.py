@@ -16,6 +16,7 @@ from source.modules.vehicle_management.public_interface import (
 from source.modules.vehicle_management.vehicle_record_model import VehicleRecord
 from source.modules.employee_self_service.employee_self_service_contracts import (
     SubmitOnboardingRequest,
+    UpdateEmployeeAddressesRequest,
     RegisterVehicleRequest,
     VehicleSummary,
     EmployeeProfileResponse,
@@ -63,8 +64,10 @@ def _build_profile_response(
         onboarding_completed=employee.onboarding_completed,
         home_latitude=employee.home_latitude,
         home_longitude=employee.home_longitude,
+        home_address_label=employee.home_address_label,
         office_latitude=employee.office_latitude,
         office_longitude=employee.office_longitude,
+        office_address_label=employee.office_address_label,
         vehicles=vehicle_summaries,
         can_offer_ride=len(vehicle_summaries) > 0,
     )
@@ -80,6 +83,30 @@ def get_my_profile(
     database_session: Session = Depends(get_database_session),
 ):
     """Return the current employee's profile, vehicles, and capabilities."""
+    return _build_profile_response(
+        employee=employee, database_session=database_session
+    )
+
+
+@employee_self_service_router.put(
+    "/me/addresses",
+    response_model=EmployeeProfileResponse,
+    summary="Update the authenticated employee's home and office addresses",
+)
+def update_my_addresses(
+    request: UpdateEmployeeAddressesRequest,
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Update the current employee's saved home and office locations."""
+    employee.home_latitude = request.home_latitude
+    employee.home_longitude = request.home_longitude
+    employee.home_address_label = request.home_address_label
+    employee.office_latitude = request.office_latitude
+    employee.office_longitude = request.office_longitude
+    employee.office_address_label = request.office_address_label
+    database_session.commit()
+    database_session.refresh(employee)
     return _build_profile_response(
         employee=employee, database_session=database_session
     )
@@ -104,8 +131,10 @@ def complete_onboarding(
 
     employee.home_latitude = request.home_latitude
     employee.home_longitude = request.home_longitude
+    employee.home_address_label = request.home_address_label
     employee.office_latitude = request.office_latitude
     employee.office_longitude = request.office_longitude
+    employee.office_address_label = request.office_address_label
     employee.is_driver = request.has_vehicle
     employee.onboarding_completed = True
     database_session.commit()

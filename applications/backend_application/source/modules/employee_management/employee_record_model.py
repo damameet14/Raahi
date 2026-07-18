@@ -37,8 +37,10 @@ class EmployeeRecord(BaseDatabaseModel, OrganizationTenantMixin, TimestampMixin)
     )
     home_latitude: Mapped[float | None] = mapped_column(nullable=True)
     home_longitude: Mapped[float | None] = mapped_column(nullable=True)
+    home_address_label: Mapped[str | None] = mapped_column(String(500), nullable=True)
     office_latitude: Mapped[float | None] = mapped_column(nullable=True)
     office_longitude: Mapped[float | None] = mapped_column(nullable=True)
+    office_address_label: Mapped[str | None] = mapped_column(String(500), nullable=True)
     is_driver: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     onboarding_completed: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False

@@ -27,12 +27,14 @@ from source.modules.ride_coordination.trip_lifecycle_service import (
     verify_booking_otp_and_start_trip,
     complete_booking_trip,
     complete_journey,
+    cancel_booking,
     record_driver_location,
     get_latest_driver_location,
     JourneyNotStartableError,
     JourneyNotActiveError,
     IncorrectBookingOtpError,
     BookingNotAwaitingPickupError,
+    BookingNotCancellableError,
 )
 from source.modules.ride_coordination.ride_view_assembly import (
     build_ride_booking_response,
@@ -307,6 +309,49 @@ def complete_booking(
         organization_id=employee.organization_id,
         ride_booking=ride_booking,
         include_otp_code=False,
+    )
+
+
+@ride_trip_router.post(
+    "/bookings/{ride_booking_id}/cancel",
+    response_model=RideBookingResponse,
+    summary="Passenger cancels their booking before pickup",
+)
+def cancel_ride_booking(
+    ride_booking_id: str,
+    employee: EmployeeRecord = Depends(resolve_current_employee),
+    database_session: Session = Depends(get_database_session),
+):
+    """Cancel the current employee's own booking and free its seat."""
+    ride_booking = _load_booking_for_participant(
+        database_session=database_session,
+        ride_booking_id=ride_booking_id,
+        employee=employee,
+    )
+    if ride_booking.passenger_employee_id != employee.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the passenger can cancel this booking",
+        )
+    ride_offer = get_ride_offer_by_id(
+        database_session, ride_booking.ride_offer_id, employee.organization_id
+    )
+    try:
+        ride_booking = cancel_booking(
+            database_session=database_session,
+            ride_offer=ride_offer,
+            ride_booking=ride_booking,
+        )
+    except BookingNotCancellableError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This booking can no longer be cancelled",
+        )
+    return build_ride_booking_response(
+        database_session=database_session,
+        organization_id=employee.organization_id,
+        ride_booking=ride_booking,
+        include_otp_code=True,
     )
 
 

@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, Car, ChevronRight } from "lucide-react";
 
 import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
+import { BottomNavigationBar } from "../../shared_user_interface_infrastructure/layout/BottomNavigationBar";
 import { useEmployeeProfileQuery } from "../../shared_user_interface_infrastructure/employee_profile/useEmployeeProfileQuery";
 import {
   listMyPassengerBookings,
@@ -51,8 +52,8 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen pb-10">
-      <EmployeeAppHeader title="Raahi" />
+    <div className="min-h-screen pb-24">
+      <EmployeeAppHeader title="Raahi" leftAction="none" />
 
       <div className="px-4 py-4">
         <section className="mb-6">
@@ -134,6 +135,8 @@ export function HomePage() {
           </button>
         </section>
       </div>
+
+      <BottomNavigationBar />
     </div>
   );
 }

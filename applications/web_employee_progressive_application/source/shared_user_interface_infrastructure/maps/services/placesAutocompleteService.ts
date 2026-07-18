@@ -5,11 +5,6 @@ import {
   PLACES_LOCATION_BIAS_RADIUS_METERS,
 } from "./googleMapsConfiguration";
 
-const LOCATION_BIAS: google.maps.CircleLiteral = {
-  center: PLACES_LOCATION_BIAS_CENTER,
-  radius: PLACES_LOCATION_BIAS_RADIUS_METERS,
-};
-
 const PLACE_DETAIL_FIELDS: Array<keyof google.maps.places.Place> = [
   "formattedAddress",
   "location",
@@ -40,11 +35,19 @@ export async function fetchPlacePredictions(
 
   const { AutocompleteSuggestion } = await importPlacesLibrary();
 
+  // Biasing around the caller's own origin (ideally the user's live GPS
+  // position — see useCurrentCoordinates) surfaces nearby addresses first,
+  // instead of always favoring the fixed demo-deployment center.
+  const locationBias: google.maps.CircleLiteral = {
+    center: origin,
+    radius: PLACES_LOCATION_BIAS_RADIUS_METERS,
+  };
+
   const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
     includedRegionCodes: ["in"],
     input: trimmedInput,
     language: "en",
-    locationBias: LOCATION_BIAS,
+    locationBias,
     origin,
     region: "in",
     sessionToken,

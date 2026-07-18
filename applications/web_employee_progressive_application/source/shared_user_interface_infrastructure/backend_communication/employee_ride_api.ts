@@ -151,6 +151,15 @@ export async function completeBooking(
   return response.data;
 }
 
+export async function cancelBooking(
+  rideBookingId: string,
+): Promise<RideBooking> {
+  const response = await employeeApiClient.post<RideBooking>(
+    `/api/v1/rides/bookings/${rideBookingId}/cancel`,
+  );
+  return response.data;
+}
+
 export async function completeJourney(rideOfferId: string): Promise<RideOffer> {
   const response = await employeeApiClient.post<RideOffer>(
     `/api/v1/rides/offers/${rideOfferId}/complete`,

@@ -14,6 +14,7 @@ import { OfferRidePage } from "./features/offer_ride/OfferRidePage";
 import { RidesOverviewPage } from "./features/rides_overview/RidesOverviewPage";
 import { UpcomingRideDetailPage } from "./features/upcoming_rides/UpcomingRideDetailPage";
 import { OngoingRidePage } from "./features/ongoing_ride/OngoingRidePage";
+import { ProfileManagementPage } from "./features/profile_management/ProfileManagementPage";
 
 export function ApplicationRouter() {
   return (
@@ -36,6 +37,7 @@ export function ApplicationRouter() {
           element={<UpcomingRideDetailPage />}
         />
         <Route path="/ongoing/:rideBookingId" element={<OngoingRidePage />} />
+        <Route path="/profile" element={<ProfileManagementPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

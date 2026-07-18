@@ -147,7 +147,7 @@ export function FindRidePage() {
 
   return (
     <div className="min-h-screen pb-28">
-      <EmployeeAppHeader title="Find a Ride" />
+      <EmployeeAppHeader title="Find a Ride" leftAction="close" />
 
       {step === "details" && (
         <div className="flex flex-col gap-4 px-4 py-4">

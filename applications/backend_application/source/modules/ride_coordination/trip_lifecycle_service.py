@@ -43,6 +43,10 @@ class BookingNotAwaitingPickupError(Exception):
     """Raised when a booking is not in a state that accepts OTP verification."""
 
 
+class BookingNotCancellableError(Exception):
+    """Raised when a booking is not in a state that can be cancelled."""
+
+
 def _current_timestamp() -> datetime:
     """Return the current timezone-aware timestamp."""
     return datetime.now(timezone.utc)
@@ -96,6 +100,31 @@ def complete_booking_trip(
     """Mark a single passenger's trip completed on drop-off."""
     ride_booking.trip_status = RideBookingTripStatus.COMPLETED.value
     ride_booking.completed_at = _current_timestamp()
+    database_session.commit()
+    database_session.refresh(ride_booking)
+    return ride_booking
+
+
+def cancel_booking(
+    *,
+    database_session: Session,
+    ride_offer: RideOfferRecord,
+    ride_booking: RideBookingRecord,
+) -> RideBookingRecord:
+    """Cancel a passenger's booking before pickup and release its seat.
+
+    Only a BOOKED trip can be cancelled — once the driver has verified the
+    pickup OTP (STARTED) or the trip is settled, cancellation is no longer
+    possible. The released seats reopen a FULL offer so other passengers can
+    be matched again.
+    """
+    if ride_booking.trip_status != RideBookingTripStatus.BOOKED.value:
+        raise BookingNotCancellableError(ride_booking.id)
+
+    ride_booking.trip_status = RideBookingTripStatus.CANCELLED.value
+    ride_offer.seats_available += ride_booking.seats_booked
+    if ride_offer.journey_status == RideOfferJourneyStatus.FULL.value:
+        ride_offer.journey_status = RideOfferJourneyStatus.OPEN.value
     database_session.commit()
     database_session.refresh(ride_booking)
     return ride_booking

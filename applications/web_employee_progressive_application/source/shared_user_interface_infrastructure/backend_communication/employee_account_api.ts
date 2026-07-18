@@ -24,6 +24,15 @@ export interface SubmitOnboardingPayload {
   office_address_label: string | null;
 }
 
+export interface UpdateEmployeeAddressesPayload {
+  home_latitude: number;
+  home_longitude: number;
+  home_address_label: string | null;
+  office_latitude: number;
+  office_longitude: number;
+  office_address_label: string | null;
+}
+
 export interface RegisterVehiclePayload {
   make: string;
   model: string;
@@ -66,6 +75,16 @@ export async function submitOnboarding(
 ): Promise<EmployeeProfile> {
   const response = await employeeApiClient.post<EmployeeProfile>(
     "/api/v1/employee/onboarding",
+    payload,
+  );
+  return response.data;
+}
+
+export async function updateMyAddresses(
+  payload: UpdateEmployeeAddressesPayload,
+): Promise<EmployeeProfile> {
+  const response = await employeeApiClient.put<EmployeeProfile>(
+    "/api/v1/employee/me/addresses",
     payload,
   );
   return response.data;

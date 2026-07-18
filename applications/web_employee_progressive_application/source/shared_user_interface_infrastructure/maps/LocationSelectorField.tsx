@@ -7,8 +7,10 @@
 import { useEffect, useRef, useState } from "react";
 import { GoogleMap, MarkerF } from "@react-google-maps/api";
 import { MapPin, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { useGoogleMapsApiLoader } from "./GoogleMapsApiLoaderProvider";
+import { useCurrentCoordinates } from "./useCurrentCoordinates";
 import { DEFAULT_MAP_CENTER } from "./services/googleMapsConfiguration";
 import {
   createAutocompleteSessionToken,
@@ -35,6 +37,7 @@ export function LocationSelectorField({
   placeholder,
 }: LocationSelectorFieldProps) {
   const { isLoaded, hasApiKey } = useGoogleMapsApiLoader();
+  const currentCoordinates = useCurrentCoordinates();
   const [inputText, setInputText] = useState(value?.label ?? "");
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -68,6 +71,7 @@ export function LocationSelectorField({
         const results = await fetchPlacePredictions(
           trimmed,
           sessionTokenRef.current,
+          currentCoordinates ?? undefined,
         );
         if (!isCancelled) {
           setPredictions(results);
@@ -75,6 +79,7 @@ export function LocationSelectorField({
       } catch {
         if (!isCancelled) {
           setPredictions([]);
+          toast.error("Couldn't fetch address suggestions. Try again.");
         }
       } finally {
         if (!isCancelled) {
@@ -86,7 +91,7 @@ export function LocationSelectorField({
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [inputText, isLoaded]);
+  }, [inputText, isLoaded, currentCoordinates]);
 
   async function handlePredictionSelected(prediction: PlacePrediction) {
     try {
@@ -102,6 +107,7 @@ export function LocationSelectorField({
       });
     } catch {
       setPredictions([]);
+      toast.error("Couldn't select that place. Please try again.");
     }
   }
 
@@ -124,7 +130,7 @@ export function LocationSelectorField({
 
   const mapCenter = value
     ? { lat: value.latitude, lng: value.longitude }
-    : DEFAULT_MAP_CENTER;
+    : (currentCoordinates ?? DEFAULT_MAP_CENTER);
 
   return (
     <div className="relative">

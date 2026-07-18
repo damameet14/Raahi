@@ -4,7 +4,9 @@
  * pickup OTP. The driver can start the journey from here (screen 1D/2C).
  */
 
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -12,13 +14,20 @@ import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/la
 import { RoutePreviewMap } from "../../shared_user_interface_infrastructure/maps/RoutePreviewMap";
 import { PrimaryButton } from "../../shared_user_interface_infrastructure/reusable_components/PrimaryButton";
 import { TripStatusPill } from "../../shared_user_interface_infrastructure/reusable_components/TripStatusPill";
-import { startJourney } from "../../shared_user_interface_infrastructure/backend_communication/employee_ride_api";
+import {
+  startJourney,
+  cancelBooking,
+} from "../../shared_user_interface_infrastructure/backend_communication/employee_ride_api";
+import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
 import { useBookingLookup } from "./useBookingLookup";
 
 export function UpcomingRideDetailPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { rideBookingId } = useParams();
   const { booking, role, isLoading } = useBookingLookup(rideBookingId);
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   if (isLoading) {
     return (
@@ -48,6 +57,23 @@ export function UpcomingRideDetailPage() {
       // The journey may already be started; proceed to tracking regardless.
     }
     navigate(`/ongoing/${booking.id}`);
+  }
+
+  async function handleCancelRide() {
+    if (!booking) {
+      return;
+    }
+    setIsCancelling(true);
+    try {
+      await cancelBooking(booking.id);
+      await queryClient.invalidateQueries({ queryKey: ["passenger-bookings"] });
+      toast.success("Ride cancelled");
+      navigate("/rides", { replace: true });
+    } catch (error) {
+      toast.error(extractApiErrorMessage(error, "Could not cancel this ride"));
+    } finally {
+      setIsCancelling(false);
+    }
   }
 
   return (
@@ -128,6 +154,38 @@ export function UpcomingRideDetailPage() {
           >
             You will enter the passenger's OTP after starting the ride.
           </button>
+        )}
+
+        {role === "passenger" && booking.trip_status === "BOOKED" && (
+          <div className="rounded-2xl border border-rose-200 p-4">
+            {isConfirmingCancel ? (
+              <>
+                <p className="mb-3 text-center text-sm font-medium text-rose-600">
+                  Cancel this ride? This can't be undone.
+                </p>
+                <div className="flex gap-3">
+                  <PrimaryButton
+                    variant="secondary"
+                    onClick={() => setIsConfirmingCancel(false)}
+                    disabled={isCancelling}
+                  >
+                    Keep ride
+                  </PrimaryButton>
+                  <PrimaryButton onClick={handleCancelRide} isLoading={isCancelling}>
+                    Yes, cancel
+                  </PrimaryButton>
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsConfirmingCancel(true)}
+                className="w-full text-center text-sm font-semibold text-rose-600"
+              >
+                Cancel ride
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

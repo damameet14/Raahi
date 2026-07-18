@@ -1,26 +1,34 @@
 /**
- * Top bar with the navigation-drawer burger (left) and profile menu (right),
- * shared across the main employee screens. Owns the slide-in drawer and the
- * profile popover (which offers sign out).
+ * Top bar shared across the employee app: a left navigation action, the
+ * screen title, and the profile avatar (which opens a popover with My
+ * Profile and Sign out). The Home screen has no left action since it is the
+ * app's root; every other screen shows a back arrow, or — for task flows
+ * like Find/Offer Ride that should be abandoned rather than stepped back
+ * through — a close (X) button. Jumping between Home, Find a Ride, Offer a
+ * Ride, and My Rides is handled by BottomNavigationBar, not this header.
  */
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Home, Search, Car, ListChecks, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, X, LogOut, UserRound } from "lucide-react";
 
 import { useEmployeeAuthentication } from "../authentication_state/EmployeeAuthenticationContext";
 
-const NAVIGATION_ITEMS = [
-  { to: "/home", label: "Home", icon: Home },
-  { to: "/find-ride", label: "Find a Ride", icon: Search },
-  { to: "/offer-ride", label: "Offer a Ride", icon: Car },
-  { to: "/rides", label: "My Rides", icon: ListChecks },
-];
+export type EmployeeAppHeaderLeftAction = "none" | "back" | "close";
 
-export function EmployeeAppHeader({ title }: { title: string }) {
+interface EmployeeAppHeaderProps {
+  title: string;
+  leftAction?: EmployeeAppHeaderLeftAction;
+  onLeftAction?: () => void;
+}
+
+export function EmployeeAppHeader({
+  title,
+  leftAction = "back",
+  onLeftAction,
+}: EmployeeAppHeaderProps) {
   const navigate = useNavigate();
   const { session, signOut } = useEmployeeAuthentication();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const initials = (session?.fullName ?? "?")
@@ -35,16 +43,36 @@ export function EmployeeAppHeader({ title }: { title: string }) {
     navigate("/login", { replace: true });
   }
 
+  function handleLeftActionClick() {
+    if (onLeftAction) {
+      onLeftAction();
+      return;
+    }
+    if (leftAction === "close") {
+      navigate("/home");
+      return;
+    }
+    navigate(-1);
+  }
+
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color:var(--color-border-primary)] bg-white/95 px-4 py-3 backdrop-blur">
-      <button
-        type="button"
-        onClick={() => setIsDrawerOpen(true)}
-        className="rounded-lg p-1 text-text-primary hover:bg-surface-secondary"
-        aria-label="Open menu"
-      >
-        <Menu size={22} />
-      </button>
+      {leftAction === "none" ? (
+        <span className="w-8" aria-hidden />
+      ) : (
+        <button
+          type="button"
+          onClick={handleLeftActionClick}
+          className="rounded-lg p-1 text-text-primary hover:bg-surface-secondary"
+          aria-label={leftAction === "close" ? "Close" : "Go back"}
+        >
+          {leftAction === "close" ? (
+            <X size={22} />
+          ) : (
+            <ArrowLeft size={22} />
+          )}
+        </button>
+      )}
       <h1 className="text-base font-bold">{title}</h1>
       <button
         type="button"
@@ -69,6 +97,16 @@ export function EmployeeAppHeader({ title }: { title: string }) {
             </p>
             <button
               type="button"
+              onClick={() => {
+                setIsProfileOpen(false);
+                navigate("/profile");
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-surface-secondary"
+            >
+              <UserRound size={16} /> My Profile
+            </button>
+            <button
+              type="button"
               onClick={handleSignOut}
               className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-rose-500 hover:bg-surface-secondary"
             >
@@ -76,48 +114,6 @@ export function EmployeeAppHeader({ title }: { title: string }) {
             </button>
           </div>
         </>
-      )}
-
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-40 flex">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setIsDrawerOpen(false)}
-            aria-hidden
-          />
-          <nav className="animate-fade-in relative flex h-full w-72 max-w-[80%] flex-col bg-white p-4">
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-lg font-extrabold">Raahi</span>
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(false)}
-                aria-label="Close menu"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex flex-col gap-1">
-              {NAVIGATION_ITEMS.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-secondary"
-                >
-                  <item.icon size={18} className="text-raahi-600" />
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="mt-auto flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-rose-500 hover:bg-surface-secondary"
-            >
-              <LogOut size={18} /> Sign out
-            </button>
-          </nav>
-        </div>
       )}
     </header>
   );
