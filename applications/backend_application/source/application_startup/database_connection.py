@@ -1,8 +1,10 @@
 """SQLAlchemy database engine and session management."""
 
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
+from typing import Generator, Iterator
 
 from source.application_startup.application_configuration import ApplicationConfiguration
 
@@ -43,6 +45,25 @@ def get_database_session() -> Generator[Session, None, None]:
     """FastAPI dependency that yields a database session per request.
 
     The session is automatically closed after the request completes.
+    """
+    if _session_factory is None:
+        raise RuntimeError(
+            "Database not initialized. Call initialize_database() during startup."
+        )
+    session = _session_factory()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@contextmanager
+def open_database_session() -> Iterator[Session]:
+    """Yield a standalone session for non-request contexts.
+
+    WebSocket handlers and background jobs (e.g. the ride-reminder scheduler)
+    have no request lifecycle, so they open and close their own short-lived
+    session through this context manager instead of the FastAPI dependency.
     """
     if _session_factory is None:
         raise RuntimeError(

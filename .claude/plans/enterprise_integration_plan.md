@@ -194,7 +194,28 @@ _Original plan:_
   with the existing `EmployeeRideReportSummary`.
 - API client + types in `backend_communication` mirroring the new endpoints.
 
-## Phase 4 — Live group chat (WebSocket)
+## Phase 4 — Live group chat (WebSocket)  ✅ DONE
+
+**Status:** committed. Backend `modules/journey_chat` added and wired
+(`ChatMessageRecord` table, router mounted): WebSocket
+`/api/v1/ws/journeys/{ride_offer_id}/chat?token=<jwt>` (token in query since WS
+handshakes carry no auth header) + REST `/api/v1/journeys/{ride_offer_id}/messages`.
+Membership = driver + non-cancelled-booking passengers, checked on connect and
+on every history read; non-members closed 4401/4403. In-process
+`JourneyChatConnectionManager` broadcasts per ride offer and drops dead sockets.
+Added a reusable `decode_access_token_or_none` (WS auth; `extract_authenticated_user`
+now delegates to it) and an `open_database_session()` context manager for
+non-request contexts (WS + the Phase 5 scheduler). Frontend: `employee_chat_api.ts`
+(history + WS URL builder), `useJourneyChatSocket` (history load, live stream,
+auto-reconnect, send), `JourneyChatPage` (`/journeys/:rideOfferId/chat`, message
+list + composer + `tel:` Call button from nav state), and `JourneyChatListPage`
+(the drawer `/chat` hub over active bookings). Chat/Call entry rows added to the
+ongoing and upcoming-ride screens. Verified: backend imports (77 routes),
+`tsc -b` + `vite build` green, and 7 backend tests pass (incl. new connection-manager
+broadcast/cleanup tests). Live socket E2E stays with the user (needs a running
+server + real tokens).
+
+_Original plan:_
 
 **Backend `modules/journey_chat`**:
 - `ChatMessageRecord` (ride_offer_id, sender_employee_id, body, created_at).

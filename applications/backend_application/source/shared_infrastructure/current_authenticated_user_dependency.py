@@ -43,15 +43,12 @@ class AuthenticatedUserContext:
         self.role = role
 
 
-def extract_authenticated_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
-) -> AuthenticatedUserContext:
-    """FastAPI dependency that extracts and validates the JWT access token.
+def decode_access_token_or_none(token: str) -> AuthenticatedUserContext | None:
+    """Decode a raw JWT access token, returning None if it is not valid.
 
-    Returns an AuthenticatedUserContext if the token is valid.
-    Raises HTTP 401 if the token is missing, expired, or invalid.
+    Used where FastAPI's HTTP bearer dependency does not apply — notably
+    WebSocket handshakes, which carry the token as a query parameter.
     """
-    token = credentials.credentials
     try:
         payload = jwt.decode(token, _jwt_secret, algorithms=[_jwt_algorithm])
         return AuthenticatedUserContext(
@@ -60,16 +57,25 @@ def extract_authenticated_user(
             email=payload["email"],
             role=UserAccountRole(payload["role"]),
         )
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Access token has expired",
-        )
     except (jwt.InvalidTokenError, KeyError, ValueError):
+        return None
+
+
+def extract_authenticated_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+) -> AuthenticatedUserContext:
+    """FastAPI dependency that extracts and validates the JWT access token.
+
+    Returns an AuthenticatedUserContext if the token is valid.
+    Raises HTTP 401 if the token is missing, expired, or invalid.
+    """
+    authenticated_user = decode_access_token_or_none(credentials.credentials)
+    if authenticated_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid access token",
+            detail="Invalid or expired access token",
         )
+    return authenticated_user
 
 
 def require_roles(allowed_roles: List[UserAccountRole]):

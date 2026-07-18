@@ -10,7 +10,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, KeyRound, MessageCircle, Phone } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { EmployeeAppHeader } from "../../shared_user_interface_infrastructure/layout/EmployeeAppHeader";
@@ -169,6 +169,31 @@ export function OngoingRidePage() {
             ? "On the way to the destination. Location updates every 5 seconds."
             : "Waiting for the driver to confirm pickup."}
         </p>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              navigate(`/journeys/${booking.ride_offer_id}/chat`, {
+                state: {
+                  callPhone: role === "passenger" ? booking.driver_phone : null,
+                  callName: booking.driver_full_name,
+                },
+              })
+            }
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[color:var(--color-border-primary)] bg-white py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface-secondary"
+          >
+            <MessageCircle size={16} /> Chat
+          </button>
+          {role === "passenger" && booking.driver_phone && (
+            <a
+              href={`tel:${booking.driver_phone}`}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[color:var(--color-border-primary)] bg-white py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface-secondary"
+            >
+              <Phone size={16} /> Call driver
+            </a>
+          )}
+        </div>
 
         {role === "passenger" &&
           tripStatus === "BOOKED" &&
