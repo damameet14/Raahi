@@ -24,8 +24,8 @@ This application owns the frontend Google Maps experience for the Raahi enterpri
 ### `GoogleMap`
 
 - Request contract: environment variable `GOOGLE_MAPS_API_KEY` exposed to Vite as `VITE_GOOGLE_MAPS_API_KEY`
-- Success result: rendered map, selected markers, optional route line, and route summary
-- Failure result or typed error: map configuration state, map load state, Places error state, route calculation error state
+- Success result: rendered map, selected markers, optional route line, and trip summary card
+- Failure result or typed error: map configuration state, map load state, Places error state, invalid route input state, no-route state, route calculation error state
 - Side effects: Google Maps JavaScript API load, Places API calls, Routes API calls, browser geolocation request
 - Permission or security requirements: browser geolocation requires user permission; real API keys must remain outside source control
 

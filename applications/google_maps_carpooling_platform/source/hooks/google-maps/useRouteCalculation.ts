@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { computeDrivingRoute } from "../../services/google-maps/computeDrivingRoute";
+import {
+  InvalidRouteInputError,
+  computeDrivingRoute,
+} from "../../services/google-maps/computeDrivingRoute";
 import type { RouteSummary } from "../../types/google-maps/routeSummary";
 import type { SelectedPlace } from "../../types/google-maps/places";
 
@@ -23,6 +26,13 @@ export function useRouteCalculation({
     if (!pickup || !destination) {
       setRoute(null);
       setRouteError(null);
+      setIsCalculatingRoute(false);
+      return;
+    }
+
+    if (pickup.placeId === destination.placeId) {
+      setRoute(null);
+      setRouteError("Pickup and destination must be different places.");
       setIsCalculatingRoute(false);
       return;
     }
@@ -53,11 +63,7 @@ export function useRouteCalculation({
         }
 
         setRoute(null);
-        setRouteError(
-          error instanceof Error
-            ? error.message
-            : "Unable to calculate this route.",
-        );
+        setRouteError(getRouteCalculationErrorMessage(error));
       } finally {
         if (requestIdRef.current === requestId) {
           setIsCalculatingRoute(false);
@@ -77,4 +83,16 @@ export function useRouteCalculation({
     route,
     routeError,
   };
+}
+
+function getRouteCalculationErrorMessage(error: unknown): string {
+  if (error instanceof InvalidRouteInputError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unable to calculate this route.";
 }

@@ -81,7 +81,8 @@
   font-weight: 600;
 }
 
-.route-summary {
+.route-summary,
+.trip-summary-card {
   display: grid;
   gap: 10px;
   padding: 12px;
@@ -106,7 +107,7 @@
   border-color: rgb(168 66 23 / 22%);
 }
 
-.route-summary__title {
+.trip-summary-card__title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -115,14 +116,19 @@
   font-weight: 900;
 }
 
-.route-summary__stats {
+.trip-summary-card__places,
+.trip-summary-card__metrics {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
 
-.route-summary__stat {
+.trip-summary-card__metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trip-summary-card__place,
+.trip-summary-card__metric {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr);
   gap: 2px 8px;
@@ -134,18 +140,22 @@
   border-radius: 6px;
 }
 
-.route-summary__stat svg {
+.trip-summary-card__place svg,
+.trip-summary-card__metric svg {
   grid-row: span 2;
   color: #175cd3;
 }
 
-.route-summary__stat dt,
-.route-summary__stat dd {
+.trip-summary-card__place dt,
+.trip-summary-card__place dd,
+.trip-summary-card__metric dt,
+.trip-summary-card__metric dd {
   min-width: 0;
   margin: 0;
 }
 
-.route-summary__stat dt {
+.trip-summary-card__place dt,
+.trip-summary-card__metric dt {
   overflow: hidden;
   color: #52636d;
   font-size: 0.72rem;
@@ -154,8 +164,19 @@
   white-space: nowrap;
 }
 
-.route-summary__stat dd {
+.trip-summary-card__place dd,
+.trip-summary-card__metric dd {
   color: #172026;
+}
+
+.trip-summary-card__place dd {
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.trip-summary-card__metric dd {
   font-size: 0.95rem;
   font-weight: 900;
 }
@@ -253,7 +274,7 @@
     justify-content: center;
   }
 
-  .route-summary__stats {
+  .trip-summary-card__metrics {
     grid-template-columns: 1fr;
   }
 }

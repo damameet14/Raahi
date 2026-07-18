@@ -174,11 +174,14 @@
 ### Classes
 - BrowserGeolocationError
 - GoogleMapsConfigError
+- InvalidRouteInputError
 - PlacesAutocompleteError
 - RouteCalculationError
+- RouteNotFoundError
 
 ### Functions
 - App
+- areCoordinatesValid
 - computeDrivingRoute
 - createAutocompleteSessionToken
 - decodeEncodedPolyline
@@ -191,6 +194,7 @@
 - getBrowserGeolocationErrorMessage
 - getCurrentBrowserLocation
 - getGoogleMapsApiKey
+- getRouteCalculationErrorMessage
 - GoogleMap
 - importPlacesLibrary
 - LoadedGoogleMap
@@ -203,15 +207,17 @@
 - toBrowserGeolocationErrorCode
 - toPlacePrediction
 - toRouteWaypoint
+- TripSummaryCard
 - useDebouncedValue
 - usePlaceAutocomplete
 - useRouteCalculation
 - useSelectedPlaces
+- validateDrivingRouteCalculationRequest
 
 ### Interfaces
-- ComputeDrivingRouteOptions
 - Coordinates
 - DestinationSearchProps
+- DrivingRouteCalculationRequest
 - GoogleRoute
 - GoogleRoutesResponse
 - ImportMeta
@@ -225,6 +231,7 @@
 - RouteSummaryPanelProps
 - SelectedPlace
 - SelectedPlaceMarkerProps
+- TripSummaryCardProps
 - UsePlaceAutocompleteOptions
 - UseRouteCalculationOptions
 

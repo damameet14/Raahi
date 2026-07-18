@@ -8,7 +8,8 @@ import {
   type Libraries,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { Clock3, LocateFixed, MapPin, Route as RouteIcon, Ruler } from "lucide-react";
+import { LocateFixed, MapPin, Route as RouteIcon } from "lucide-react";
+import { TripSummaryCard } from "./TripSummaryCard";
 import { DestinationSearch } from "./places/DestinationSearch";
 import { PickupSearch } from "./places/PickupSearch";
 import { useRouteCalculation } from "../../hooks/google-maps/useRouteCalculation";
@@ -267,8 +268,9 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
         </div>
 
         <RouteSummaryPanel
-          hasRouteInputs={hasRouteInputs}
+          destination={selectedPlaces.destination}
           isCalculatingRoute={isCalculatingRoute}
+          pickup={selectedPlaces.pickup}
           route={route}
           routeError={routeError}
         />
@@ -284,18 +286,22 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
 }
 
 interface RouteSummaryPanelProps {
-  hasRouteInputs: boolean;
+  destination: SelectedPlace | null;
   isCalculatingRoute: boolean;
+  pickup: SelectedPlace | null;
   route: RouteSummary | null;
   routeError: string | null;
 }
 
 function RouteSummaryPanel({
-  hasRouteInputs,
+  destination,
   isCalculatingRoute,
+  pickup,
   route,
   routeError,
 }: RouteSummaryPanelProps) {
+  const hasRouteInputs = Boolean(pickup && destination);
+
   if (!hasRouteInputs) {
     return null;
   }
@@ -322,25 +328,12 @@ function RouteSummaryPanel({
     return null;
   }
 
+  if (!pickup || !destination) {
+    return null;
+  }
+
   return (
-    <div className="route-summary" aria-label="Calculated route summary">
-      <div className="route-summary__title">
-        <RouteIcon aria-hidden="true" size={18} />
-        <span>Route calculated</span>
-      </div>
-      <dl className="route-summary__stats">
-        <div className="route-summary__stat">
-          <Ruler aria-hidden="true" size={16} />
-          <dt>Distance</dt>
-          <dd>{route.distanceLabel}</dd>
-        </div>
-        <div className="route-summary__stat">
-          <Clock3 aria-hidden="true" size={16} />
-          <dt>Drive time</dt>
-          <dd>{route.durationLabel}</dd>
-        </div>
-      </dl>
-    </div>
+    <TripSummaryCard destination={destination} pickup={pickup} route={route} />
   );
 }
 

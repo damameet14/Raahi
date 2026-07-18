@@ -1,19 +1,19 @@
 import type { Coordinates } from "../../types/google-maps/location";
-import type { RouteSummary } from "../../types/google-maps/routeSummary";
+import type {
+  DrivingRouteCalculationRequest,
+  RouteSummary,
+} from "../../types/google-maps/routeSummary";
 
 const COMPUTE_ROUTES_URL =
   "https://routes.googleapis.com/directions/v2:computeRoutes";
 const ROUTE_FIELD_MASK =
   "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline";
 
-interface ComputeDrivingRouteOptions {
-  apiKey: string;
-  destination: Coordinates;
-  origin: Coordinates;
-  signal?: AbortSignal;
-}
-
 interface GoogleRoutesResponse {
+  error?: {
+    message?: string;
+    status?: string;
+  };
   routes?: GoogleRoute[];
 }
 
@@ -32,12 +32,33 @@ export class RouteCalculationError extends Error {
   }
 }
 
+export class InvalidRouteInputError extends RouteCalculationError {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidRouteInputError";
+  }
+}
+
+export class RouteNotFoundError extends RouteCalculationError {
+  constructor(message = "No driving route was found for these locations.") {
+    super(message);
+    this.name = "RouteNotFoundError";
+  }
+}
+
 export async function computeDrivingRoute({
   apiKey,
   destination,
   origin,
   signal,
-}: ComputeDrivingRouteOptions): Promise<RouteSummary> {
+}: DrivingRouteCalculationRequest): Promise<RouteSummary> {
+  validateDrivingRouteCalculationRequest({
+    apiKey,
+    destination,
+    origin,
+    signal,
+  });
+
   const response = await fetch(COMPUTE_ROUTES_URL, {
     body: JSON.stringify({
       computeAlternativeRoutes: false,
@@ -59,32 +80,82 @@ export async function computeDrivingRoute({
     signal,
   });
 
+  const data = (await response.json().catch(() => null)) as
+    | GoogleRoutesResponse
+    | null;
+
   if (!response.ok) {
     throw new RouteCalculationError(
-      "Routes API could not calculate a route. Check API access, billing, and browser key restrictions.",
+      data?.error?.message ??
+        "Routes API could not calculate a route. Check API access, billing, and browser key restrictions.",
     );
   }
 
-  const data = (await response.json()) as GoogleRoutesResponse;
-  const route = data.routes?.[0];
+  const route = data?.routes?.[0];
   const encodedPolyline = route?.polyline?.encodedPolyline;
 
-  if (!route || !encodedPolyline || route.distanceMeters == null || !route.duration) {
-    throw new RouteCalculationError(
-      "Routes API did not return route distance, duration, and polyline.",
+  if (!route) {
+    throw new RouteNotFoundError();
+  }
+
+  if (!encodedPolyline || route.distanceMeters == null || !route.duration) {
+    throw new RouteNotFoundError(
+      "Routes API did not return a complete drawable route.",
     );
   }
 
   const durationSeconds = parseDurationSeconds(route.duration);
+  const durationLabel = formatDuration(durationSeconds);
+  const path = decodeEncodedPolyline(encodedPolyline);
+
+  if (path.length === 0) {
+    throw new RouteNotFoundError(
+      "Routes API returned an empty route path for these locations.",
+    );
+  }
 
   return {
     distanceLabel: formatDistance(route.distanceMeters),
     distanceMeters: route.distanceMeters,
-    durationLabel: formatDuration(durationSeconds),
+    durationLabel,
     durationSeconds,
     encodedPolyline,
-    path: decodeEncodedPolyline(encodedPolyline),
+    etaLabel: durationLabel,
+    path,
   };
+}
+
+function validateDrivingRouteCalculationRequest({
+  apiKey,
+  destination,
+  origin,
+}: DrivingRouteCalculationRequest): void {
+  if (!apiKey.trim()) {
+    throw new InvalidRouteInputError("Google Maps API key is missing.");
+  }
+
+  if (!areCoordinatesValid(origin) || !areCoordinatesValid(destination)) {
+    throw new InvalidRouteInputError(
+      "Pickup and destination must include valid coordinates.",
+    );
+  }
+
+  if (origin.lat === destination.lat && origin.lng === destination.lng) {
+    throw new InvalidRouteInputError(
+      "Pickup and destination must be different locations.",
+    );
+  }
+}
+
+function areCoordinatesValid(coordinates: Coordinates): boolean {
+  return (
+    Number.isFinite(coordinates.lat) &&
+    Number.isFinite(coordinates.lng) &&
+    coordinates.lat >= -90 &&
+    coordinates.lat <= 90 &&
+    coordinates.lng >= -180 &&
+    coordinates.lng <= 180
+  );
 }
 
 function toRouteWaypoint(coordinates: Coordinates) {
@@ -99,7 +170,11 @@ function toRouteWaypoint(coordinates: Coordinates) {
 }
 
 function parseDurationSeconds(duration: string): number {
-  const seconds = Number(duration.replace(/s$/, ""));
+  if (!duration.endsWith("s")) {
+    throw new RouteCalculationError("Routes API returned an invalid duration.");
+  }
+
+  const seconds = Number(duration.slice(0, -1));
 
   if (!Number.isFinite(seconds)) {
     throw new RouteCalculationError("Routes API returned an invalid duration.");
@@ -161,11 +236,17 @@ function decodeNextValue(
   let byte: number;
 
   do {
+    if (index >= encodedPolyline.length) {
+      throw new RouteNotFoundError(
+        "Routes API returned an invalid route path.",
+      );
+    }
+
     byte = encodedPolyline.charCodeAt(index) - 63;
     index += 1;
     result |= (byte & 0x1f) << shift;
     shift += 5;
-  } while (byte >= 0x20 && index < encodedPolyline.length);
+  } while (byte >= 0x20);
 
   const value = result & 1 ? ~(result >> 1) : result >> 1;
 
