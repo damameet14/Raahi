@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const platformStatistics = [
@@ -28,9 +28,52 @@ const platformFeatures = [
   },
 ];
 
+const processSteps = [
+  {
+    number: '01',
+    title: 'Set your commute',
+    description: 'Choose the route and time that fit your working day.',
+  },
+  {
+    number: '02',
+    title: 'Meet your match',
+    description: 'Connect with a verified colleague on a compatible route.',
+  },
+  {
+    number: '03',
+    title: 'Travel together',
+    description: 'Follow the journey live and arrive with less friction.',
+  },
+];
+
+const impactPreviews = [
+  { identifier: 'traffic', title: 'Less Traffic', detail: 'Fewer single-rider vehicles on the road.' },
+  { identifier: 'costs', title: 'Lower Costs', detail: 'Shared fares make daily travel easier to sustain.' },
+  { identifier: 'together', title: 'More Together', detail: 'Commutes become trusted team routines.' },
+  { identifier: 'teams', title: 'Trusted Teams', detail: 'Only verified workplace members participate.' },
+  { identifier: 'visibility', title: 'Live Visibility', detail: 'Everyone can follow the active trip status.' },
+  { identifier: 'footprint', title: 'Smaller Footprint', detail: 'Shared rides reduce avoidable fuel use.' },
+];
+
+const fallbackImpactPreview = impactPreviews[0]!;
+
 export function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+  const [isPreloaderVisible, setIsPreloaderVisible] = useState(true);
+  const [preloaderProgress, setPreloaderProgress] = useState(0);
+  const [visibleStatisticValues, setVisibleStatisticValues] = useState(
+    platformStatistics.map(() => 0)
+  );
+  const [activeImpactPreview, setActiveImpactPreview] = useState('traffic');
+
+  const activeImpactDetail = useMemo(
+    () =>
+      impactPreviews.find(
+        (impactPreview) => impactPreview.identifier === activeImpactPreview
+      ) ?? fallbackImpactPreview,
+    [activeImpactPreview]
+  );
 
   useEffect(() => {
     const updateHeaderState = () => setIsHeaderScrolled(window.scrollY > 40);
@@ -39,13 +82,104 @@ export function LandingPage() {
     return () => window.removeEventListener('scroll', updateHeaderState);
   }, []);
 
+  useEffect(() => {
+    let animationFrame = 0;
+    const startTime = performance.now();
+    const minimumDuration = 1200;
+
+    function renderPreloader(currentTime: number) {
+      const progress = Math.min((currentTime - startTime) / minimumDuration, 1);
+      setPreloaderProgress(progress);
+
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(renderPreloader);
+        return;
+      }
+
+      window.setTimeout(() => setIsPreloaderVisible(false), 220);
+    }
+
+    animationFrame = window.requestAnimationFrame(renderPreloader);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
+
+  useEffect(() => {
+    const statisticsSection = document.querySelector('[data-marketing-statistics]');
+    if (!statisticsSection) {
+      setVisibleStatisticValues(platformStatistics.map((statistic) => statistic.value));
+      return;
+    }
+
+    let animationFrame = 0;
+    let animationStartTime = 0;
+
+    function animateStatistics(currentTime: number) {
+      if (animationStartTime === 0) {
+        animationStartTime = currentTime;
+      }
+      const progress = Math.min((currentTime - animationStartTime) / 900, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setVisibleStatisticValues(
+        platformStatistics.map((statistic) => Math.round(statistic.value * easedProgress))
+      );
+
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(animateStatistics);
+      }
+    }
+
+    const statisticsObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          animationFrame = window.requestAnimationFrame(animateStatistics);
+          statisticsObserver.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    statisticsObserver.observe(statisticsSection);
+    return () => {
+      statisticsObserver.disconnect();
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
   return (
     <div className="marketing-page">
+      {isPreloaderVisible && (
+        <div
+          className={`marketing-preloader ${preloaderProgress >= 1 ? 'is-complete' : ''}`}
+          role="progressbar"
+          aria-label="Loading Raahi"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(preloaderProgress * 100)}
+        >
+          <div className="marketing-preloader-content">
+            <p>Enterprise carpooling platform</p>
+            <div className="marketing-preloader-wordmark" aria-hidden="true">
+              <span>RAA</span>
+              <span>HI</span>
+              <i style={{ transform: `translateY(${110 - preloaderProgress * 130}px)` }} />
+            </div>
+            <div className="marketing-preloader-status">
+              <span>LOADING</span>
+              <span>{Math.round(preloaderProgress * 100)}%</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className={`marketing-header ${isHeaderScrolled ? 'is-scrolled' : ''}`}>
         <nav className="marketing-navigation marketing-frame" aria-label="Main navigation">
           <a className="marketing-brand" href="#top" aria-label="Raahi home">
-            <span className="marketing-brand-mark" aria-hidden="true">R</span>
-            <span>Raahi</span>
+            <span className="marketing-brand-mark" aria-hidden="true">
+              <img src="/assets/raahi-logo.png" alt="" />
+            </span>
+            <span className="marketing-brand-wordmark">
+              <span>RAA</span><span>HI</span>
+            </span>
           </a>
 
           <button
@@ -68,6 +202,13 @@ export function LandingPage() {
             <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How it works</a>
             <a href="#demo" onClick={() => setIsMenuOpen(false)}>Live tracking</a>
             <a href="#impact" onClick={() => setIsMenuOpen(false)}>Impact</a>
+            <Link
+              className="marketing-navigation-sign-in"
+              to="/login"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Sign in
+            </Link>
             <Link
               className="marketing-navigation-call-to-action"
               to="/register-organization"
@@ -109,11 +250,11 @@ export function LandingPage() {
           <div className="marketing-hero-corner-label" aria-hidden="true">RAAHI / 2026</div>
         </section>
 
-        <section className="marketing-statistics marketing-frame" aria-label="Raahi activity">
-          {platformStatistics.map((statistic) => (
+        <section className="marketing-statistics marketing-frame" aria-label="Raahi activity" data-marketing-statistics>
+          {platformStatistics.map((statistic, statisticIndex) => (
             <article className="marketing-statistic-card" key={statistic.label}>
               <div className="marketing-statistic-value">
-                <strong>{statistic.value}</strong><span aria-hidden="true">+</span>
+                <strong>{visibleStatisticValues[statisticIndex] ?? statistic.value}</strong><span aria-hidden="true">+</span>
               </div>
               <span className="marketing-statistic-label">{statistic.label}</span>
             </article>
@@ -164,15 +305,13 @@ export function LandingPage() {
             <p>Three simple moments turn an everyday route into a calmer, shared commute.</p>
           </div>
           <div className="marketing-process-timeline">
-            <article className="marketing-process-step">
-              <span>01</span><h3>Register your company</h3><p>Create the workplace tenant and admin account.</p>
-            </article>
-            <article className="marketing-process-step">
-              <span>02</span><h3>Set your commute rules</h3><p>Configure costs, office location, vehicles, and employee access.</p>
-            </article>
-            <article className="marketing-process-step">
-              <span>03</span><h3>Travel together</h3><p>Give employees a trusted place to share verified workplace rides.</p>
-            </article>
+            {processSteps.map((processStep) => (
+              <article className="marketing-process-step" key={processStep.number}>
+                <span>{processStep.number}</span>
+                <h3>{processStep.title}</h3>
+                <p>{processStep.description}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -238,14 +377,38 @@ export function LandingPage() {
             <span>BUILT FOR BETTER COMMUTES</span>
             <span>RAAHI / 2026</span>
           </div>
-          <div className="marketing-impact-words" aria-label="Raahi impact areas">
-            <span>LESS TRAFFIC</span><span>LOWER COSTS</span><span>MORE TOGETHER</span>
-            <span>TRUSTED TEAMS</span><span>LIVE VISIBILITY</span><span>SMALLER FOOTPRINT</span>
+          <div className="marketing-impact-stage">
+            <div className="marketing-impact-words" aria-label="Raahi impact areas">
+              {impactPreviews.map((impactPreview) => (
+                <button
+                  key={impactPreview.identifier}
+                  type="button"
+                  className={activeImpactPreview === impactPreview.identifier ? 'is-active' : ''}
+                  onPointerEnter={() => setActiveImpactPreview(impactPreview.identifier)}
+                  onFocus={() => setActiveImpactPreview(impactPreview.identifier)}
+                >
+                  {impactPreview.title.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <figure className="marketing-impact-preview-card">
+              <figcaption>
+                <span>{activeImpactDetail.title}</span>
+                <span>RAAHI IMPACT</span>
+              </figcaption>
+              <div className={`marketing-impact-preview-visual ${activeImpactDetail.identifier}`} aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <p>{activeImpactDetail.detail}</p>
+            </figure>
+            <p className="marketing-impact-side-label">FOR PEOPLE<br />FOR TEAMS</p>
+            <p className="marketing-impact-summary">
+              One shared journey creates a lighter routine for people,
+              organizations, and the city around them.
+            </p>
           </div>
-          <p className="marketing-impact-summary">
-            One shared journey creates a lighter routine for people,
-            organizations, and the city around them.
-          </p>
         </section>
 
         <section className="marketing-call-to-action marketing-frame">
@@ -260,18 +423,48 @@ export function LandingPage() {
       </main>
 
       <footer className="marketing-footer marketing-frame">
-        <div className="marketing-footer-top">
-          <div>
-            <p className="marketing-micro-label">SHARE YOUR COMMUTE</p>
-            <p>Cut costs. Cut emissions.<br />Make the journey better.</p>
+        <div className="marketing-footer-main">
+          <div className="marketing-footer-navigation-area">
+            <p className="marketing-micro-label">EXPLORE RAAHI</p>
+            <div className="marketing-footer-link-groups">
+              <div>
+                <span>PLATFORM</span>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How it works</a>
+              </div>
+              <div>
+                <span>COMPANY</span>
+                <a href="#impact">Why Raahi</a>
+                <a href="#demo">Live view</a>
+              </div>
+            </div>
           </div>
-          <Link className="marketing-footer-circle-link" to="/register-organization" aria-label="Register organization">↗</Link>
+
+          <div className="marketing-footer-contact-area">
+            <p className="marketing-micro-label">LET'S TALK</p>
+            <h2>Still have questions?</h2>
+            <form className="marketing-footer-contact-form" action="mailto:hello@raahi.work" method="post">
+              <label className="sr-only" htmlFor="footer-email">Your email address</label>
+              <input id="footer-email" name="email" type="email" placeholder="Enter your email" autoComplete="email" required />
+              <button className="marketing-footer-send-button" type="submit">Send</button>
+              <button className="marketing-footer-arrow-button" type="submit" aria-label="Send email">-&gt;</button>
+            </form>
+          </div>
         </div>
-        <div className="marketing-footer-wordmark" aria-hidden="true">RAAHI</div>
+        <div className="marketing-footer-wordmark" aria-hidden="true">
+          <span>RAA</span><span>HI</span>
+        </div>
         <div className="marketing-footer-bottom">
-          <span>© 2026 RAAHI</span>
-          <Link to="/login">ADMIN LOGIN</Link>
-          <span>BENGALURU / INDIA</span>
+          <span>Copyright 2026 RAAHI. ALL RIGHTS RESERVED.</span>
+          <div>
+            <Link to="/login">ADMIN LOGIN</Link>
+            <Link to="/register-organization">REGISTER</Link>
+            <a href="mailto:hello@raahi.work">CONTACT</a>
+          </div>
+          <div className="marketing-footer-location">
+            <span>BENGALURU / INDIA</span>
+            <a className="marketing-footer-back-to-top" href="#top" aria-label="Back to top">UP</a>
+          </div>
         </div>
       </footer>
     </div>
