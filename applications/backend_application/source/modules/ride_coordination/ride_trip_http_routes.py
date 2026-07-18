@@ -4,6 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from source.application_startup.database_connection import get_database_session
+from source.application_startup.application_configuration import (
+    ApplicationConfiguration,
+    create_application_configuration,
+)
 from source.modules.employee_management.employee_record_model import EmployeeRecord
 from source.modules.employee_management.current_employee_http_dependency import (
     resolve_current_employee,
@@ -46,6 +50,15 @@ from source.modules.ride_coordination.trip_lifecycle_service import (
 from source.modules.ride_coordination.ride_view_assembly import (
     build_ride_booking_response,
     build_booking_tracking_response,
+)
+from source.modules.ride_coordination.ride_notification_dispatch import (
+    notify_booking_cancelled_safely,
+    notify_booking_completed_safely,
+    notify_booking_confirmed_safely,
+    notify_journey_cancelled_safely,
+    notify_journey_completed_safely,
+    notify_journey_started_safely,
+    notify_pickup_verified_safely,
 )
 from source.modules.ride_coordination.ride_coordination_contracts import (
     AcceptRideRequestsRequest,
@@ -151,6 +164,9 @@ def accept_ride_requests(
     request: AcceptRideRequestsRequest,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Accept one or more pending requests onto the driver's open offer."""
     ride_offer = _load_offer_owned_by_driver(
@@ -182,6 +198,12 @@ def accept_ride_requests(
         ride_offer=ride_offer,
         ride_requests=ride_requests,
     )
+    for booking in created_bookings:
+        notify_booking_confirmed_safely(
+            database_session=database_session,
+            configuration=configuration,
+            ride_booking=booking,
+        )
     booking_responses = [
         build_ride_booking_response(
             database_session=database_session,
@@ -338,6 +360,9 @@ def start_ride_journey(
     ride_offer_id: str,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Begin the driver's journey so tracking and pickups can proceed."""
     ride_offer = _load_offer_owned_by_driver(
@@ -354,6 +379,11 @@ def start_ride_journey(
             status_code=status.HTTP_409_CONFLICT,
             detail="This journey cannot be started in its current state",
         )
+    notify_journey_started_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_offer=ride_offer,
+    )
     return RideOfferResponse.model_validate(ride_offer)
 
 
@@ -366,6 +396,9 @@ def cancel_my_ride_offer(
     ride_offer_id: str,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Cancel the driver's own offer and every booking still awaiting pickup."""
     ride_offer = _load_offer_owned_by_driver(
@@ -387,6 +420,11 @@ def cancel_my_ride_offer(
             status_code=status.HTTP_409_CONFLICT,
             detail="Rides can only be cancelled at least 2 hours before departure",
         )
+    notify_journey_cancelled_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_offer=ride_offer,
+    )
     return RideOfferResponse.model_validate(ride_offer)
 
 
@@ -400,6 +438,9 @@ def verify_booking_otp(
     request: VerifyBookingOtpRequest,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Verify the passenger OTP and start that passenger's trip."""
     ride_booking = _load_booking_for_participant(
@@ -436,6 +477,11 @@ def verify_booking_otp(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect OTP"
         )
+    notify_pickup_verified_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_booking=ride_booking,
+    )
     return build_ride_booking_response(
         database_session=database_session,
         organization_id=employee.organization_id,
@@ -453,6 +499,9 @@ def complete_booking(
     ride_booking_id: str,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Complete a single passenger's trip on drop-off."""
     ride_booking = _load_booking_for_participant(
@@ -467,6 +516,11 @@ def complete_booking(
         )
     ride_booking = complete_booking_trip(
         database_session=database_session, ride_booking=ride_booking
+    )
+    notify_booking_completed_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_booking=ride_booking,
     )
     return build_ride_booking_response(
         database_session=database_session,
@@ -485,6 +539,9 @@ def cancel_ride_booking(
     ride_booking_id: str,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Cancel the current employee's own booking and free its seat."""
     ride_booking = _load_booking_for_participant(
@@ -511,6 +568,11 @@ def cancel_ride_booking(
             status_code=status.HTTP_409_CONFLICT,
             detail="This booking can no longer be cancelled",
         )
+    notify_booking_cancelled_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_booking=ride_booking,
+    )
     return build_ride_booking_response(
         database_session=database_session,
         organization_id=employee.organization_id,
@@ -528,6 +590,9 @@ def complete_ride_journey(
     ride_offer_id: str,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Complete the journey and settle all of its trips."""
     ride_offer = _load_offer_owned_by_driver(
@@ -537,6 +602,11 @@ def complete_ride_journey(
     )
     ride_offer = complete_journey(
         database_session=database_session, ride_offer=ride_offer
+    )
+    notify_journey_completed_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_offer=ride_offer,
     )
     return RideOfferResponse.model_validate(ride_offer)
 

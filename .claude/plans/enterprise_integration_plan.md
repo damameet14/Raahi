@@ -228,7 +228,30 @@ _Original plan:_
 message list, composer), reachable from ride-detail/ongoing screens. A **Call**
 button uses `tel:` to the counterpart's phone.
 
-## Phase 5 — WhatsApp ride notifications + 15-minute reminders
+## Phase 5 — WhatsApp ride notifications + 15-minute reminders  ✅ DONE
+
+**Status:** committed. Notifications module extended (decoupled — no ride/payment
+imports): `notification_contracts.py` (`RideNotificationDetails`,
+`PaymentNotificationDetails`), `ride_notification_templates.py` (WhatsApp wording
+per event/role), payment email + WhatsApp templates, and dispatch functions for
+booking confirmed / journey started / pickup verified / trip completed / booking
+cancelled / journey cancelled / reminders + payment succeeded/failed (each send
+best-effort). A ride-side adapter `ride_notification_dispatch.py` builds details
+(reusing `build_ride_booking_response` + passenger phone lookup) and is called
+best-effort from the ride routes at every transition (book, accept, start,
+verify-OTP, complete booking, complete journey, cancel booking, cancel offer) —
+messaging both driver and affected passenger(s). Payment success fires an
+email + WhatsApp from the payment routes (payer resolved from the authenticated
+employee). **APScheduler** (`ride_reminder_scheduler.py`, `BackgroundScheduler`)
+runs every 60s from `application_lifespan`, calling `ride_reminder_service.send_due_ride_reminders`
+which finds OPEN/FULL offers departing within 15 min, reminds each awaiting
+passenger + a consolidated driver message, and dedupes via a new
+`ride_offer_records.reminder_sent` flag (model + schema addition). Installed
+`apscheduler==3.11.0` into the venv. Verified: app imports (77 routes) and 9
+backend tests pass (added reminder windowing + once-only tests). Live WhatsApp/email
+delivery stays with the user (needs the sidecar QR + SMTP creds + real phones).
+
+_Original plan:_
 
 - Fire `NotificationDispatchService` events at each lifecycle transition in
   `ride_coordination` (booking confirmed, request accepted, journey started,

@@ -23,6 +23,9 @@ from source.modules.ride_coordination.ride_request_record_model import (
     RideRequestRecord,
 )
 from source.modules.ride_coordination.ride_offer_record_model import RideOfferRecord
+from source.modules.ride_coordination.ride_notification_dispatch import (
+    notify_booking_confirmed_safely,
+)
 from source.modules.ride_coordination.ride_status_definitions import (
     RideRequestStatus,
     RideOfferJourneyStatus,
@@ -209,6 +212,9 @@ def book_offer(
     request: BookRideOfferRequest,
     employee: EmployeeRecord = Depends(resolve_current_employee),
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(
+        create_application_configuration
+    ),
 ):
     """Confirm a passenger's booking of a published offer."""
     ride_request = get_ride_request_by_id(
@@ -254,6 +260,11 @@ def book_offer(
             detail="This offer no longer has enough seats",
         )
 
+    notify_booking_confirmed_safely(
+        database_session=database_session,
+        configuration=configuration,
+        ride_booking=booking,
+    )
     return build_ride_booking_response(
         database_session=database_session,
         organization_id=employee.organization_id,

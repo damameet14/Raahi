@@ -26,9 +26,18 @@ from source.modules.payment_processing.payment_processing_service import (
 from source.modules.wallet.public_interface import (
     InsufficientWalletBalanceError,
 )
+from source.modules.notifications.public_interface import (
+    PaymentNotificationDetails,
+    notify_payment_failed,
+    notify_payment_succeeded,
+)
 from source.shared_infrastructure.application_configuration_dependency import (
     get_application_configuration,
 )
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 payment_processing_router = APIRouter(
     prefix="/api/v1/payments",
@@ -43,6 +52,38 @@ def _create_payment_processing_service(
 ) -> PaymentProcessingService:
     """FastAPI dependency constructing the payment service per request."""
     return PaymentProcessingService(configuration)
+
+
+def _notify_payment_result(
+    *,
+    configuration: ApplicationConfiguration,
+    employee: EmployeeRecord,
+    payment: PaymentResponse,
+    did_succeed: bool,
+) -> None:
+    """Best-effort payment email/WhatsApp; never breaks the response."""
+    details = PaymentNotificationDetails(
+        payer_full_name=employee.full_name,
+        payer_email=employee.email,
+        payer_phone=employee.phone,
+        amount=payment.amount,
+        currency=payment.currency,
+        method=payment.method,
+        route_summary=f"your completed Raahi ride (booking {payment.ride_booking_id[:8]})",
+    )
+    try:
+        if did_succeed:
+            notify_payment_succeeded(
+                configuration=configuration, details=details
+            )
+        else:
+            notify_payment_failed(
+                configuration=configuration, details=details
+            )
+    except Exception as notification_error:  # noqa: BLE001 - best-effort
+        logger.warning(
+            "Payment notification failed safely: %s", notification_error
+        )
 
 
 @payment_processing_router.post(
@@ -80,13 +121,23 @@ async def verify_razorpay_payment(
     payment_service: PaymentProcessingService = Depends(
         _create_payment_processing_service
     ),
+    configuration: ApplicationConfiguration = Depends(
+        get_application_configuration
+    ),
 ):
     """Verify a Razorpay Checkout result and settle the fare."""
-    return await payment_service.verify_razorpay_payment(
+    payment = await payment_service.verify_razorpay_payment(
         database_session=database_session,
         employee=employee,
         request=request,
     )
+    _notify_payment_result(
+        configuration=configuration,
+        employee=employee,
+        payment=payment,
+        did_succeed=True,
+    )
+    return payment
 
 
 @payment_processing_router.post(
@@ -100,15 +151,25 @@ def pay_booking(
     payment_service: PaymentProcessingService = Depends(
         _create_payment_processing_service
     ),
+    configuration: ApplicationConfiguration = Depends(
+        get_application_configuration
+    ),
 ):
     """Settle a completed booking's fare directly by cash or wallet."""
     try:
-        return payment_service.pay_booking_directly(
+        payment = payment_service.pay_booking_directly(
             database_session=database_session,
             employee=employee,
             ride_booking_id=ride_booking_id,
             method=request.method,
         )
+        _notify_payment_result(
+            configuration=configuration,
+            employee=employee,
+            payment=payment,
+            did_succeed=True,
+        )
+        return payment
     except RideBookingNotPayableError as booking_error:
         raise HTTPException(
             status_code=booking_error.http_status_code,

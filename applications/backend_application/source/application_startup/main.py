@@ -81,6 +81,9 @@ from source.modules.payment_processing.payment_processing_http_routes import (
 from source.modules.journey_chat.journey_chat_http_routes import (
     journey_chat_router,
 )
+from source.modules.ride_coordination.ride_reminder_scheduler import (
+    start_ride_reminder_scheduler,
+)
 
 from source.database_seed.seed_demo_data import seed_demo_data
 
@@ -109,6 +112,9 @@ _DEVELOPMENT_SCHEMA_ADDITIONS: dict[str, dict[str, str]] = {
     },
     "ride_booking_records": {
         "payment_status": "VARCHAR(20) NOT NULL DEFAULT 'UNPAID'",
+    },
+    "ride_offer_records": {
+        "reminder_sent": "BOOLEAN NOT NULL DEFAULT FALSE",
     },
 }
 
@@ -164,6 +170,8 @@ async def application_lifespan(app: FastAPI):
         finally:
             session.close()
 
+    ride_reminder_scheduler = start_ride_reminder_scheduler(configuration)
+
     print("[OK] Raahi backend application started successfully")
     print(f"  Database: {configuration.database_url[:50]}...")
     print(f"  Swagger docs: http://localhost:8001/docs")
@@ -171,6 +179,7 @@ async def application_lifespan(app: FastAPI):
     yield
 
     # Shutdown
+    ride_reminder_scheduler.shutdown(wait=False)
     print("Raahi backend application shutting down...")
 
 

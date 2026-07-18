@@ -59,3 +59,6 @@ class RideOfferRecord(BaseDatabaseModel, OrganizationTenantMixin, TimestampMixin
         nullable=False,
         index=True,
     )
+    reminder_sent: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
