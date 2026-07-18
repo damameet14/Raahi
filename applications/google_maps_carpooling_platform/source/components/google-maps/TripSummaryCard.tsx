@@ -17,7 +17,8 @@ export function TripSummaryCard({
     <article className="trip-summary-card" aria-label="Trip summary">
       <div className="trip-summary-card__title">
         <RouteIcon aria-hidden="true" size={18} />
-        <span>Trip Preview</span>
+        <span>{route.routeTitle}</span>
+        <small>{toTravelModeLabel(route.travelMode)}</small>
       </div>
 
       <dl className="trip-summary-card__places">
@@ -47,4 +48,20 @@ export function TripSummaryCard({
       </dl>
     </article>
   );
+}
+
+function toTravelModeLabel(travelMode: RouteSummary["travelMode"]): string {
+  if (travelMode === "WALK") {
+    return "Walking";
+  }
+
+  if (travelMode === "BICYCLE") {
+    return "Bicycle";
+  }
+
+  if (travelMode === "TWO_WHEELER") {
+    return "Two-wheeler";
+  }
+
+  return "Driving";
 }

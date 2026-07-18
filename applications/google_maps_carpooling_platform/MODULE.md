@@ -2,7 +2,7 @@
 
 ## Module purpose
 
-This application owns the frontend Google Maps experience for the Raahi enterprise carpooling flow. It validates and evolves map loading, place selection, route calculation, and route visualization before final integration into the broader product.
+This application owns the frontend Google Maps experience for the Raahi enterprise carpooling flow. It validates and evolves map loading, place selection, route calculation, ride draft creation, ride discovery, and trip visualization before final integration into the broader product.
 
 ## Owned responsibilities
 
@@ -11,6 +11,8 @@ This application owns the frontend Google Maps experience for the Raahi enterpri
 - Searching pickup and destination places with Google Places Autocomplete.
 - Storing selected pickup and destination place contracts.
 - Calculating and displaying a driving route with Google Routes API.
+- Managing frontend-only ride drafts and discovery previews in session state.
+- Displaying simulated trip visualization while live tracking is out of scope.
 - Documenting Google Maps validation phases.
 
 ## Responsibilities not owned
@@ -33,9 +35,12 @@ This application owns the frontend Google Maps experience for the Raahi enterpri
 
 ```text
 source/components/google-maps/ - Google Maps user interface components
+source/constants/google-maps/ - Map display and overlay configuration
+source/google-maps/ - Public Google Maps module exports
 source/hooks/google-maps/ - Google Maps state and workflow hooks
 source/services/google-maps/ - Google Maps Platform and browser side-effect adapters
 source/types/google-maps/ - Google Maps contracts used by components, hooks, and services
+source/utilities/google-maps/ - Pure display and formatting helpers
 docs/google-maps/ - Phase validation and implementation documentation
 ```
 
@@ -45,10 +50,11 @@ docs/google-maps/ - Phase validation and implementation documentation
 - Google Places Autocomplete provides pickup and destination suggestions.
 - Google Routes API calculates driving route distance, duration, and polyline data.
 - Browser geolocation provides optional current location centering.
+- Ride draft, discovery, and trip visualization state is session-only React state.
 
 ## Allowed callers
 
-- The application entry point `source/App.tsx` renders the Google Maps experience.
+- The application entry point `source/App.tsx` imports from `source/google-maps`.
 - Other Raahi applications should not import internals from this application during the long-lived feature phase.
 
 ## Invariants
@@ -60,5 +66,5 @@ docs/google-maps/ - Phase validation and implementation documentation
 ## Tests
 
 - Public behavior: manual browser validation documented in `docs/google-maps/phase-*.md`
-- Contract tests: not yet added
-- Important rule tests: not yet added
+- Contract tests: planned for route, ride draft, discovery, and trip visualization contracts
+- Important rule tests: planned for route cache, ride validation, and formatting utilities

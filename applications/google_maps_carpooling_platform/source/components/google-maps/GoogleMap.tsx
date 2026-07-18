@@ -5,70 +5,41 @@ import {
   OVERLAY_MOUSE_TARGET,
   OverlayViewF,
   PolylineF,
-  type Libraries,
   useJsApiLoader,
 } from "@react-google-maps/api";
 import { LocateFixed, MapPin, Route as RouteIcon } from "lucide-react";
+import { OperationalStatusPanel } from "./OperationalStatusPanel";
+import { RideCreationPanel } from "./RideCreationPanel";
+import { RideDiscoveryPanel } from "./RideDiscoveryPanel";
+import { RouteEnhancementControls } from "./RouteEnhancementControls";
 import { TripSummaryCard } from "./TripSummaryCard";
+import { TripVisualizationPanel } from "./TripVisualizationPanel";
+import { useRideDiscovery } from "../../hooks/google-maps/useRideDiscovery";
+import { useTripVisualization } from "../../hooks/google-maps/useTripVisualization";
 import { DestinationSearch } from "./places/DestinationSearch";
 import { PickupSearch } from "./places/PickupSearch";
+import {
+  AHMEDABAD_CENTER,
+  AHMEDABAD_CIRCLE_OPTIONS,
+  ALTERNATIVE_ROUTE_POLYLINE_OPTIONS,
+  GOOGLE_MAPS_LIBRARIES,
+  MAP_CONTAINER_STYLE,
+  MAP_OPTIONS,
+  ROUTE_POLYLINE_OPTIONS,
+  SELECTED_PLACE_ZOOM,
+  TRIP_PREVIEW_POLYLINE_OPTIONS,
+  USER_LOCATION_CIRCLE_OPTIONS,
+} from "../../constants/google-maps/mapDisplayConfiguration";
 import { useRouteCalculation } from "../../hooks/google-maps/useRouteCalculation";
 import { useSelectedPlaces } from "../../hooks/google-maps/useSelectedPlaces";
 import { getGoogleMapsApiKey } from "../../services/google-maps/googleMapsConfiguration";
 import { getCurrentBrowserLocation } from "../../services/google-maps/browserGeolocation";
 import type { Coordinates } from "../../types/google-maps/location";
 import type { PlaceSearchRole, SelectedPlace } from "../../types/google-maps/places";
+import type { RideMarkerCluster } from "../../types/google-maps/rideDiscovery";
+import type { RideDraft } from "../../types/google-maps/rideDraft";
 import type { RouteSummary } from "../../types/google-maps/routeSummary";
 import "./GoogleMap.css";
-
-const GOOGLE_MAPS_LIBRARIES: Libraries = ["places"];
-
-const AHMEDABAD_CENTER: Coordinates = {
-  lat: 23.0225,
-  lng: 72.5714,
-};
-
-const MAP_CONTAINER_STYLE = {
-  width: "100%",
-  height: "100%",
-};
-
-const MAP_OPTIONS: google.maps.MapOptions = {
-  clickableIcons: false,
-  fullscreenControl: true,
-  mapTypeControl: false,
-  streetViewControl: false,
-  zoomControl: true,
-};
-
-const AHMEDABAD_CIRCLE_OPTIONS: google.maps.CircleOptions = {
-  clickable: false,
-  fillColor: "#156c5c",
-  fillOpacity: 0.18,
-  strokeColor: "#156c5c",
-  strokeOpacity: 0.85,
-  strokeWeight: 2,
-};
-
-const USER_LOCATION_CIRCLE_OPTIONS: google.maps.CircleOptions = {
-  clickable: false,
-  fillColor: "#1d4ed8",
-  fillOpacity: 0.2,
-  strokeColor: "#1d4ed8",
-  strokeOpacity: 0.9,
-  strokeWeight: 2,
-};
-
-const ROUTE_POLYLINE_OPTIONS: google.maps.PolylineOptions = {
-  clickable: false,
-  geodesic: true,
-  strokeColor: "#175cd3",
-  strokeOpacity: 0.92,
-  strokeWeight: 5,
-  zIndex: 2,
-};
-
-const SELECTED_PLACE_ZOOM = 15;
 
 type ApiKeyState =
   | { status: "ready"; apiKey: string }
@@ -101,16 +72,42 @@ interface LoadedGoogleMapProps {
 }
 
 function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceReference = useRef<google.maps.Map | null>(null);
   const [center, setCenter] = useState<Coordinates>(AHMEDABAD_CENTER);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [rideDrafts, setRideDrafts] = useState<RideDraft[]>([]);
   const { selectedPlaces, setSelectedPlace } = useSelectedPlaces();
-  const { isCalculatingRoute, route, routeError } = useRouteCalculation({
+  const {
+    isCalculatingRoute,
+    refreshRoute,
+    route,
+    routeError,
+    routes,
+    selectedRouteId,
+    setSelectedRouteId,
+    setTravelMode,
+    travelMode,
+  } = useRouteCalculation({
     apiKey,
     destination: selectedPlaces.destination,
     pickup: selectedPlaces.pickup,
+  });
+  const {
+    filteredRidePreviews,
+    markerClusters,
+    previewRide,
+    rideDiscoveryFilter,
+    selectedRidePreview,
+    selectedRidePreviewId,
+    updateRideDiscoveryFilter,
+  } = useRideDiscovery({
+    referenceLocation: selectedPlaces.pickup,
+    rideDrafts,
+  });
+  const tripVisualizationState = useTripVisualization({
+    ridePreview: selectedRidePreview,
   });
   const hasRouteInputs = Boolean(
     selectedPlaces.pickup && selectedPlaces.destination,
@@ -123,11 +120,11 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
   });
 
   const handleMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
+    mapInstanceReference.current = map;
   }, []);
 
   const handleMapUnmount = useCallback(() => {
-    mapRef.current = null;
+    mapInstanceReference.current = null;
   }, []);
 
   const handleCurrentLocation = useCallback(async () => {
@@ -138,8 +135,8 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
       const location = await getCurrentBrowserLocation();
       setUserLocation(location);
       setCenter(location);
-      mapRef.current?.panTo(location);
-      mapRef.current?.setZoom(15);
+      mapInstanceReference.current?.panTo(location);
+      mapInstanceReference.current?.setZoom(15);
     } catch (error) {
       setLocationError(
         error instanceof Error
@@ -160,14 +157,18 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
 
       setSelectedPlace(role, place);
       setCenter(selectedCenter);
-      mapRef.current?.panTo(selectedCenter);
-      mapRef.current?.setZoom(SELECTED_PLACE_ZOOM);
+      mapInstanceReference.current?.panTo(selectedCenter);
+      mapInstanceReference.current?.setZoom(SELECTED_PLACE_ZOOM);
     },
     [setSelectedPlace],
   );
 
+  const handleRideDraftCreated = useCallback((rideDraft: RideDraft) => {
+    setRideDrafts((currentRideDrafts) => [rideDraft, ...currentRideDrafts]);
+  }, []);
+
   useEffect(() => {
-    if (!route || route.path.length === 0 || !mapRef.current) {
+    if (!route || route.path.length === 0 || !mapInstanceReference.current) {
       return;
     }
 
@@ -175,7 +176,7 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
     route.path.forEach((point) => {
       bounds.extend(point);
     });
-    mapRef.current.fitBounds(bounds, 72);
+    mapInstanceReference.current.fitBounds(bounds, 72);
   }, [route]);
 
   if (loadError) {
@@ -213,8 +214,23 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
             radius={75}
           />
         ) : null}
+        {routes
+          .filter((routeOption) => routeOption.routeId !== route?.routeId)
+          .map((routeOption) => (
+            <PolylineF
+              key={routeOption.routeId}
+              options={ALTERNATIVE_ROUTE_POLYLINE_OPTIONS}
+              path={routeOption.path}
+            />
+          ))}
         {route ? (
           <PolylineF options={ROUTE_POLYLINE_OPTIONS} path={route.path} />
+        ) : null}
+        {tripVisualizationState ? (
+          <PolylineF
+            options={TRIP_PREVIEW_POLYLINE_OPTIONS}
+            path={tripVisualizationState.routePath}
+          />
         ) : null}
         {selectedPlaces.pickup ? (
           <SelectedPlaceMarker
@@ -229,6 +245,27 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
             place={selectedPlaces.destination}
             role="destination"
           />
+        ) : null}
+        {markerClusters.map((markerCluster) => (
+          <RideDiscoveryMarker
+            key={markerCluster.clusterId}
+            markerCluster={markerCluster}
+            selectedRidePreviewId={selectedRidePreviewId}
+          />
+        ))}
+        {tripVisualizationState ? (
+          <>
+            <TripOverlayMarker
+              label="Start"
+              position={tripVisualizationState.ridePreview.pickup}
+              variant="pickup"
+            />
+            <TripOverlayMarker
+              label="End"
+              position={tripVisualizationState.destinationPosition}
+              variant="destination"
+            />
+          </>
         ) : null}
       </GoogleMapCanvas>
 
@@ -267,12 +304,65 @@ function LoadedGoogleMap({ apiKey }: LoadedGoogleMapProps) {
           />
         </div>
 
+        <OperationalStatusPanel
+          availableRideCount={filteredRidePreviews.length}
+          hasCalculatedRoute={Boolean(route)}
+          rideDraftCount={rideDrafts.length}
+        />
+
         <RouteSummaryPanel
           destination={selectedPlaces.destination}
           isCalculatingRoute={isCalculatingRoute}
           pickup={selectedPlaces.pickup}
           route={route}
           routeError={routeError}
+        />
+
+        {hasRouteInputs ? (
+          <RouteEnhancementControls
+            alternativeRoutes={routes}
+            isCalculatingRoute={isCalculatingRoute}
+            onRefreshRoute={refreshRoute}
+            onRetryRoute={refreshRoute}
+            onRouteSelected={setSelectedRouteId}
+            onTravelModeChanged={setTravelMode}
+            routeError={routeError}
+            selectedRouteId={selectedRouteId}
+            travelMode={travelMode}
+          />
+        ) : null}
+
+        <RideCreationPanel
+          destination={selectedPlaces.destination}
+          onRideDraftCreated={handleRideDraftCreated}
+          pickup={selectedPlaces.pickup}
+          route={route}
+        />
+
+        {rideDrafts.length > 0 ? (
+          <p className="map-toolbar__message" role="status">
+            {rideDrafts.length} session ride draft
+            {rideDrafts.length === 1 ? "" : "s"} ready for discovery.
+          </p>
+        ) : null}
+
+        <RideDiscoveryPanel
+          filteredRidePreviews={filteredRidePreviews}
+          onFilterChanged={updateRideDiscoveryFilter}
+          onRidePreviewSelected={previewRide}
+          rideDiscoveryFilter={rideDiscoveryFilter}
+          selectedRidePreviewId={selectedRidePreviewId}
+        />
+
+        {selectedRidePreview ? (
+          <p className="map-toolbar__message" role="status">
+            Previewing {selectedRidePreview.driverDisplayName}'s ride to{" "}
+            {selectedRidePreview.destination.formattedAddress}.
+          </p>
+        ) : null}
+
+        <TripVisualizationPanel
+          tripVisualizationState={tripVisualizationState}
         />
 
         {locationError ? (
@@ -353,6 +443,59 @@ function SelectedPlaceMarker({ label, place, role }: SelectedPlaceMarkerProps) {
         aria-label={`${role} marker: ${place.formattedAddress}`}
         className={`selected-place-marker selected-place-marker--${role}`}
         title={place.formattedAddress}
+      >
+        {label}
+      </div>
+    </OverlayViewF>
+  );
+}
+
+interface RideDiscoveryMarkerProps {
+  markerCluster: RideMarkerCluster;
+  selectedRidePreviewId: string | null;
+}
+
+function RideDiscoveryMarker({
+  markerCluster,
+  selectedRidePreviewId,
+}: RideDiscoveryMarkerProps) {
+  const isSelectedCluster =
+    selectedRidePreviewId != null &&
+    markerCluster.ridePreviewIds.includes(selectedRidePreviewId);
+
+  return (
+    <OverlayViewF
+      mapPaneName={OVERLAY_MOUSE_TARGET}
+      position={markerCluster.position}
+    >
+      <div
+        aria-label={`${markerCluster.rideCount} available ride marker`}
+        className={`ride-discovery-marker${
+          isSelectedCluster ? " ride-discovery-marker--selected" : ""
+        }`}
+      >
+        {markerCluster.rideCount}
+      </div>
+    </OverlayViewF>
+  );
+}
+
+interface TripOverlayMarkerProps {
+  label: string;
+  position: Coordinates;
+  variant: "pickup" | "destination";
+}
+
+function TripOverlayMarker({
+  label,
+  position,
+  variant,
+}: TripOverlayMarkerProps) {
+  return (
+    <OverlayViewF mapPaneName={OVERLAY_MOUSE_TARGET} position={position}>
+      <div
+        aria-label={`Trip ${variant}: ${label}`}
+        className={`trip-overlay-marker trip-overlay-marker--${variant}`}
       >
         {label}
       </div>
