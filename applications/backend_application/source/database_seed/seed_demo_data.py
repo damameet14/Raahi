@@ -10,6 +10,7 @@ from source.modules.vehicle_management.vehicle_record_model import VehicleRecord
 from source.modules.trip_statistics.trip_record_model import TripRecord
 from source.modules.company_settings.company_settings_record_model import CompanySettingsRecord
 from source.shared_infrastructure.base_database_model import generate_unique_identifier
+from source.shared_infrastructure.user_account_role import UserAccountRole
 from source.database_seed.demo_data_definitions import (
     DEMO_ORGANIZATION,
     DEMO_ADMIN_USER,
@@ -18,6 +19,61 @@ from source.database_seed.demo_data_definitions import (
     DEMO_COMPANY_SETTINGS,
     generate_demo_trip_records,
 )
+
+# Default password for all seeded employee accounts.
+# Employees must change this on first login (must_change_password=True).
+DEMO_EMPLOYEE_PASSWORD = "employee123"
+
+
+def _backfill_employee_login_accounts(database_session: Session) -> None:
+    """Create missing EMPLOYEE login accounts for already-seeded employees.
+
+    Runs on every startup so that databases created before the employee-
+    account seed was added get the accounts without a full re-seed.
+    """
+    employees_without_account = (
+        database_session.query(EmployeeRecord)
+        .filter(
+            EmployeeRecord.organization_id == DEMO_ORGANIZATION["id"],
+            EmployeeRecord.user_account_id.is_(None),
+        )
+        .all()
+    )
+    if not employees_without_account:
+        return
+
+    password_hash = hash_plain_text_password(DEMO_EMPLOYEE_PASSWORD)
+    created_count = 0
+
+    for employee in employees_without_account:
+        # Skip if an account already exists for this email
+        existing_account = (
+            database_session.query(UserAccountRecord)
+            .filter(UserAccountRecord.email == employee.email)
+            .first()
+        )
+        if existing_account is not None:
+            employee.user_account_id = existing_account.id
+            continue
+
+        account = UserAccountRecord(
+            organization_id=DEMO_ORGANIZATION["id"],
+            email=employee.email,
+            password_hash=password_hash,
+            full_name=employee.full_name,
+            role=UserAccountRole.EMPLOYEE.value,
+            must_change_password=True,
+            is_active=True,
+        )
+        database_session.add(account)
+        database_session.flush()
+        employee.user_account_id = account.id
+        created_count += 1
+
+    database_session.commit()
+    if created_count > 0:
+        print(f"[Seed] Backfilled {created_count} employee login accounts.")
+        print(f"       Default password: {DEMO_EMPLOYEE_PASSWORD}")
 
 
 def seed_demo_data(database_session: Session) -> None:
@@ -32,7 +88,9 @@ def seed_demo_data(database_session: Session) -> None:
         .first()
     )
     if existing_organization is not None:
-        print("[Seed] Demo data already exists. Skipping.")
+        print("[Seed] Demo data already exists. Skipping full seed.")
+        # Backfill employee login accounts if missing
+        _backfill_employee_login_accounts(database_session)
         return
 
     print("[Seed] Seeding demo data...")
@@ -55,14 +113,30 @@ def seed_demo_data(database_session: Session) -> None:
     database_session.add(admin_user)
     database_session.flush()  # Ensure admin exists before employees
 
-    # 3. Employees
+    # 3. Employee login accounts + employee records
+    employee_password_hash = hash_plain_text_password(DEMO_EMPLOYEE_PASSWORD)
     employee_ids = []
     for employee_data in DEMO_EMPLOYEES:
+        # Create an EMPLOYEE login account
+        employee_account = UserAccountRecord(
+            organization_id=DEMO_ORGANIZATION["id"],
+            email=employee_data["email"],
+            password_hash=employee_password_hash,
+            full_name=employee_data["full_name"],
+            role=UserAccountRole.EMPLOYEE.value,
+            must_change_password=True,
+            is_active=True,
+        )
+        database_session.add(employee_account)
+        database_session.flush()
+
+        # Create the employee record linked to the account
         employee_id = generate_unique_identifier()
         employee_ids.append(employee_id)
         employee = EmployeeRecord(
             id=employee_id,
             organization_id=DEMO_ORGANIZATION["id"],
+            user_account_id=employee_account.id,
             **employee_data,
         )
         database_session.add(employee)
@@ -99,3 +173,5 @@ def seed_demo_data(database_session: Session) -> None:
     database_session.commit()
     print("[Seed] Demo data seeded successfully!")
     print(f"       Admin login: {DEMO_ADMIN_USER['email']} / {DEMO_ADMIN_USER['plain_text_password']}")
+    print(f"       Employee login (all): <employee_email> / {DEMO_EMPLOYEE_PASSWORD}")
+

@@ -145,9 +145,9 @@ async def application_lifespan(app: FastAPI):
         finally:
             session.close()
 
-    print("✓ Raahi backend application started successfully")
+    print("[OK] Raahi backend application started successfully")
     print(f"  Database: {configuration.database_url[:50]}...")
-    print(f"  Swagger docs: http://localhost:8000/docs")
+    print(f"  Swagger docs: http://localhost:8001/docs")
 
     yield
 
@@ -170,6 +170,7 @@ app.add_middleware(
     allow_origins=[
         configuration.frontend_url,
         "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:3000",
     ],
     allow_credentials=True,
