@@ -87,3 +87,7 @@ yarn-error.log*
 .project-index/
 
 raahi-google*
+
+.claude/skills
+.claude/context/function_registry.md
+.agents/context/function_registry.md

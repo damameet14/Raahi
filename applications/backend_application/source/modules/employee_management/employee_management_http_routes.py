@@ -14,15 +14,22 @@ from source.shared_infrastructure.user_account_role import UserAccountRole
 from source.shared_infrastructure.pagination_contracts import PaginatedResponse
 from source.modules.employee_management.employee_management_contracts import (
     CreateEmployeeRequest,
+    CreateEmployeeResponse,
     UpdateEmployeeRequest,
     EmployeeResponse,
+    ResetEmployeePasswordResponse,
 )
 from source.modules.employee_management.employee_record_repository import (
-    create_employee_record,
     retrieve_employee_record_by_id,
     retrieve_paginated_employee_records,
     update_employee_record,
     delete_employee_record,
+)
+from source.modules.employee_management.employee_account_provisioning import (
+    provision_employee_with_login_account,
+    reset_employee_login_password,
+    EmployeeEmailAlreadyRegisteredError,
+    EmployeeLoginAccountMissingError,
 )
 
 employee_management_router = APIRouter(
@@ -68,9 +75,9 @@ def list_employees(
 
 @employee_management_router.post(
     "",
-    response_model=EmployeeResponse,
+    response_model=CreateEmployeeResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a new employee",
+    summary="Create a new employee and provision a login account",
 )
 def create_employee(
     request: CreateEmployeeRequest,
@@ -79,11 +86,64 @@ def create_employee(
     ),
     database_session: Session = Depends(get_database_session),
 ):
-    """Create a new employee record within the current organization."""
+    """Create an employee and its EMPLOYEE login account.
+
+    Returns the created employee together with a one-time temporary
+    password the administrator hands to the employee for first login.
+    """
     employee_data = request.model_dump()
     employee_data["organization_id"] = current_user.organization_id
-    employee = create_employee_record(database_session, employee_data)
-    return EmployeeResponse.model_validate(employee)
+    try:
+        employee, temporary_password = provision_employee_with_login_account(
+            database_session=database_session,
+            employee_data=employee_data,
+        )
+    except EmployeeEmailAlreadyRegisteredError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A login account already exists for this email address",
+        )
+    return CreateEmployeeResponse(
+        **EmployeeResponse.model_validate(employee).model_dump(),
+        temporary_password=temporary_password,
+    )
+
+
+@employee_management_router.post(
+    "/{employee_id}/reset-password",
+    response_model=ResetEmployeePasswordResponse,
+    summary="Regenerate an employee's temporary login password",
+)
+def reset_employee_password(
+    employee_id: str,
+    current_user: AuthenticatedUserContext = Depends(
+        require_roles([UserAccountRole.COMPANY_ADMIN, UserAccountRole.SUPER_ADMIN])
+    ),
+    database_session: Session = Depends(get_database_session),
+):
+    """Reset an employee to a new temporary password and force a change."""
+    employee = retrieve_employee_record_by_id(
+        database_session, employee_id, current_user.organization_id
+    )
+    if employee is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found",
+        )
+    try:
+        temporary_password = reset_employee_login_password(
+            database_session=database_session,
+            employee=employee,
+        )
+    except EmployeeLoginAccountMissingError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Employee has no login account to reset",
+        )
+    return ResetEmployeePasswordResponse(
+        employee_id=employee.id,
+        temporary_password=temporary_password,
+    )
 
 
 @employee_management_router.get(

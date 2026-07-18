@@ -30,6 +30,12 @@ class CompanySettingsRecord(BaseDatabaseModel, OrganizationTenantMixin, Timestam
     ride_radius_kilometers: Mapped[float] = mapped_column(
         Float, default=25.0, nullable=False
     )
+    pickup_match_radius_kilometers: Mapped[float] = mapped_column(
+        Float, default=2.0, nullable=False
+    )
+    drop_match_radius_kilometers: Mapped[float] = mapped_column(
+        Float, default=3.0, nullable=False
+    )
     default_currency: Mapped[str] = mapped_column(
         String(10), default="INR", nullable=False
     )

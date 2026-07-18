@@ -24,6 +24,8 @@ class CompanySettingsResponse(BaseModel):
     office_latitude: float
     office_longitude: float
     ride_radius_kilometers: float
+    pickup_match_radius_kilometers: float
+    drop_match_radius_kilometers: float
     default_currency: str
     company_logo_url: str | None
     created_at: datetime
@@ -40,6 +42,8 @@ class UpdateCompanySettingsRequest(BaseModel):
     office_latitude: float | None = None
     office_longitude: float | None = None
     ride_radius_kilometers: float | None = Field(default=None, ge=1)
+    pickup_match_radius_kilometers: float | None = Field(default=None, gt=0)
+    drop_match_radius_kilometers: float | None = Field(default=None, gt=0)
     default_currency: str | None = Field(default=None, max_length=10)
     company_logo_url: str | None = Field(default=None, max_length=500)
 

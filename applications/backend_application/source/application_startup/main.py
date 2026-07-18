@@ -28,6 +28,10 @@ from source.modules.employee_management.employee_record_model import EmployeeRec
 from source.modules.vehicle_management.vehicle_record_model import VehicleRecord  # noqa: F401
 from source.modules.trip_statistics.trip_record_model import TripRecord  # noqa: F401
 from source.modules.company_settings.company_settings_record_model import CompanySettingsRecord  # noqa: F401
+from source.modules.ride_coordination.ride_request_record_model import RideRequestRecord  # noqa: F401
+from source.modules.ride_coordination.ride_offer_record_model import RideOfferRecord  # noqa: F401
+from source.modules.ride_coordination.ride_booking_record_model import RideBookingRecord  # noqa: F401
+from source.modules.ride_coordination.live_location_ping_record_model import LiveLocationPingRecord  # noqa: F401
 
 # Import routers
 from source.modules.administrator_authentication.administrator_authentication_http_routes import (
@@ -54,6 +58,15 @@ from source.modules.dashboard_statistics.dashboard_statistics_http_routes import
 from source.modules.administrator_profile.administrator_profile_http_routes import (
     administrator_profile_router,
 )
+from source.modules.employee_self_service.employee_self_service_http_routes import (
+    employee_self_service_router,
+)
+from source.modules.ride_coordination.ride_discovery_http_routes import (
+    ride_discovery_router,
+)
+from source.modules.ride_coordination.ride_trip_http_routes import (
+    ride_trip_router,
+)
 
 from source.database_seed.seed_demo_data import seed_demo_data
 
@@ -61,28 +74,52 @@ from source.database_seed.seed_demo_data import seed_demo_data
 configuration = create_application_configuration()
 
 
+# Columns added to existing tables after their initial release. Each entry is
+# a column name mapped to the SQL fragment used to add it. On startup any
+# missing column is added so pre-existing development databases keep working
+# without a full migration tool. Production should use Alembic instead.
+_DEVELOPMENT_SCHEMA_ADDITIONS: dict[str, dict[str, str]] = {
+    "user_account_records": {
+        "must_change_password": "BOOLEAN NOT NULL DEFAULT FALSE",
+    },
+    "employee_records": {
+        "office_latitude": "FLOAT",
+        "office_longitude": "FLOAT",
+        "onboarding_completed": "BOOLEAN NOT NULL DEFAULT FALSE",
+    },
+    "company_settings_records": {
+        "pickup_match_radius_kilometers": "FLOAT NOT NULL DEFAULT 2.0",
+        "drop_match_radius_kilometers": "FLOAT NOT NULL DEFAULT 3.0",
+    },
+}
+
+
 def ensure_development_schema_compatibility() -> None:
-    """Apply small compatibility updates for existing development databases."""
+    """Add any missing columns to existing development database tables."""
     from source.application_startup.database_connection import _engine
 
     if _engine is None:
         return
 
     database_inspector = inspect(_engine)
-    user_account_columns = {
-        column["name"]
-        for column in database_inspector.get_columns("user_account_records")
-    }
-    if "must_change_password" in user_account_columns:
-        return
+    existing_table_names = set(database_inspector.get_table_names())
 
-    with _engine.begin() as connection:
-        connection.execute(
-            text(
-                "ALTER TABLE user_account_records "
-                "ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE"
-            )
-        )
+    for table_name, column_definitions in _DEVELOPMENT_SCHEMA_ADDITIONS.items():
+        if table_name not in existing_table_names:
+            continue
+        existing_column_names = {
+            column["name"] for column in database_inspector.get_columns(table_name)
+        }
+        for column_name, column_type_clause in column_definitions.items():
+            if column_name in existing_column_names:
+                continue
+            with _engine.begin() as connection:
+                connection.execute(
+                    text(
+                        f"ALTER TABLE {table_name} "
+                        f"ADD COLUMN {column_name} {column_type_clause}"
+                    )
+                )
 
 
 @asynccontextmanager
@@ -149,6 +186,9 @@ app.include_router(company_settings_router)
 app.include_router(trip_statistics_router)
 app.include_router(dashboard_statistics_router)
 app.include_router(administrator_profile_router)
+app.include_router(employee_self_service_router)
+app.include_router(ride_discovery_router)
+app.include_router(ride_trip_router)
 
 
 @app.get("/api/v1/health", tags=["Health"])

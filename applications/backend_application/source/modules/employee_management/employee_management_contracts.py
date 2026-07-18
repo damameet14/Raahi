@@ -47,7 +47,28 @@ class EmployeeResponse(BaseModel):
     is_driver: bool
     home_latitude: float | None
     home_longitude: float | None
+    office_latitude: float | None
+    office_longitude: float | None
+    onboarding_completed: bool
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class CreateEmployeeResponse(EmployeeResponse):
+    """Employee creation result including the one-time temporary password.
+
+    The temporary password is shown to the administrator exactly once so
+    they can hand it to the employee; it is never persisted in plain text
+    and never returned by any subsequent read.
+    """
+
+    temporary_password: str
+
+
+class ResetEmployeePasswordResponse(BaseModel):
+    """Result of regenerating an employee's temporary login password."""
+
+    employee_id: str
+    temporary_password: str

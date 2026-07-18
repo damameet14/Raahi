@@ -1,6 +1,6 @@
 """SQLAlchemy model for vehicle records."""
 
-from sqlalchemy import String, Integer, Date, ForeignKey
+from sqlalchemy import String, Integer, Date, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import date
 
@@ -16,13 +16,20 @@ class VehicleRecord(BaseDatabaseModel, OrganizationTenantMixin, TimestampMixin):
     """Represents a registered vehicle available for carpooling."""
 
     __tablename__ = "vehicle_records"
+    __table_args__ = (
+        # Vehicle numbers are unique within an organization, not globally,
+        # since employees self-register their own vehicles per company.
+        UniqueConstraint(
+            "organization_id",
+            "vehicle_number",
+            name="unique_vehicle_number_per_organization",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=generate_unique_identifier
     )
-    vehicle_number: Mapped[str] = mapped_column(
-        String(20), unique=True, nullable=False
-    )
+    vehicle_number: Mapped[str] = mapped_column(String(20), nullable=False)
     owner_employee_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("employee_records.id"), nullable=False
     )
