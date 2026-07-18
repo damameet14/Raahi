@@ -1,7 +1,7 @@
 """Application configuration loaded from environment variables."""
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 
 class ApplicationConfiguration(BaseSettings):
@@ -58,11 +58,22 @@ class ApplicationConfiguration(BaseSettings):
     )
 
     # ── Email (SMTP) ─────────────────────────────────────────
+    # Accept both the Python-style names and the Node bridge names
+    # (SMTP_USER / SMTP_SECURE) so an existing .env works unchanged.
     email_enabled: bool = Field(default=False, alias="EMAIL_ENABLED")
     smtp_host: str = Field(default="", alias="SMTP_HOST")
     smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    # STARTTLS on a plaintext port (typically 587).
     smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
-    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    # Implicit TLS / SMTPS (typically 465). Also inferred when port == 465.
+    smtp_use_ssl: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("SMTP_USE_SSL", "SMTP_SECURE"),
+    )
+    smtp_username: str = Field(
+        default="",
+        validation_alias=AliasChoices("SMTP_USERNAME", "SMTP_USER"),
+    )
     smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
     email_from_name: str = Field(default="Raahi", alias="EMAIL_FROM_NAME")
     email_from_address: str = Field(

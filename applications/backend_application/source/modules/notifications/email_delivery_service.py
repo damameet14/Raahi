@@ -51,11 +51,24 @@ def send_email(
     mime_message["Subject"] = email.subject
     mime_message.set_content(email.body_text)
 
+    # Port 465 speaks TLS immediately (SMTPS) and must use SMTP_SSL; a plaintext
+    # SMTP + STARTTLS handshake on 465 fails with a closed connection. Other
+    # ports (typically 587) connect plaintext and upgrade with STARTTLS.
+    use_implicit_ssl = (
+        configuration.smtp_use_ssl or configuration.smtp_port == 465
+    )
+
     try:
-        with smtplib.SMTP(
-            configuration.smtp_host, configuration.smtp_port, timeout=15
-        ) as smtp_connection:
-            if configuration.smtp_use_tls:
+        if use_implicit_ssl:
+            smtp_connection = smtplib.SMTP_SSL(
+                configuration.smtp_host, configuration.smtp_port, timeout=15
+            )
+        else:
+            smtp_connection = smtplib.SMTP(
+                configuration.smtp_host, configuration.smtp_port, timeout=15
+            )
+        with smtp_connection:
+            if not use_implicit_ssl and configuration.smtp_use_tls:
                 smtp_connection.starttls()
             if configuration.smtp_username:
                 smtp_connection.login(
