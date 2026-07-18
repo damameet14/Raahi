@@ -23,3 +23,6 @@ httpx==0.28.1
 
 # ── Utilities ────────────────────────────────
 python-dotenv==1.1.0
+
+# ── Scheduling (15-minute pre-ride reminders) ─
+apscheduler==3.11.0

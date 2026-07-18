@@ -39,6 +39,45 @@ class ApplicationConfiguration(BaseSettings):
     # ── External Services ────────────────────────────────────
     google_maps_api_key: str = Field(default="", alias="GOOGLE_MAPS_API_KEY")
 
+    # ── Razorpay Payments ────────────────────────────────────
+    razorpay_key_id: str = Field(default="", alias="RAZORPAY_KEY_ID")
+    razorpay_key_secret: str = Field(default="", alias="RAZORPAY_KEY_SECRET")
+    razorpay_webhook_secret: str = Field(
+        default="", alias="RAZORPAY_WEBHOOK_SECRET"
+    )
+    razorpay_currency: str = Field(default="INR", alias="RAZORPAY_CURRENCY")
+    razorpay_company_name: str = Field(
+        default="Raahi", alias="RAZORPAY_COMPANY_NAME"
+    )
+    razorpay_company_description: str = Field(
+        default="Enterprise carpooling payment",
+        alias="RAZORPAY_COMPANY_DESCRIPTION",
+    )
+    razorpay_theme_color: str = Field(
+        default="#249448", alias="RAZORPAY_THEME_COLOR"
+    )
+
+    # ── Email (SMTP) ─────────────────────────────────────────
+    email_enabled: bool = Field(default=False, alias="EMAIL_ENABLED")
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
+    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    email_from_name: str = Field(default="Raahi", alias="EMAIL_FROM_NAME")
+    email_from_address: str = Field(
+        default="no-reply@raahi.local", alias="EMAIL_FROM_ADDRESS"
+    )
+
+    # ── WhatsApp outbound bridge (Node whatsapp-web.js sidecar) ──
+    whatsapp_enabled: bool = Field(default=False, alias="WHATSAPP_ENABLED")
+    whatsapp_service_url: str = Field(
+        default="http://localhost:8090", alias="WHATSAPP_SERVICE_URL"
+    )
+    whatsapp_notification_api_key: str = Field(
+        default="", alias="WHATSAPP_NOTIFICATION_API_KEY"
+    )
+
     model_config = {"env_file": [".env", "../../.env"], "extra": "ignore"}
 
 

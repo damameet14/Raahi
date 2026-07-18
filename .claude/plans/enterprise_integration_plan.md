@@ -44,7 +44,22 @@ routes in the PWA, confirming these are the intended slots.
 
 ---
 
-## Phase 0 — Foundations: config + notification dispatch + WhatsApp sidecar
+## Phase 0 — Foundations: config + notification dispatch + WhatsApp sidecar  ✅ DONE
+
+**Status:** committed. Config fields added
+(`application_configuration.py`: Razorpay/SMTP/WhatsApp). New
+`modules/notifications` module built: `email_delivery_service.send_email`
+(smtplib, `EMAIL_ENABLED` gate, safe log-only fallback),
+`whatsapp_delivery_service.send_whatsapp_message` (httpx → sidecar,
+`WHATSAPP_ENABLED` gate), `notification_templates`,
+`notification_dispatch_service.send_employee_temporary_password_notification`,
+and `public_interface`. `apscheduler` added to requirements. WhatsApp sidecar
+ported to `applications/whatsapp_server` as an outbound-only sender
+(`POST /internal/send-message`, key-guarded; agent chatbot removed). All sends
+are best-effort/non-blocking. Verified: config loads, notifications import +
+log-only send OK, sidecar JS `node --check` OK.
+
+_Original plan:_
 
 **Backend config** (`application_configuration.py`): add fields for Razorpay
 (`RAZORPAY_KEY_ID/KEY_SECRET/WEBHOOK_SECRET/CURRENCY/COMPANY_NAME/…`), SMTP
