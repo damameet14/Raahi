@@ -262,7 +262,23 @@ _Original plan:_
   driver a consolidated pickup summary; dedupe with a `reminder_sent` flag.
 - Payment success/failure also emails (Phase 1 templates) + optional WhatsApp.
 
-## Phase 6 — Wire-up, compose, docs, verification
+## Phase 6 — Wire-up, compose, docs, verification  ✅ DONE
+
+**Status:** committed. Routers/models/schema-additions were registered
+incrementally as each phase landed (so every phase stayed runnable), so this
+phase finalized the surrounding pieces: `.env.example` (backend root) gained
+Razorpay/SMTP/WhatsApp sections and the duplicated `GOOGLE_MAPS_API_KEY=` bug was
+fixed to a placeholder; the employee PWA `.env.example` gained `VITE_RAZORPAY_KEY_ID`;
+`docker-compose.yml` gained the `whatsapp_server` sidecar service (with a persisted
+`whatsapp_session` volume) and the backend service gained the Razorpay/SMTP/WhatsApp
+env vars (WhatsApp URL pointing at the sidecar); the README gained run steps for the
+employee PWA and the WhatsApp sidecar (QR scan), a Payments/Chat/Notifications
+section, and extended env + endpoint tables. Final verification: `docker compose
+config` OK; backend imports (77 routes) and all 9 backend tests pass; employee PWA
+`tsc -b` + `vite build` green. Live end-to-end (real Razorpay checkout, WhatsApp QR,
+SMTP inbox, DB migration on restart) remains user-owned per the caveats below.
+
+_Original plan:_
 
 - Register all routers in `main.py`; add new tables/columns to schema-additions;
   update `.env.example` files (backend + PWA + whatsapp sidecar).

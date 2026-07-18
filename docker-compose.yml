@@ -39,9 +39,44 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION_DAYS: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:-7}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      # Razorpay (fare payments + wallet recharge)
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+      RAZORPAY_CURRENCY: ${RAZORPAY_CURRENCY:-INR}
+      RAZORPAY_COMPANY_NAME: ${RAZORPAY_COMPANY_NAME:-Raahi}
+      # Email (SMTP)
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Raahi}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-no-reply@raahi.local}
+      # WhatsApp outbound bridge (points at the sidecar service below)
+      WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-false}
+      WHATSAPP_SERVICE_URL: ${WHATSAPP_SERVICE_URL:-http://whatsapp_server:8090}
+      WHATSAPP_NOTIFICATION_API_KEY: ${WHATSAPP_NOTIFICATION_API_KEY:-}
     volumes:
       - ./applications/backend_application:/application
     command: uvicorn source.application_startup.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ─── WhatsApp outbound sidecar (whatsapp-web.js) ──────────
+  whatsapp_server:
+    build:
+      context: ./applications/whatsapp_server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: 8090
+      WHATSAPP_CLIENT_ID: ${WHATSAPP_CLIENT_ID:-raahi-notifications}
+      WHATSAPP_NOTIFICATION_API_KEY: ${WHATSAPP_NOTIFICATION_API_KEY:-}
+    volumes:
+      # Persist the WhatsApp session so the QR is scanned only once.
+      - whatsapp_session:/application/.wwebjs_auth
 
   # ─── Frontend (React + Vite) ──────────────────────────────
   web_administration_portal:
@@ -60,3 +95,4 @@ services:
 
 volumes:
   postgres_data:
+  whatsapp_session:

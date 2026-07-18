@@ -42,12 +42,55 @@ pip install -r requirements.txt
 uvicorn source.application_startup.main:app --reload
 ```
 
-**Frontend:**
+**Admin portal frontend:**
 ```bash
 cd applications/web_administration_portal
 npm install
 npm run dev
 ```
+
+**Employee PWA:**
+```bash
+cd applications/web_employee_progressive_application
+npm install
+npm run dev
+```
+
+**WhatsApp outbound sidecar** (only needed to actually deliver WhatsApp
+notifications; the backend runs fine without it and logs messages instead):
+```bash
+cd applications/whatsapp_server
+cp .env.example .env          # set WHATSAPP_NOTIFICATION_API_KEY
+npm install
+npm start
+# On first run it prints a QR code in the terminal — scan it from
+# WhatsApp → Linked Devices. The session is saved for next time.
+```
+Then set `WHATSAPP_ENABLED=true`, `WHATSAPP_SERVICE_URL=http://localhost:8090`,
+and a matching `WHATSAPP_NOTIFICATION_API_KEY` in the backend `.env`.
+
+---
+
+## Payments, Chat & Notifications
+
+These enterprise features build on the ride flow in the employee PWA:
+
+- **Payments & Wallet** — passengers pay a completed ride's fare by Cash, Card,
+  UPI, or Wallet; every payment credits the driver's wallet. Card/UPI go through
+  Razorpay Checkout, verified server-side. Wallet recharge also uses Razorpay.
+  Configure `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` (backend) and
+  `VITE_RAZORPAY_KEY_ID` (employee PWA). Point a Razorpay webhook at
+  `POST /api/v1/payments/razorpay/webhook` and set `RAZORPAY_WEBHOOK_SECRET`.
+- **Journey chat** — a WebSocket group chat per journey (driver + accepted
+  passengers) at `/api/v1/ws/journeys/{ride_offer_id}/chat`, with a `tel:` call
+  button. No extra service required.
+- **Email** — temporary-password/welcome and payment emails via SMTP. Set
+  `EMAIL_ENABLED=true` plus the `SMTP_*` / `EMAIL_FROM_*` vars (e.g. a Gmail app
+  password or Mailtrap). With `EMAIL_ENABLED=false` emails are logged, not sent.
+- **WhatsApp ride notifications + 15-minute reminders** — fired at each ride
+  lifecycle transition and by an in-process scheduler shortly before departure.
+  Both email and WhatsApp sends are best-effort: a channel failure is logged and
+  never blocks or rolls back a ride/payment.
 
 ---
 
@@ -66,6 +109,13 @@ npm run dev
 | `FRONTEND_URL` | Frontend origin for CORS | `http://localhost:5173` |
 | `API_URL` | Backend API base URL | `http://localhost:8000` |
 | `GOOGLE_MAPS_API_KEY` | Google Maps API key | *(empty)* |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay credentials (payments + wallet) | *(empty)* |
+| `RAZORPAY_WEBHOOK_SECRET` | Razorpay webhook signing secret | *(empty)* |
+| `EMAIL_ENABLED` | Send email over SMTP (else log-only) | `false` |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP delivery settings | *(empty)* / `587` |
+| `WHATSAPP_ENABLED` | Send WhatsApp via the sidecar (else log-only) | `false` |
+| `WHATSAPP_SERVICE_URL` | WhatsApp sidecar base URL | `http://localhost:8090` |
+| `WHATSAPP_NOTIFICATION_API_KEY` | Shared key between backend and sidecar | *(empty)* |
 
 ### Using External PostgreSQL
 
@@ -147,6 +197,9 @@ All endpoints are prefixed with `/api/v1/`.
 | **Settings** | `GET` · `PUT` |
 | **Organization** | `GET /current` · `PUT /current` |
 | **Profile** | `GET` · `PUT` · `POST /change-password` |
+| **Payments** | `POST /payments/razorpay/orders` · `POST /payments/razorpay/verify` · `POST /payments/bookings/:id/pay` · `GET /payments/my-payments` · `GET /payments/:id` · `POST /payments/razorpay/webhook` |
+| **Wallet** | `GET /wallet` · `GET /wallet/transactions` · `POST /wallet/recharge/orders` · `POST /wallet/recharge/verify` |
+| **Journey Chat** | `WS /ws/journeys/:ride_offer_id/chat` · `GET /journeys/:ride_offer_id/messages` |
 
 Full API documentation: http://localhost:8000/docs
 
