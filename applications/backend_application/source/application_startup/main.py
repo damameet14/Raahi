@@ -33,6 +33,9 @@ from source.modules.ride_coordination.ride_offer_record_model import RideOfferRe
 from source.modules.ride_coordination.ride_booking_record_model import RideBookingRecord  # noqa: F401
 from source.modules.ride_coordination.live_location_ping_record_model import LiveLocationPingRecord  # noqa: F401
 from source.modules.employee_self_service.saved_place_record_model import SavedPlaceRecord  # noqa: F401
+from source.modules.payment_processing.payment_record_model import PaymentRecord  # noqa: F401
+from source.modules.wallet.wallet_record_model import WalletRecord  # noqa: F401
+from source.modules.wallet.wallet_transaction_record_model import WalletTransactionRecord  # noqa: F401
 
 # Import routers
 from source.modules.administrator_authentication.administrator_authentication_http_routes import (
@@ -68,6 +71,12 @@ from source.modules.ride_coordination.ride_discovery_http_routes import (
 from source.modules.ride_coordination.ride_trip_http_routes import (
     ride_trip_router,
 )
+from source.modules.wallet.wallet_http_routes import (
+    wallet_router,
+)
+from source.modules.payment_processing.payment_processing_http_routes import (
+    payment_processing_router,
+)
 
 from source.database_seed.seed_demo_data import seed_demo_data
 
@@ -93,6 +102,9 @@ _DEVELOPMENT_SCHEMA_ADDITIONS: dict[str, dict[str, str]] = {
     "company_settings_records": {
         "pickup_match_radius_kilometers": "FLOAT NOT NULL DEFAULT 2.0",
         "drop_match_radius_kilometers": "FLOAT NOT NULL DEFAULT 3.0",
+    },
+    "ride_booking_records": {
+        "payment_status": "VARCHAR(20) NOT NULL DEFAULT 'UNPAID'",
     },
 }
 
@@ -193,6 +205,8 @@ app.include_router(administrator_profile_router)
 app.include_router(employee_self_service_router)
 app.include_router(ride_discovery_router)
 app.include_router(ride_trip_router)
+app.include_router(wallet_router)
+app.include_router(payment_processing_router)
 
 
 @app.get("/api/v1/health", tags=["Health"])

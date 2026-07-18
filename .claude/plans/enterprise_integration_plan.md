@@ -108,7 +108,42 @@ _Original plan:_
 - Verify with a log-only run (`EMAIL_ENABLED=false`) and, if SMTP creds exist,
   a real send to a test inbox.
 
-## Phase 2 — Payments & Wallet (backend)
+## Phase 2 — Payments & Wallet (backend)  ✅ DONE
+
+**Status:** committed. Three modules added and wired into `main.py` (models
+imported for `create_all`, routers registered, `ride_booking_records.payment_status`
+added to `_DEVELOPMENT_SCHEMA_ADDITIONS`).
+
+- `modules/payment_gateway` — shared `RazorpayGatewayService` adapter (rupees→paise,
+  async order creation, checkout + webhook HMAC verify). No business rules; both
+  wallet recharge and fare settlement depend on it, keeping the module graph acyclic
+  (`payment_gateway` ← `wallet` ← `payment_processing`).
+- `modules/wallet` — `WalletRecord` (balance per employee) + `WalletTransactionRecord`
+  (append-only ledger: RECHARGE/RIDE_PAYMENT/RIDE_EARNING, signed by `direction`,
+  `balance_after` snapshot). `wallet_service` owns credit/debit (flush-only, caller
+  commits), recharge order+verify (self-committing), and the public ride-transfer
+  helpers `credit_wallet_for_ride_earning` / `debit_wallet_for_ride_payment`
+  (`InsufficientWalletBalanceError`). Routes `/api/v1/wallet`: balance, transactions,
+  recharge orders/verify.
+- `modules/payment_processing` — `PaymentRecord` keyed to a booking
+  (`activity_type="ride_booking"`, payer=passenger, payee=driver, `method`
+  CASH/CARD/UPI/WALLET). `PaymentProcessingService` validates a payable booking
+  (passenger-only, COMPLETED, UNPAID, fare>0), settles Card/UPI via Razorpay
+  order+verify and Cash/Wallet directly, and on settlement marks the booking PAID +
+  credits the driver's wallet (Wallet also debits the passenger) in one transaction.
+  Idempotent verify + signed webhook backstop prevent double-crediting. Routes
+  `/api/v1/payments`: razorpay/orders, razorpay/verify, bookings/{id}/pay,
+  my-payments, {id}, razorpay/webhook.
+
+Verified: app assembles (75 routes, all payment/wallet paths present);
+`tests/test_payment_and_wallet.py` (4 tests) green — paise rounding, HMAC
+checkout verify, wallet credit→debit ledger, insufficient-balance guard. Payment
+email/WhatsApp notifications are deferred to Phase 5 where they are consumed.
+Boundary note: direct imports of `EmployeeRecord` / `current_employee_http_dependency`
+and the ride booking model match the repo's existing convention (ride_coordination
+exposes no public_interface; models are imported directly across the app).
+
+_Original plan:_
 
 **`modules/payment_processing`** (adapt from branch):
 - `PaymentRecord` keyed to ride bookings: `activity_type="ride_booking"`,

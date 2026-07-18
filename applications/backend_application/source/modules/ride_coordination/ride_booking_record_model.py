@@ -65,6 +65,12 @@ class RideBookingRecord(BaseDatabaseModel, OrganizationTenantMixin, TimestampMix
         nullable=False,
         index=True,
     )
+    payment_status: Mapped[str] = mapped_column(
+        String(20),
+        default="UNPAID",
+        nullable=False,
+        index=True,
+    )
     started_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
