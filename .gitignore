@@ -85,3 +85,5 @@ yarn-error.log*
 # Project Index (generated)
 # ──────────────────────────────────────────────
 .project-index/
+
+raahi-google*
