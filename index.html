@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Raahi helps teams share commutes, lower travel costs, and reduce emissions."
+    />
+    <title>Raahi — Enterprise Carpooling</title>
+    <link rel="icon" href="assets/raahi-logo.png?v=1" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/tokens.css?v=26" />
+    <link rel="stylesheet" href="css/animations.css?v=26" />
+    <link rel="stylesheet" href="css/style.css?v=26" />
+    <script src="js/main.js?v=26" defer></script>
+  </head>
+
+
+  <body class="is-preloading">
+
+    <div
+      class="site-preloader"
+      data-site-preloader
+      role="progressbar"
+      aria-label="Loading Raahi"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <div class="preloader-content">
+        <p class="preloader-kicker">ENTERPRISE CARPOOLING PLATFORM</p>
+        <svg
+          class="preloader-wordmark"
+          viewBox="0 0 1200 300"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <mask
+              id="preloader-wave-mask"
+              x="0"
+              y="0"
+              width="1200"
+              height="300"
+              maskUnits="userSpaceOnUse"
+            >
+              <rect width="1200" height="300" fill="black" />
+              <g class="preloader-wave-level">
+                <path
+                  class="preloader-wave-shape"
+                  fill="white"
+                  d="M-800 104 C-650 44 -500 164 -350 104 S-50 44 100 104 S400 164 550 104 S850 44 1000 104 S1300 164 1450 104 S1750 44 1900 104 L1900 420 L-800 420 Z"
+                />
+              </g>
+            </mask>
+          </defs>
+
+          <text
+            class="preloader-wordmark-base"
+            x="600"
+            y="226"
+            text-anchor="middle"
+          >RAAHI</text>
+          <text
+            class="preloader-wordmark-filled"
+            x="600"
+            y="226"
+            text-anchor="middle"
+            mask="url(#preloader-wave-mask)"
+          >
+            <tspan class="preloader-wordmark-primary">RAA</tspan><tspan class="preloader-wordmark-accent">HI</tspan>
+          </text>
+        </svg>
+
+        <div class="preloader-status" aria-hidden="true">
+          <span>LOADING</span>
+          <span data-preloader-progress>0%</span>
+        </div>
+      </div>
+    </div>
+
+    <header class="site-header" data-site-header>
+      <nav class="navigation frame" aria-label="Main navigation">
+        <a class="brand" href="#top" aria-label="Raahi home">
+          <span class="brand-mark" aria-hidden="true">
+            <img
+              class="brand-mark-image"
+              src="assets/raahi-logo.png?v=1"
+              alt=""
+              width="66"
+              height="66"
+            />
+          </span>
+          <span class="brand-wordmark">
+            <span>RAA</span><span class="brand-wordmark-accent">HI</span>
+          </span>
+        </a>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label="Menu"
+          aria-expanded="false"
+          aria-controls="navigation-menu"
+          data-menu-toggle
+        >
+          <span></span><span></span>
+        </button>
+
+        <div class="navigation-grid" id="navigation-menu" data-navigation-menu>
+          <a href="#features">Platform</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#demo">Live tracking</a>
+          <a href="#about">Impact</a>
+          <a class="navigation-sign-in" href="#demo">Sign in</a>
+          <a class="navigation-call-to-action" href="#contact">Let's commute!</a>
+        </div>
+      </nav>
+    </header>
+
+
+    <main id="top">
+
+
+      <section class="hero frame" id="platform" aria-labelledby="hero-title">
+        <div class="hero-meta">
+          <p>Enterprise carpooling platform</p>
+          <p>Built for teams.<br />For every commute.</p>
+        </div>
+
+        <div class="hero-display" aria-hidden="true">
+          <span>RAA</span><span class="hero-display-accent">HI</span>
+        </div>
+
+        <div class="hero-content">
+          <h1 id="hero-title">Share the road.<br />Change the routine.</h1>
+          <div class="hero-introduction">
+            <p>
+              Find trusted colleagues heading your way, offer an empty seat,
+              and keep every shared journey visible in real time.
+            </p>
+            <div class="hero-actions">
+              <a class="button button--primary" href="#contact">Get started <span>↗</span></a>
+              <a class="text-link" href="#how-it-works">See how it works <span>↓</span></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-corner-label" aria-hidden="true">RAAHI / 2026</div>
+      </section>
+
+
+
+      <section
+        class="statistics frame reveal"
+        aria-label="Raahi activity"
+        data-statistics-section
+      >
+
+
+        <article class="statistic-card" style="--statistics-delay: 60ms">
+          <div class="statistic-value">
+            <strong data-statistic-value="48">48</strong>
+            <span aria-hidden="true">+</span>
+          </div>
+          <span class="statistic-label">Employees<br />onboarded</span>
+        </article>
+
+
+        <article class="statistic-card" style="--statistics-delay: 130ms">
+          <div class="statistic-value">
+            <strong data-statistic-value="163">163</strong>
+            <span aria-hidden="true">+</span>
+          </div>
+          <span class="statistic-label">Shared rides<br />this month</span>
+        </article>
+
+
+        <article class="statistic-card" style="--statistics-delay: 200ms">
+          <div class="statistic-value">
+            <strong data-statistic-value="22">22</strong>
+            <span aria-hidden="true">+</span>
+          </div>
+          <span class="statistic-label">Vehicles<br />registered</span>
+        </article>
+
+
+        <div class="statistics-message" style="--statistics-delay: 270ms">
+          <span>RAAHI IN MOTION</span>
+          <p>Less traffic.<br /><strong>More together.</strong></p>
+        </div>
+      </section>
+
+
+
+      <section class="content-section frame" id="features" aria-labelledby="features-title">
+        <div class="section-index reveal">
+          <span>01 / PLATFORM</span>
+          <span>Everything in one place</span>
+        </div>
+        <div class="section-heading reveal">
+          <h2 id="features-title">Everything you need<br />to <span>share your ride.</span></h2>
+          <p>
+            A calmer commute starts with simple tools, trusted people,
+            and a route that works for everyone.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal" style="--delay: 0ms">
+            <div class="feature-card-top">
+              <span class="feature-number">01</span>
+              <span class="feature-icon" aria-hidden="true">⌖</span>
+            </div>
+            <div>
+              <h3>Smart Matching</h3>
+              <p>Bring verified colleagues with compatible routes together.</p>
+            </div>
+            <a href="#demo" aria-label="Explore Smart Matching">Explore <span>↗</span></a>
+          </article>
+          <article class="feature-card reveal" style="--delay: 90ms">
+            <div class="feature-card-top">
+              <span class="feature-number">02</span>
+              <span class="feature-icon" aria-hidden="true">→</span>
+            </div>
+            <div>
+              <h3>Trusted Teams</h3>
+              <p>Keep every shared commute within your verified workplace community.</p>
+            </div>
+            <a href="#how-it-works" aria-label="Explore Trusted Teams">Explore <span>↗</span></a>
+          </article>
+          <article class="feature-card reveal" style="--delay: 180ms">
+            <div class="feature-card-top">
+              <span class="feature-number">03</span>
+              <span class="feature-icon" aria-hidden="true">◎</span>
+            </div>
+            <div>
+              <h3>Track Live</h3>
+              <p>Share trip progress and arrival updates with your team.</p>
+            </div>
+            <a href="#demo" aria-label="Explore Track Live">Explore <span>↗</span></a>
+          </article>
+        </div>
+      </section>
+
+      <section class="process-section frame" id="how-it-works" aria-labelledby="process-title">
+        <div class="section-index reveal">
+          <span>02 / THE ROUTE</span>
+          <span>Three quiet steps</span>
+        </div>
+        <div class="process-introduction reveal">
+          <h2 id="process-title">How it <span>works.</span></h2>
+          <p>
+            Three simple moments turn an everyday route into a calmer,
+            shared commute.
+          </p>
+        </div>
+        <div class="process-timeline reveal">
+          <article class="process-step" style="--step-delay: 0ms">
+            <span class="process-marker">01</span>
+            <h3>Set your commute</h3>
+            <p>Choose the route and time that fit your working day.</p>
+          </article>
+          <article class="process-step" style="--step-delay: 130ms">
+            <span class="process-marker">02</span>
+            <h3>Meet your match</h3>
+            <p>Connect with a verified colleague on a compatible route.</p>
+          </article>
+          <article class="process-step" style="--step-delay: 260ms">
+            <span class="process-marker">03</span>
+            <h3>Travel together</h3>
+            <p>Follow the journey live and arrive with less friction.</p>
+          </article>
+          </div>
+      </section>
+
+      <section class="demo-section frame" id="demo" aria-labelledby="demo-title">
+        <div class="section-index reveal">
+          <span>03 / LIVE VIEW</span>
+          <span>Clarity in motion</span>
+        </div>
+        <div class="demo-heading reveal">
+          <h2 id="demo-title">See every journey<br /><span>in action.</span></h2>
+          <p>
+            One clear view for team journeys, trusted colleagues,
+            pickup details, and real-time progress.
+          </p>
+        </div>
+
+        <div class="application-window reveal">
+          <div class="application-toolbar">
+            <div class="toolbar-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span>APP.RAAHI.WORK / COMMUTE OVERVIEW</span>
+            <span>LIVE</span>
+          </div>
+          <div class="application-layout">
+            <aside class="application-sidebar">
+              <span class="application-logo">R</span>
+              <a class="application-link application-link--active" href="#demo">⌖ <span>Overview</span></a>
+              <a class="application-link" href="#demo">→ <span>Team routes</span></a>
+              <a class="application-link" href="#demo">◎ <span>My journeys</span></a>
+              <span class="application-profile">NK</span>
+            </aside>
+            <div class="application-content">
+              <div class="application-welcome">
+                <div>
+                  <small>GOOD MORNING, NAMRA</small>
+                  <h3>Today’s commute</h3>
+                </div>
+                <span class="live-badge"><i></i> 163 RIDES THIS MONTH</span>
+              </div>
+              <div class="ride-search">
+                <label>
+                  <span>FROM</span>
+                  <strong>Koramangala</strong>
+                </label>
+                <span aria-hidden="true">⇄</span>
+                <label>
+                  <span>TO</span>
+                  <strong>Embassy Tech Village</strong>
+                </label>
+                <button type="button">Search</button>
+              </div>
+              <div class="rides-and-map">
+                <div class="available-rides">
+                  <div class="available-rides-title">
+                    <strong>Team journeys</strong><span>12 ACTIVE</span>
+                  </div>
+                  <article class="ride-result">
+                    <span class="rider-avatar">AS</span>
+                    <div><strong>Aarav Shah</strong><span>Koramangala → Bellandur</span></div>
+                    <div><strong>8:30 AM</strong><span>2 seats</span></div>
+                  </article>
+                  <article class="ride-result">
+                    <span class="rider-avatar">MR</span>
+                    <div><strong>Meera Rao</strong><span>Indiranagar → Bellandur</span></div>
+                    <div><strong>8:45 AM</strong><span>1 seat</span></div>
+                  </article>
+                  <article class="ride-result">
+                    <span class="rider-avatar">VK</span>
+                    <div><strong>Vikram Kumar</strong><span>HSR Layout → Bellandur</span></div>
+                    <div><strong>9:00 AM</strong><span>3 seats</span></div>
+                  </article>
+                </div>
+                <div class="route-map" aria-label="Route map from Koramangala to Tech Village">
+                  <span class="map-street map-street--one"></span>
+                  <span class="map-street map-street--two"></span>
+                  <span class="map-street map-street--three"></span>
+                  <span class="map-route"></span>
+                  <span class="map-point map-point--start"></span>
+                  <span class="map-point map-point--end"></span>
+                  <small class="map-label map-label--start">KORAMANGALA</small>
+                  <small class="map-label map-label--end">TECH VILLAGE</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="impact-section frame reveal"
+        id="about"
+        aria-labelledby="impact-title"
+      >
+        <div class="impact-header">
+          <span>04 / WHY RAAHI</span>
+          <span>BUILT FOR BETTER COMMUTES</span>
+          <span>RAAHI / 2026</span>
+        </div>
+
+        <div class="impact-stage">
+          <h2 class="impact-words" id="impact-title">
+            <span
+              class="impact-word"
+              data-impact-preview="traffic"
+              style="--impact-delay: 40ms"
+              tabindex="0"
+            >LESS TRAFFIC</span>
+            <span
+              class="impact-word"
+              data-impact-preview="costs"
+              style="--impact-delay: 100ms"
+              tabindex="0"
+            >LOWER COSTS</span>
+            <span
+              class="impact-word"
+              data-impact-preview="together"
+              style="--impact-delay: 160ms"
+              tabindex="0"
+            >MORE TOGETHER</span>
+            <span
+              class="impact-word"
+              data-impact-preview="teams"
+              style="--impact-delay: 220ms"
+              tabindex="0"
+            >TRUSTED TEAMS</span>
+            <span
+              class="impact-word"
+              data-impact-preview="visibility"
+              style="--impact-delay: 280ms"
+              tabindex="0"
+            >LIVE VISIBILITY</span>
+            <span
+              class="impact-word"
+              data-impact-preview="footprint"
+              style="--impact-delay: 340ms"
+              tabindex="0"
+            >SMALLER FOOTPRINT</span>
+          </h2>
+
+          <div class="impact-preview-gallery" aria-hidden="true">
+            <figure class="impact-preview-card" data-impact-preview-card="traffic">
+              <figcaption><span>LESS TRAFFIC</span><span>01 / CITY</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Open road with fewer vehicles">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <path d="M74 210L146 0H214L286 210" fill="#FFFFFF" stroke="#E1E7E2"/>
+                <path d="M180 15V48M180 75V108M180 135V168M180 193V210" stroke="#32B45C" stroke-width="4"/>
+                <rect x="146" y="124" width="68" height="38" rx="18" fill="#17251B"/>
+                <circle cx="158" cy="164" r="6" fill="#647069"/>
+                <circle cx="202" cy="164" r="6" fill="#647069"/>
+              </svg>
+            </figure>
+
+            <figure class="impact-preview-card" data-impact-preview-card="costs">
+              <figcaption><span>LOWER COSTS</span><span>02 / SAVINGS</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Shared commute savings">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <circle cx="118" cy="105" r="62" fill="#FFFFFF" stroke="#E1E7E2"/>
+                <circle cx="214" cy="105" r="62" fill="#FFFFFF" stroke="#E1E7E2"/>
+                <circle cx="166" cy="105" r="48" fill="#32B45C"/>
+                <path d="M166 78V132M145 92H177C191 92 191 112 177 112H151" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+                <path d="M63 178H297" stroke="#17251B" stroke-width="3"/>
+              </svg>
+            </figure>
+
+            <figure class="impact-preview-card" data-impact-preview-card="together">
+              <figcaption><span>MORE TOGETHER</span><span>03 / PEOPLE</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Colleagues sharing one commute">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <path d="M70 146C70 114 96 88 128 88H232C264 88 290 114 290 146V170H70Z" fill="#17251B"/>
+                <circle cx="124" cy="76" r="28" fill="#32B45C"/>
+                <circle cx="180" cy="62" r="32" fill="#FFFFFF" stroke="#E1E7E2"/>
+                <circle cx="238" cy="76" r="28" fill="#32B45C"/>
+                <circle cx="108" cy="171" r="12" fill="#647069"/>
+                <circle cx="252" cy="171" r="12" fill="#647069"/>
+              </svg>
+            </figure>
+
+            <figure class="impact-preview-card" data-impact-preview-card="teams">
+              <figcaption><span>TRUSTED TEAMS</span><span>04 / VERIFIED</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Verified workplace team">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <path d="M180 25L264 55V108C264 154 228 181 180 194C132 181 96 154 96 108V55Z" fill="#FFFFFF" stroke="#E1E7E2" stroke-width="3"/>
+                <circle cx="180" cy="91" r="31" fill="#17251B"/>
+                <path d="M139 158C145 129 160 116 180 116C200 116 215 129 221 158" fill="#32B45C"/>
+                <path d="M159 91L175 106L205 72" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </figure>
+
+            <figure class="impact-preview-card" data-impact-preview-card="visibility">
+              <figcaption><span>LIVE VISIBILITY</span><span>05 / ON TIME</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Live route tracking map">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <path d="M0 46H360M0 98H360M0 150H360M72 0V210M144 0V210M216 0V210M288 0V210" stroke="#E1E7E2"/>
+                <path d="M54 162C98 156 116 74 176 84C228 93 240 46 307 50" fill="none" stroke="#32B45C" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="54" cy="162" r="10" fill="#17251B" stroke="#FFFFFF" stroke-width="4"/>
+                <circle cx="307" cy="50" r="10" fill="#32B45C" stroke="#FFFFFF" stroke-width="4"/>
+                <circle cx="176" cy="84" r="20" fill="#32B45C"/>
+                <path d="M166 84H186M180 77L187 84L180 91" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </figure>
+
+            <figure class="impact-preview-card" data-impact-preview-card="footprint">
+              <figcaption><span>SMALLER FOOTPRINT</span><span>06 / IMPACT</span></figcaption>
+              <svg viewBox="0 0 360 210" role="img" aria-label="Leaf representing lower emissions">
+                <rect width="360" height="210" fill="#F6F8F6"/>
+                <path d="M276 32C187 29 97 73 88 157C150 182 244 151 276 32Z" fill="#32B45C"/>
+                <path d="M83 179C132 126 183 94 245 59" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+                <path d="M150 118L129 82M191 93L181 57M132 133L177 140M177 101L222 108" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </figure>
+          </div>
+
+          <p class="impact-side-label">FOR PEOPLE<br />FOR TEAMS</p>
+
+          <p class="impact-summary">
+            One shared journey creates a lighter routine for people,
+            organizations, and the city around them.
+          </p>
+        </div>
+      </section>
+
+      <section class="call-to-action frame" id="contact" aria-labelledby="cta-title">
+        <div>
+          <p class="micro-label">THE NEXT RIDE STARTS HERE</p>
+          <h2 id="cta-title">Ready to make your<br />commute better?</h2>
+        </div>
+        <a class="button button--primary button--large" href="mailto:hello@raahi.work">
+          Get started <span>↗</span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="site-footer frame reveal">
+      <div class="footer-main">
+        <div class="footer-navigation-area">
+          <p class="micro-label">EXPLORE RAAHI</p>
+          <div class="footer-link-groups">
+            <div>
+              <span>PLATFORM</span>
+              <a href="#features">Features</a>
+              <a href="#how-it-works">How it works</a>
+            </div>
+            <div>
+              <span>COMPANY</span>
+              <a href="#about">Why Raahi</a>
+              <a href="#demo">Live view</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-contact-area">
+          <p class="micro-label">LET'S TALK</p>
+          <h2>Still have questions?</h2>
+          <form
+            class="footer-contact-form"
+            action="mailto:hello@raahi.work"
+            method="post"
+            enctype="text/plain"
+          >
+            <label class="visually-hidden" for="footer-email">Your email address</label>
+            <input
+              id="footer-email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              autocomplete="email"
+              required
+            />
+            <button class="footer-send-button" type="submit">Send</button>
+            <button class="footer-arrow-button" type="submit" aria-label="Send email">→</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-wordmark" aria-hidden="true">
+        <span>RAA</span><span class="footer-wordmark-accent">HI</span>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 RAAHI. ALL RIGHTS RESERVED.</span>
+        <div>
+          <a href="#contact">PRIVACY POLICY</a>
+          <a href="#contact">TERMS OF USE</a>
+          <a href="mailto:hello@raahi.work">CONTACT</a>
+        </div>
+        <div class="footer-location">
+          <span>BENGALURU / INDIA</span>
+          <a class="footer-back-to-top" href="#top" aria-label="Back to top">↑</a>
+        </div>
+      </div>
+    </footer>
+
+
+  </body>
+</html>
