@@ -1,0 +1,25 @@
+# ── Web Framework ────────────────────────────
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+
+# ── Database ─────────────────────────────────
+sqlalchemy==2.0.41
+psycopg2-binary==2.9.10
+alembic==1.16.2
+
+# ── Authentication ───────────────────────────
+pyjwt==2.10.1
+passlib[bcrypt]==1.7.4
+bcrypt==4.3.0
+python-multipart==0.0.20
+
+# ── Validation & Settings ────────────────────
+pydantic==2.11.4
+pydantic-settings==2.9.1
+
+# ── Testing ──────────────────────────────────
+pytest==8.4.1
+httpx==0.28.1
+
+# ── Utilities ────────────────────────────────
+python-dotenv==1.1.0

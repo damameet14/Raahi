@@ -1,0 +1,9 @@
+{
+  "outputDirectoryName": ".project-index",
+  "enabledLanguages": [
+    "typescript",
+    "javascript",
+    "python"
+  ],
+  "isMonorepoDetectionEnabled": true
+}

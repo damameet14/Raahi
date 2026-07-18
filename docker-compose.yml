@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL (optional – override with DATABASE_URL) ───
+  postgres_database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-raahi_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-raahi_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-raahi}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raahi_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend (FastAPI) ────────────────────────────────────
+  backend_application:
+    build:
+      context: ./applications/backend_application
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://raahi_user:raahi_secret@postgres_database:5432/raahi}
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-random-secret-in-production}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:-30}
+      JWT_REFRESH_TOKEN_EXPIRATION_DAYS: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:-7}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+    volumes:
+      - ./applications/backend_application:/application
+    command: uvicorn source.application_startup.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ─── Frontend (React + Vite) ──────────────────────────────
+  web_administration_portal:
+    build:
+      context: ./applications/web_administration_portal
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${API_URL:-http://localhost:8000}
+    volumes:
+      - ./applications/web_administration_portal:/application
+      - /application/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:

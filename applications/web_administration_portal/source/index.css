@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* ── Raahi Design System ────────────────────────────────── */
+
+@theme {
+  --color-raahi-50: #eef2ff;
+  --color-raahi-100: #e0e7ff;
+  --color-raahi-200: #c7d2fe;
+  --color-raahi-300: #a5b4fc;
+  --color-raahi-400: #818cf8;
+  --color-raahi-500: #6366f1;
+  --color-raahi-600: #4f46e5;
+  --color-raahi-700: #4338ca;
+  --color-raahi-800: #3730a3;
+  --color-raahi-900: #312e81;
+  --color-raahi-950: #1e1b4b;
+
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+
+  --color-surface-primary: #0f172a;
+  --color-surface-secondary: #1e293b;
+  --color-surface-tertiary: #334155;
+  --color-surface-card: #1e293b;
+  --color-surface-hover: #334155;
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-border-primary: #334155;
+  --color-border-secondary: #475569;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Base styles ────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Scrollbar styling ──────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-secondary);
+}
+
+/* ── Animations ─────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 20px 4px rgba(99, 102, 241, 0.15); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* ── Glassmorphism card ─────────────────────────────────── */
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.8) 0%,
+    rgba(30, 41, 59, 0.4) 100%
+  );
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 16px;
+}
+
+/* ── Gradient backgrounds ───────────────────────────────── */
+
+.gradient-raahi {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+}
+
+.gradient-emerald {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+.gradient-amber {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+.gradient-rose {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+}
+
+.gradient-cyan {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+}
