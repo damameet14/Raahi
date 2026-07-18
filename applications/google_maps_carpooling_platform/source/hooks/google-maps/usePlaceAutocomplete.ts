@@ -31,14 +31,14 @@ export function usePlaceAutocomplete({
     inputValue.trim(),
     SEARCH_DEBOUNCE_MS,
   );
-  const sessionTokenRef =
+  const sessionTokenReference =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-  const requestIdRef = useRef(0);
-  const selectedInputValueRef = useRef("");
-  const isSelectionSettledRef = useRef(false);
+  const requestIdReference = useRef(0);
+  const selectedInputValueReference = useRef("");
+  const isSelectionSettledReference = useRef(false);
 
   const resetSessionToken = useCallback(async () => {
-    sessionTokenRef.current = await createAutocompleteSessionToken();
+    sessionTokenReference.current = await createAutocompleteSessionToken();
   }, []);
 
   useEffect(() => {
@@ -57,8 +57,8 @@ export function usePlaceAutocomplete({
     }
 
     if (
-      isSelectionSettledRef.current ||
-      debouncedInputValue === selectedInputValueRef.current
+      isSelectionSettledReference.current ||
+      debouncedInputValue === selectedInputValueReference.current
     ) {
       setPredictions([]);
       setHighlightedIndex(-1);
@@ -67,26 +67,26 @@ export function usePlaceAutocomplete({
       return;
     }
 
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
+    const requestId = requestIdReference.current + 1;
+    requestIdReference.current = requestId;
     setIsSearching(true);
     setError(null);
 
     async function searchPlaces() {
       try {
-        if (!sessionTokenRef.current) {
-          sessionTokenRef.current = await createAutocompleteSessionToken();
+        if (!sessionTokenReference.current) {
+          sessionTokenReference.current = await createAutocompleteSessionToken();
         }
 
         const nextPredictions = await fetchPlacePredictions(
           debouncedInputValue,
-          sessionTokenRef.current,
+          sessionTokenReference.current,
           origin,
         );
 
         if (
-          requestIdRef.current !== requestId ||
-          isSelectionSettledRef.current
+          requestIdReference.current !== requestId ||
+          isSelectionSettledReference.current
         ) {
           return;
         }
@@ -95,7 +95,7 @@ export function usePlaceAutocomplete({
         setHighlightedIndex(nextPredictions.length > 0 ? 0 : -1);
         setIsOpen(true);
       } catch {
-        if (requestIdRef.current !== requestId) {
+        if (requestIdReference.current !== requestId) {
           return;
         }
 
@@ -104,7 +104,7 @@ export function usePlaceAutocomplete({
         setIsOpen(true);
         setError("Unable to load place suggestions. Check Places API access.");
       } finally {
-        if (requestIdRef.current === requestId) {
+        if (requestIdReference.current === requestId) {
           setIsSearching(false);
         }
       }
@@ -115,7 +115,7 @@ export function usePlaceAutocomplete({
 
   const selectPrediction = useCallback(
     async (prediction: PlacePrediction) => {
-      requestIdRef.current += 1;
+      requestIdReference.current += 1;
       setIsResolvingPlace(true);
       setIsSearching(false);
       setError(null);
@@ -123,8 +123,8 @@ export function usePlaceAutocomplete({
       try {
         const selectedPlace = await fetchSelectedPlace(prediction.prediction);
         onPlaceSelected(selectedPlace);
-        selectedInputValueRef.current = selectedPlace.formattedAddress;
-        isSelectionSettledRef.current = true;
+        selectedInputValueReference.current = selectedPlace.formattedAddress;
+        isSelectionSettledReference.current = true;
         setInputValue(selectedPlace.formattedAddress);
         setPredictions([]);
         setHighlightedIndex(-1);
@@ -141,8 +141,8 @@ export function usePlaceAutocomplete({
   );
 
   const updateInputValue = useCallback((nextValue: string) => {
-    if (nextValue !== selectedInputValueRef.current) {
-      isSelectionSettledRef.current = false;
+    if (nextValue !== selectedInputValueReference.current) {
+      isSelectionSettledReference.current = false;
     }
 
     setInputValue(nextValue);

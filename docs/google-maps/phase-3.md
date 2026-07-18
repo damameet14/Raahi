@@ -123,8 +123,17 @@ Start the app:
 
 ```bash
 npm install
+copy .env.example .env
 npm run dev
 ```
+
+Local configuration:
+
+- Create an untracked `.env` file inside `applications/google_maps_carpooling_platform`.
+- Set `GOOGLE_MAPS_API_KEY` to a real Google Maps Platform browser key.
+- The Vite configuration exposes the value to the app as `VITE_GOOGLE_MAPS_API_KEY`.
+- Restart `npm run dev` after changing `.env`.
+- Verify the app leaves the map configuration error screen and loads the map.
 
 Build validation:
 
@@ -191,6 +200,20 @@ Manual browser checks:
 - [x] No backend is implemented.
 - [x] No ride booking or matching is implemented.
 - [x] No tracking is implemented.
+
+## Future Roadmap
+
+- Move production route calculation to a backend service with a server-restricted key.
+- Add waypoint support when the carpooling workflow needs intermediate stops.
+- Add integration tests with mocked Routes API responses.
+- Add production monitoring for route failures and quota usage.
+
+## Merge Readiness
+
+- Changes remain inside the Google Maps application and `docs/google-maps`.
+- No backend, admin portal, booking, matching, payment, or tracking modules are modified.
+- The real API key remains outside source control.
+- Future merge risk is limited to the Google Maps feature branch surface.
 
 ## Phase 3 Completion Criteria
 

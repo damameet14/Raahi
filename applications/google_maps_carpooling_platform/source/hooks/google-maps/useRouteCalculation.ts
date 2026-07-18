@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   InvalidRouteInputError,
+  RouteCalculationError,
+  RouteNotFoundError,
   computeRouteCalculationResult,
 } from "../../services/google-maps/computeDrivingRoute";
 import {
@@ -12,7 +14,6 @@ import {
 import type { SelectedPlace } from "../../types/google-maps/places";
 import type {
   RouteCalculationResult,
-  RouteSummary,
   RouteTravelMode,
 } from "../../types/google-maps/routeSummary";
 
@@ -112,10 +113,11 @@ export function useRouteCalculation({
           setSelectedRouteId(nextResult.selectedRouteId);
         }
       } catch (error) {
-        if (
-          abortController.signal.aborted ||
-          requestIdReference.current !== requestId
-        ) {
+        if (requestIdReference.current !== requestId) {
+          return;
+        }
+
+        if (abortController.signal.aborted && !didRouteRequestTimeOut) {
           return;
         }
 
@@ -174,6 +176,18 @@ export function useRouteCalculation({
 function getRouteCalculationErrorMessage(error: unknown): string {
   if (error instanceof InvalidRouteInputError) {
     return error.message;
+  }
+
+  if (error instanceof RouteNotFoundError) {
+    return error.message;
+  }
+
+  if (error instanceof RouteCalculationError) {
+    return `Routes API error: ${error.message}`;
+  }
+
+  if (error instanceof TypeError) {
+    return "Network connection failed while calculating the route. Please retry.";
   }
 
   if (error instanceof Error) {

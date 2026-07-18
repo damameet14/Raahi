@@ -207,6 +207,7 @@
 - getDefaultRideDiscoveryFilter
 - getGoogleMapsApiKey
 - getRouteCalculationErrorMessage
+- getTravelModeSafetyWarningMessage
 - GoogleMap
 - importPlacesLibrary
 - isRouteTravelModeSupported
@@ -232,6 +233,7 @@
 - toRouteWaypoint
 - toSessionRidePreview
 - toTravelModeLabel
+- TravelModeSafetyWarning
 - TripOverlayMarker
 - TripSummaryCard
 - TripVisualizationPanel
@@ -278,6 +280,7 @@
 - SelectedPlace
 - SelectedPlaceMarkerProps
 - SessionRideCollection
+- TravelModeSafetyWarningProps
 - TripOverlayMarkerProps
 - TripSummaryCardProps
 - TripTimelineStep

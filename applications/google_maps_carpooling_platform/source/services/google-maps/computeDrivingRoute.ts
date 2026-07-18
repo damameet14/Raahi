@@ -124,18 +124,18 @@ export async function computeRouteCalculationResult({
     signal,
   });
 
-  const data = (await response.json().catch(() => null)) as
+  const routesApiResponse = (await response.json().catch(() => null)) as
     | GoogleRoutesResponse
     | null;
 
   if (!response.ok) {
     throw new RouteCalculationError(
-      data?.error?.message ??
+      routesApiResponse?.error?.message ??
         "Routes API could not calculate a route. Check API access, billing, and browser key restrictions.",
     );
   }
 
-  const routes = data?.routes ?? [];
+  const routes = routesApiResponse?.routes ?? [];
 
   if (routes.length === 0) {
     throw new RouteNotFoundError();

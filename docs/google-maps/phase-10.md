@@ -43,6 +43,7 @@ docs/google-maps/phase-10.md
 - Run `npm run build`.
 - Run `npm run typecheck`.
 - Run `npm test`.
+- Copy `.env.example` to an untracked `.env`, set `GOOGLE_MAPS_API_KEY`, run `npm run dev`, and verify the map loads instead of the configuration error screen.
 - Verify operational status updates from real route, draft, and discovery counts.
 - Verify trip card displays route title and travel mode.
 - Verify reduced-motion preference disables hover motion.
@@ -52,6 +53,7 @@ docs/google-maps/phase-10.md
 
 | Issue | Likely Cause | Resolution |
 | --- | --- | --- |
+| Map configuration error appears | `GOOGLE_MAPS_API_KEY` is missing from the app `.env` file or Vite was not restarted | Copy `.env.example` to `.env`, set a real key, restart `npm run dev`, and verify the key has required APIs enabled |
 | Status count looks wrong | Discovery filters are active | Check Nearby Rides count after filter changes |
 | Hover motion is absent | Reduced-motion is enabled | This is expected for accessibility |
 | Trip card mode says Driving | Travel mode defaults to DRIVE | Select a different route mode in Route Options |

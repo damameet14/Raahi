@@ -231,6 +231,26 @@
   gap: 8px;
 }
 
+.route-controls__mode-warning {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  margin: 0;
+  padding: 9px 10px;
+  color: #8a3b12;
+  background: #fff8f3;
+  border: 1px solid rgb(168 66 23 / 22%);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.route-controls__mode-warning svg {
+  margin-top: 1px;
+}
+
 .route-controls__mode-button,
 .route-controls__action-button,
 .route-controls__alternative-button {

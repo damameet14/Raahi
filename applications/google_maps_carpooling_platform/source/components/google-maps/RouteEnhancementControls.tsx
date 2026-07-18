@@ -1,4 +1,9 @@
-import { RefreshCcw, RotateCw, Route as RouteIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  RefreshCcw,
+  RotateCw,
+  Route as RouteIcon,
+} from "lucide-react";
 import type {
   RouteSummary,
   RouteTravelMode,
@@ -60,6 +65,8 @@ export function RouteEnhancementControls({
         ))}
       </div>
 
+      <TravelModeSafetyWarning travelMode={travelMode} />
+
       {alternativeRoutes.length > 1 ? (
         <div className="route-controls__alternatives">
           {alternativeRoutes.map((route, index) => (
@@ -105,4 +112,43 @@ export function RouteEnhancementControls({
       </div>
     </section>
   );
+}
+
+interface TravelModeSafetyWarningProps {
+  travelMode: RouteTravelMode;
+}
+
+function TravelModeSafetyWarning({
+  travelMode,
+}: TravelModeSafetyWarningProps) {
+  const warningMessage = getTravelModeSafetyWarningMessage(travelMode);
+
+  if (!warningMessage) {
+    return null;
+  }
+
+  return (
+    <p className="route-controls__mode-warning" role="note">
+      <AlertTriangle aria-hidden="true" size={16} />
+      <span>{warningMessage}</span>
+    </p>
+  );
+}
+
+function getTravelModeSafetyWarningMessage(
+  travelMode: RouteTravelMode,
+): string | null {
+  if (travelMode === "WALK") {
+    return "Walking routes may not always reflect real-world sidewalks, crossings, or local conditions.";
+  }
+
+  if (travelMode === "BICYCLE") {
+    return "Bicycle routes may not always reflect real-world cycling conditions, traffic, or road suitability.";
+  }
+
+  if (travelMode === "TWO_WHEELER") {
+    return "Two-wheeler routes may not always reflect real-world road restrictions, traffic, or riding conditions.";
+  }
+
+  return null;
 }
