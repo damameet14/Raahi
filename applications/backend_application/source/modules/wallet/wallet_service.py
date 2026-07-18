@@ -253,7 +253,8 @@ async def create_wallet_recharge_order(
     razorpay_order = await razorpay_gateway_service.create_order(
         amount_in_rupees=request.amount,
         currency=wallet.currency,
-        receipt_reference=f"wallet-{wallet.id}",
+        # Razorpay caps the receipt at 40 chars; "wr_" + a 36-char id = 39.
+        receipt_reference=f"wr_{wallet.id}",
     )
     pending_transaction = WalletTransactionRecord(
         organization_id=organization_id,

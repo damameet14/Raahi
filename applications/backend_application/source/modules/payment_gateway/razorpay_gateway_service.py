@@ -8,6 +8,7 @@ no database.
 
 import hashlib
 import hmac
+import logging
 from decimal import Decimal, ROUND_HALF_UP
 
 import httpx
@@ -17,7 +18,11 @@ from source.application_startup.application_configuration import (
     ApplicationConfiguration,
 )
 
+logger = logging.getLogger(__name__)
+
 _RAZORPAY_ORDERS_ENDPOINT = "https://api.razorpay.com/v1/orders"
+# Razorpay rejects an order whose ``receipt`` is longer than 40 characters.
+_RAZORPAY_RECEIPT_MAX_LENGTH = 40
 _ORDER_REQUEST_TIMEOUT_SECONDS = 15.0
 
 
@@ -62,7 +67,7 @@ class RazorpayGatewayService:
         order_payload = {
             "amount": self.convert_rupees_to_paise(amount_in_rupees),
             "currency": currency,
-            "receipt": receipt_reference,
+            "receipt": receipt_reference[:_RAZORPAY_RECEIPT_MAX_LENGTH],
             "payment_capture": 1,
         }
         async with httpx.AsyncClient(
@@ -77,6 +82,11 @@ class RazorpayGatewayService:
                 ),
             )
         if response.status_code >= 400:
+            logger.warning(
+                "Razorpay order creation failed (%s): %s",
+                response.status_code,
+                response.text[:500],
+            )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail="Razorpay order creation failed",
