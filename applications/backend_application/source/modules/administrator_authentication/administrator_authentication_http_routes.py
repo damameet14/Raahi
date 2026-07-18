@@ -12,10 +12,13 @@ from source.modules.administrator_authentication.authentication_contracts import
     AdministratorLoginRequest,
     AuthenticationTokensResponse,
     RefreshTokenRequest,
+    ChangeAdministratorPasswordRequest,
+    ChangeAdministratorPasswordResponse,
 )
 from source.modules.administrator_authentication.authenticate_administrator_credentials import (
     authenticate_administrator_credentials,
     refresh_administrator_access_token,
+    change_administrator_password,
 )
 from source.shared_infrastructure.current_authenticated_user_dependency import (
     AuthenticatedUserContext,
@@ -78,3 +81,21 @@ def get_current_authenticated_user(
         "role": current_user.role.value,
         "organization_id": current_user.organization_id,
     }
+
+
+@administrator_authentication_router.post(
+    "/change-password",
+    response_model=ChangeAdministratorPasswordResponse,
+    summary="Change administrator password",
+)
+def change_current_administrator_password(
+    change_password_request: ChangeAdministratorPasswordRequest,
+    current_user: AuthenticatedUserContext = Depends(extract_authenticated_user),
+    database_session: Session = Depends(get_database_session),
+):
+    """Change the authenticated administrator password."""
+    return change_administrator_password(
+        change_password_request=change_password_request,
+        user_account_id=current_user.user_account_id,
+        database_session=database_session,
+    )

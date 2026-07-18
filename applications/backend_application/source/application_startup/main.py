@@ -7,6 +7,7 @@ mounts all module routers, and seeds demo data on first startup.
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 
 from source.application_startup.application_configuration import (
     create_application_configuration,
@@ -60,6 +61,30 @@ from source.database_seed.seed_demo_data import seed_demo_data
 configuration = create_application_configuration()
 
 
+def ensure_development_schema_compatibility() -> None:
+    """Apply small compatibility updates for existing development databases."""
+    from source.application_startup.database_connection import _engine
+
+    if _engine is None:
+        return
+
+    database_inspector = inspect(_engine)
+    user_account_columns = {
+        column["name"]
+        for column in database_inspector.get_columns("user_account_records")
+    }
+    if "must_change_password" in user_account_columns:
+        return
+
+    with _engine.begin() as connection:
+        connection.execute(
+            text(
+                "ALTER TABLE user_account_records "
+                "ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE"
+            )
+        )
+
+
 @asynccontextmanager
 async def application_lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle."""
@@ -72,6 +97,7 @@ async def application_lifespan(app: FastAPI):
 
     # Create tables (development convenience; use Alembic in production)
     BaseDatabaseModel.metadata.create_all(bind=engine)
+    ensure_development_schema_compatibility()
 
     # Seed demo data on first run
     from source.application_startup.database_connection import _session_factory

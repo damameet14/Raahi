@@ -11,7 +11,15 @@ import { apiClient } from '@/shared_user_interface_infrastructure/backend_commun
 import { PageHeader } from '@/shared_user_interface_infrastructure/reusable_components/PageHeader';
 import { LoadingSpinner } from '@/shared_user_interface_infrastructure/reusable_components/LoadingSpinner';
 
-const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#06b6d4', '#8b5cf6'];
+const CHART_COLORS = ['#32b45c', '#249448', '#f59e0b', '#f43f5e', '#06b6d4', '#647069'];
+const chartAxisColor = '#647069';
+const chartGridColor = '#e1e7e2';
+const chartTooltipStyle = {
+  backgroundColor: '#ffffff',
+  border: '1px solid #e1e7e2',
+  borderRadius: '8px',
+  color: '#17251b',
+};
 
 export function ReportsOverviewPage() {
   const summaryQuery = useQuery({
@@ -70,10 +78,10 @@ export function ReportsOverviewPage() {
           <h3 className="mb-4 text-base font-semibold text-text-primary">Monthly Trip Cost (₹)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12} />
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', color: '#f1f5f9' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+              <XAxis dataKey="month" stroke={chartAxisColor} fontSize={12} />
+              <YAxis stroke={chartAxisColor} fontSize={12} />
+              <Tooltip contentStyle={chartTooltipStyle} />
               <Bar dataKey="total_cost" fill="#f59e0b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -89,7 +97,7 @@ export function ReportsOverviewPage() {
                   <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', color: '#f1f5f9' }} />
+              <Tooltip contentStyle={chartTooltipStyle} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -100,15 +108,15 @@ export function ReportsOverviewPage() {
           <h3 className="mb-4 text-base font-semibold text-text-primary">Monthly Fuel Consumption (L)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12} />
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', color: '#f1f5f9' }} />
-              <Area type="monotone" dataKey="total_fuel" stroke="#f43f5e" fill="url(#roseGradient)" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+              <XAxis dataKey="month" stroke={chartAxisColor} fontSize={12} />
+              <YAxis stroke={chartAxisColor} fontSize={12} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Area type="monotone" dataKey="total_fuel" stroke="#32b45c" fill="url(#roseGradient)" strokeWidth={2} />
               <defs>
                 <linearGradient id="roseGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#32b45c" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#32b45c" stopOpacity={0} />
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -120,11 +128,11 @@ export function ReportsOverviewPage() {
           <h3 className="mb-4 text-base font-semibold text-text-primary">Monthly Trip Participation</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12} />
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', color: '#f1f5f9' }} />
-              <Bar dataKey="trip_count" fill="#6366f1" radius={[6, 6, 0, 0]} name="Trips" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+              <XAxis dataKey="month" stroke={chartAxisColor} fontSize={12} />
+              <YAxis stroke={chartAxisColor} fontSize={12} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Bar dataKey="trip_count" fill="#32b45c" radius={[6, 6, 0, 0]} name="Trips" />
             </BarChart>
           </ResponsiveContainer>
         </div>

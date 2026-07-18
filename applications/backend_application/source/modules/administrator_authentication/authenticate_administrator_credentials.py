@@ -8,8 +8,11 @@ from source.modules.administrator_authentication.authentication_contracts import
     AdministratorLoginRequest,
     AuthenticationTokensResponse,
     RefreshTokenRequest,
+    ChangeAdministratorPasswordRequest,
+    ChangeAdministratorPasswordResponse,
 )
 from source.modules.administrator_authentication.password_security import (
+    hash_plain_text_password,
     verify_submitted_password_against_hash,
 )
 from source.modules.administrator_authentication.access_token_generation import (
@@ -75,6 +78,7 @@ def authenticate_administrator_credentials(
         full_name=user_account.full_name,
         role=user_account.role,
         organization_id=user_account.organization_id,
+        must_change_password=user_account.must_change_password,
     )
 
 
@@ -135,4 +139,45 @@ def refresh_administrator_access_token(
         full_name=user_account.full_name,
         role=user_account.role,
         organization_id=user_account.organization_id,
+        must_change_password=user_account.must_change_password,
+    )
+
+
+def change_administrator_password(
+    change_password_request: ChangeAdministratorPasswordRequest,
+    user_account_id: str,
+    database_session: Session,
+) -> ChangeAdministratorPasswordResponse:
+    """Replace an administrator password and clear the first-login requirement."""
+    user_account = (
+        database_session.query(UserAccountRecord)
+        .filter(UserAccountRecord.id == user_account_id)
+        .first()
+    )
+
+    if user_account is None or not user_account.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account not found or deactivated",
+        )
+
+    is_current_password_valid = verify_submitted_password_against_hash(
+        change_password_request.current_password,
+        user_account.password_hash,
+    )
+    if not is_current_password_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    user_account.password_hash = hash_plain_text_password(
+        change_password_request.new_password
+    )
+    user_account.must_change_password = False
+    database_session.commit()
+
+    return ChangeAdministratorPasswordResponse(
+        message="Password changed successfully",
+        must_change_password=False,
     )

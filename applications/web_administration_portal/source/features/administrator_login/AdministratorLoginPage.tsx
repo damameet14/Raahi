@@ -1,10 +1,10 @@
 /**
- * Administrator login page with branded UI.
+ * Administrator login page with the public Raahi visual system.
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Building2, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { apiClient } from '@/shared_user_interface_infrastructure/backend_communication/api_client';
 import { useAuthenticatedUser } from '@/shared_user_interface_infrastructure/authentication_state/AuthenticationContextProvider';
 
@@ -37,6 +37,7 @@ export function AdministratorLoginPage() {
         full_name,
         role,
         organization_id,
+        must_change_password,
       } = response.data;
 
       storeAuthenticationTokens(access_token, refresh_token, {
@@ -45,9 +46,10 @@ export function AdministratorLoginPage() {
         fullName: full_name,
         role,
         organizationId: organization_id,
+        mustChangePassword: must_change_password,
       });
 
-      navigate('/dashboard');
+      navigate(must_change_password ? '/change-password' : '/dashboard');
     } catch (error: any) {
       setAuthenticationErrorMessage(
         error.response?.data?.detail || 'Authentication failed. Please try again.'
@@ -58,107 +60,83 @@ export function AdministratorLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* ── Left panel: branded visual ───────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-raahi items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative z-10 max-w-md text-center px-8">
-          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-            <Building2 className="h-10 w-10 text-white" />
-          </div>
-          <h2 className="text-4xl font-bold text-white mb-4">Raahi</h2>
-          <p className="text-lg text-white/80 leading-relaxed">
-            Enterprise Carpooling Platform — Reducing carbon footprint one shared ride at a time.
+    <div className="registration-page">
+      <Link className="registration-brand" to="/">
+        <span>R</span>
+        Raahi
+      </Link>
+
+      <main className="administrator-login-shell">
+        <section className="registration-introduction">
+          <p className="marketing-micro-label">ADMIN PORTAL</p>
+          <h1>Welcome back.</h1>
+          <p>
+            Sign in to manage your organization, employees, vehicles, reports,
+            and company commute settings.
           </p>
-          <div className="mt-12 grid grid-cols-3 gap-6 text-center">
+          <div className="administrator-login-statistics" aria-label="Raahi platform statistics">
+            <div><strong>40%</strong><span>Fuel Saved</span></div>
+            <div><strong>2.3t</strong><span>CO2 Reduced</span></div>
+            <div><strong>500+</strong><span>Rides Shared</span></div>
+          </div>
+        </section>
+
+        <section className="registration-panel" aria-label="Administrator login form">
+          <div className="registration-form-heading">
+            <LogIn aria-hidden="true" />
             <div>
-              <p className="text-3xl font-bold text-white">40%</p>
-              <p className="text-xs text-white/60 mt-1">Fuel Saved</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">2.3t</p>
-              <p className="text-xs text-white/60 mt-1">CO₂ Reduced</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">500+</p>
-              <p className="text-xs text-white/60 mt-1">Rides Shared</p>
+              <h2>Admin login</h2>
+              <p>Sign in to your admin portal to manage your organization.</p>
             </div>
           </div>
-        </div>
-        {/* Decorative circles */}
-        <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-white/5" />
-        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-white/5" />
-      </div>
 
-      {/* ── Right panel: login form ──────────────────── */}
-      <div className="flex w-full items-center justify-center bg-surface-primary px-6 lg:w-1/2">
-        <div className="w-full max-w-md animate-fade-in">
-          <div className="mb-8">
-            <div className="lg:hidden mb-6 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-raahi">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-text-primary">Raahi</span>
-            </div>
-            <h1 className="text-2xl font-bold text-text-primary">Welcome back</h1>
-            <p className="mt-2 text-sm text-text-secondary">
-              Sign in to your admin portal to manage your organization.
-            </p>
-          </div>
-
-          <form onSubmit={handleLoginFormSubmission} className="space-y-5">
+          <form onSubmit={handleLoginFormSubmission} className="registration-form">
             {authenticationErrorMessage && (
-              <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+              <div className="registration-error">
                 {authenticationErrorMessage}
               </div>
             )}
 
-            <div>
-              <label htmlFor="email-input" className="mb-1.5 block text-sm font-medium text-text-secondary">
-                Email Address
-              </label>
+            <label htmlFor="email-input">
+              Email Address
               <input
                 id="email-input"
                 type="email"
                 value={emailAddress}
-                onChange={(e) => setEmailAddress(e.target.value)}
+                onChange={(event) => setEmailAddress(event.target.value)}
                 placeholder="admin@raahi.com"
                 required
-                className="w-full rounded-xl border border-border-primary bg-surface-secondary px-4 py-3 text-sm text-text-primary placeholder:text-text-muted outline-none transition-colors focus:border-raahi-500 focus:ring-1 focus:ring-raahi-500/30"
               />
-            </div>
+            </label>
 
-            <div>
-              <label htmlFor="password-input" className="mb-1.5 block text-sm font-medium text-text-secondary">
-                Password
-              </label>
-              <div className="relative">
+            <label htmlFor="password-input">
+              Password
+              <div className="administrator-password-input">
                 <input
                   id="password-input"
                   type={isPasswordVisible ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full rounded-xl border border-border-primary bg-surface-secondary px-4 py-3 pr-11 text-sm text-text-primary placeholder:text-text-muted outline-none transition-colors focus:border-raahi-500 focus:ring-1 focus:ring-raahi-500/30"
                 />
                 <button
                   type="button"
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
+                  aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
                 >
                   {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-            </div>
+            </label>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-raahi-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-raahi-600/25 transition-all hover:bg-raahi-700 hover:shadow-raahi-600/40 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
+              className="marketing-button marketing-button-primary administrator-login-button"
             >
               {isSubmitting ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                'Signing in...'
               ) : (
                 <>
                   <LogIn className="h-4 w-4" />
@@ -168,11 +146,11 @@ export function AdministratorLoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-xs text-text-muted">
+          <p className="administrator-demo-credentials">
             Demo credentials: admin@raahi.com / admin123
           </p>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

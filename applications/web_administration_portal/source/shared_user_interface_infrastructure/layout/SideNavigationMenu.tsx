@@ -1,8 +1,5 @@
 /**
  * Side navigation menu for the administration portal.
- *
- * Displays navigation links organized by admin capability.
- * Highlights the currently active route.
  */
 
 import { NavLink } from 'react-router-dom';
@@ -13,7 +10,6 @@ import {
   BarChart3,
   Settings,
   UserCircle,
-  Building2,
   LogOut,
 } from 'lucide-react';
 import { useAuthenticatedUser } from '../authentication_state/AuthenticationContextProvider';
@@ -32,10 +28,9 @@ export function SideNavigationMenu() {
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border-primary bg-surface-secondary">
-      {/* ── Brand ──────────────────────────────────────── */}
-      <div className="flex h-16 items-center gap-3 border-b border-border-primary px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-raahi">
-          <Building2 className="h-5 w-5 text-white" />
+      <div className="flex h-20 items-center gap-3 border-b border-border-primary px-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-raahi-500 text-sm font-bold text-white">
+          R
         </div>
         <div>
           <h1 className="text-base font-bold text-text-primary tracking-tight">Raahi</h1>
@@ -43,17 +38,16 @@ export function SideNavigationMenu() {
         </div>
       </div>
 
-      {/* ── Navigation links ───────────────────────────── */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
         {navigationMenuItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${
                 isActive
-                  ? 'bg-raahi-600/20 text-raahi-400 shadow-sm'
-                  : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                  ? 'border border-raahi-500 bg-white text-raahi-700 shadow-sm'
+                  : 'text-text-secondary hover:bg-white hover:text-text-primary'
               }`
             }
           >
@@ -63,14 +57,13 @@ export function SideNavigationMenu() {
         ))}
       </nav>
 
-      {/* ── User info & logout ─────────────────────────── */}
       <div className="border-t border-border-primary p-4">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-raahi-600 text-xs font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-raahi-500 text-xs font-bold text-white">
             {authenticatedUser?.fullName?.charAt(0) || 'A'}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-text-primary">
+            <p className="truncate text-sm font-semibold text-text-primary">
               {authenticatedUser?.fullName || 'Administrator'}
             </p>
             <p className="truncate text-xs text-text-muted">
@@ -80,7 +73,7 @@ export function SideNavigationMenu() {
         </div>
         <button
           onClick={clearAuthenticationState}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/10"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
         >
           <LogOut className="h-4 w-4" />
           Sign Out

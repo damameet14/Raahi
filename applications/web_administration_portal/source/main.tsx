@@ -33,10 +33,10 @@ createRoot(document.getElementById('root')!).render(
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#1e293b',
-              color: '#f1f5f9',
-              border: '1px solid #334155',
-              borderRadius: '12px',
+              background: '#ffffff',
+              color: '#17251b',
+              border: '1px solid #e1e7e2',
+              borderRadius: '8px',
             },
           }}
         />

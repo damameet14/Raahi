@@ -39,7 +39,7 @@ class ApplicationConfiguration(BaseSettings):
     # ── External Services ────────────────────────────────────
     google_maps_api_key: str = Field(default="", alias="GOOGLE_MAPS_API_KEY")
 
-    model_config = {"env_file": ".env", "extra": "ignore"}
+    model_config = {"env_file": [".env", "../../.env"], "extra": "ignore"}
 
 
 def create_application_configuration() -> ApplicationConfiguration:

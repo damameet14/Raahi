@@ -9,6 +9,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRouteGuard } from './shared_user_interface_infrastructure/protected_route/ProtectedRouteGuard';
 import { AdministrationPortalLayout } from './shared_user_interface_infrastructure/layout/AdministrationPortalLayout';
 import { AdministratorLoginPage } from './features/administrator_login/AdministratorLoginPage';
+import { LandingPage } from './features/public_landing/LandingPage';
+import { OrganizationRegistrationPage } from './features/organization_registration/OrganizationRegistrationPage';
+import { RequiredPasswordChangePage } from './features/required_password_change/RequiredPasswordChangePage';
 import { DashboardOverviewPage } from './features/dashboard_overview/DashboardOverviewPage';
 import { EmployeeListPage } from './features/employee_management/EmployeeListPage';
 import { VehicleListPage } from './features/vehicle_management/VehicleListPage';
@@ -21,6 +24,8 @@ export function ApplicationRouter() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/register-organization" element={<OrganizationRegistrationPage />} />
         <Route path="/login" element={<AdministratorLoginPage />} />
 
         {/* Protected admin routes */}
@@ -32,11 +37,12 @@ export function ApplicationRouter() {
             <Route path="/reports" element={<ReportsOverviewPage />} />
             <Route path="/settings" element={<CompanySettingsPage />} />
             <Route path="/profile" element={<AdministratorProfilePage />} />
+            <Route path="/change-password" element={<RequiredPasswordChangePage />} />
           </Route>
         </Route>
 
         {/* Default redirect */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

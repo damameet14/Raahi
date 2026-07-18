@@ -5,7 +5,7 @@
  * persisting tokens and user data to localStorage.
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface AuthenticatedUserData {
   userAccountId: string;
@@ -13,6 +13,7 @@ interface AuthenticatedUserData {
   fullName: string;
   role: string;
   organizationId: string;
+  mustChangePassword: boolean;
 }
 
 interface AuthenticationContextValue {
@@ -24,6 +25,7 @@ interface AuthenticationContextValue {
     refreshToken: string,
     userData: AuthenticatedUserData
   ) => void;
+  markPasswordChangeCompleted: () => void;
   clearAuthenticationState: () => void;
 }
 
@@ -58,6 +60,17 @@ export function AuthenticationContextProvider({ children }: { children: React.Re
     setAuthenticatedUser(null);
   }, []);
 
+  const markPasswordChangeCompleted = useCallback(() => {
+    setAuthenticatedUser((currentUser) => {
+      if (!currentUser) {
+        return currentUser;
+      }
+      const updatedUser = { ...currentUser, mustChangePassword: false };
+      localStorage.setItem('raahi_user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  }, []);
+
   return (
     <AuthenticationContext.Provider
       value={{
@@ -65,6 +78,7 @@ export function AuthenticationContextProvider({ children }: { children: React.Re
         authenticatedUser,
         accessToken,
         storeAuthenticationTokens,
+        markPasswordChangeCompleted,
         clearAuthenticationState,
       }}
     >

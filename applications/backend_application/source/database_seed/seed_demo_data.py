@@ -40,6 +40,7 @@ def seed_demo_data(database_session: Session) -> None:
     # 1. Organization
     organization = OrganizationRecord(**DEMO_ORGANIZATION)
     database_session.add(organization)
+    database_session.flush()  # Ensure org exists before FK-dependent inserts
 
     # 2. Admin user
     admin_data = {
@@ -52,6 +53,7 @@ def seed_demo_data(database_session: Session) -> None:
     )
     admin_user = UserAccountRecord(**admin_data)
     database_session.add(admin_user)
+    database_session.flush()  # Ensure admin exists before employees
 
     # 3. Employees
     employee_ids = []

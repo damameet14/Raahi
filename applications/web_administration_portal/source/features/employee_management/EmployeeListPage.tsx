@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, UserCheck, UserX, Trash2, X } from 'lucide-react';
+import { Search, UserCheck, UserX, Trash2, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,7 +43,7 @@ const createEmployeeSchema = z.object({
   is_driver: z.boolean().default(false),
 });
 
-type CreateEmployeeFormData = z.infer<typeof createEmployeeSchema>;
+type CreateEmployeeFormData = z.input<typeof createEmployeeSchema>;
 
 export function EmployeeListPage() {
   const queryClient = useQueryClient();
@@ -84,7 +84,10 @@ export function EmployeeListPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateEmployeeFormData) => apiClient.post('/api/v1/employees', data),
+    mutationFn: (data: CreateEmployeeFormData) => apiClient.post('/api/v1/employees', {
+      ...data,
+      is_driver: data.is_driver ?? false,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       setIsCreationModalOpen(false);
@@ -213,7 +216,7 @@ export function EmployeeListPage() {
 
       {/* ── Creation modal ───────────────────────────── */}
       {isCreationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
           <div className="glass-card w-full max-w-lg p-6 animate-fade-in mx-4">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-text-primary">Add New Employee</h2>

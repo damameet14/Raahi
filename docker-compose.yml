@@ -1,10 +1,12 @@
 version: "3.9"
 
 services:
-  # ─── PostgreSQL (optional – override with DATABASE_URL) ───
+  # ─── PostgreSQL (optional – only starts with --profile dev-db) ───
   postgres_database:
     image: postgres:16-alpine
     restart: unless-stopped
+    profiles:
+      - dev-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-raahi_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-raahi_secret}
@@ -25,6 +27,8 @@ services:
       context: ./applications/backend_application
       dockerfile: Dockerfile
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     environment:
@@ -35,9 +39,6 @@ services:
       JWT_REFRESH_TOKEN_EXPIRATION_DAYS: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:-7}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
-    depends_on:
-      postgres_database:
-        condition: service_healthy
     volumes:
       - ./applications/backend_application:/application
     command: uvicorn source.application_startup.main:app --host 0.0.0.0 --port 8000 --reload

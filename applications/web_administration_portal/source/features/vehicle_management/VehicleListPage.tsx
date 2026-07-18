@@ -40,7 +40,7 @@ const createVehicleSchema = z.object({
   insurance_expiry_date: z.string().optional(),
 });
 
-type CreateVehicleFormData = z.infer<typeof createVehicleSchema>;
+type CreateVehicleFormData = z.input<typeof createVehicleSchema>;
 
 export function VehicleListPage() {
   const queryClient = useQueryClient();
@@ -72,7 +72,12 @@ export function VehicleListPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateVehicleFormData) => {
-      const payload = { ...data, insurance_expiry_date: data.insurance_expiry_date || null };
+      const payload = {
+        ...data,
+        capacity: data.capacity ?? 4,
+        fuel_type: data.fuel_type ?? 'PETROL',
+        insurance_expiry_date: data.insurance_expiry_date || null,
+      };
       return apiClient.post('/api/v1/vehicles', payload);
     },
     onSuccess: () => {
@@ -149,7 +154,7 @@ export function VehicleListPage() {
       )}
 
       {isCreationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
           <div className="glass-card w-full max-w-lg p-6 animate-fade-in mx-4">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-text-primary">Register New Vehicle</h2>

@@ -21,9 +21,24 @@ class AuthenticationTokensResponse(BaseModel):
     full_name: str
     role: str
     organization_id: str
+    must_change_password: bool
 
 
 class RefreshTokenRequest(BaseModel):
     """Request to refresh an expired access token."""
 
     refresh_token: str = Field(..., description="Valid refresh token")
+
+
+class ChangeAdministratorPasswordRequest(BaseModel):
+    """Request to replace the authenticated administrator password."""
+
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class ChangeAdministratorPasswordResponse(BaseModel):
+    """Response returned after a password is changed."""
+
+    message: str
+    must_change_password: bool = False

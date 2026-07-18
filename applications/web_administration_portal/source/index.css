@@ -3,17 +3,17 @@
 /* ── Raahi Design System ────────────────────────────────── */
 
 @theme {
-  --color-raahi-50: #eef2ff;
-  --color-raahi-100: #e0e7ff;
-  --color-raahi-200: #c7d2fe;
-  --color-raahi-300: #a5b4fc;
-  --color-raahi-400: #818cf8;
-  --color-raahi-500: #6366f1;
-  --color-raahi-600: #4f46e5;
-  --color-raahi-700: #4338ca;
-  --color-raahi-800: #3730a3;
-  --color-raahi-900: #312e81;
-  --color-raahi-950: #1e1b4b;
+  --color-raahi-50: #f0fbf3;
+  --color-raahi-100: #dcf6e4;
+  --color-raahi-200: #bcedca;
+  --color-raahi-300: #88dfa5;
+  --color-raahi-400: #55ca79;
+  --color-raahi-500: #32b45c;
+  --color-raahi-600: #249448;
+  --color-raahi-700: #1f743c;
+  --color-raahi-800: #1d5c33;
+  --color-raahi-900: #194c2c;
+  --color-raahi-950: #0a2916;
 
   --color-emerald-400: #34d399;
   --color-emerald-500: #10b981;
@@ -22,18 +22,18 @@
   --color-rose-400: #fb7185;
   --color-rose-500: #f43f5e;
 
-  --color-surface-primary: #0f172a;
-  --color-surface-secondary: #1e293b;
-  --color-surface-tertiary: #334155;
-  --color-surface-card: #1e293b;
-  --color-surface-hover: #334155;
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f6f8f6;
+  --color-surface-tertiary: #edf3ee;
+  --color-surface-card: #ffffff;
+  --color-surface-hover: #eef6f0;
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-primary: #17251b;
+  --color-text-secondary: #647069;
+  --color-text-muted: #8a968f;
 
-  --color-border-primary: #334155;
-  --color-border-secondary: #475569;
+  --color-border-primary: #e1e7e2;
+  --color-border-secondary: #c8d3ca;
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
@@ -60,11 +60,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-primary);
+  background: var(--color-surface-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-surface-tertiary);
+  background: var(--color-border-secondary);
   border-radius: 3px;
 }
 
@@ -104,20 +104,16 @@ body {
 /* ── Glassmorphism card ─────────────────────────────────── */
 
 .glass-card {
-  background: linear-gradient(
-    135deg,
-    rgba(30, 41, 59, 0.8) 0%,
-    rgba(30, 41, 59, 0.4) 100%
-  );
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 16px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(225, 231, 226, 0.55);
 }
 
 /* ── Gradient backgrounds ───────────────────────────────── */
 
 .gradient-raahi {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+  background: #32b45c;
 }
 
 .gradient-emerald {
@@ -134,4 +130,1214 @@ body {
 
 .gradient-cyan {
   background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+}
+
+.dashboard-purpose-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.dashboard-purpose-strip > div,
+.dashboard-context-card {
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  background: var(--color-surface-secondary);
+  padding: 18px;
+}
+
+.dashboard-purpose-strip span,
+.dashboard-section-heading span,
+.dashboard-context-card span {
+  display: block;
+  color: var(--color-text-muted);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-purpose-strip strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dashboard-section {
+  margin-top: 32px;
+}
+
+.dashboard-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+
+.dashboard-section-heading h2 {
+  margin: 4px 0 0;
+  color: var(--color-text-primary);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-section-heading p {
+  max-width: 380px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  text-align: right;
+}
+
+.dashboard-context-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.dashboard-context-card strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text-primary);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-context-card p {
+  margin: 6px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* Raahi public landing and registration experience */
+
+.marketing-page,
+.registration-page {
+  --marketing-background: #ffffff;
+  --marketing-surface: #f6f8f6;
+  --marketing-primary: #17251b;
+  --marketing-secondary: #647069;
+  --marketing-border: #e1e7e2;
+  --marketing-accent: #32b45c;
+  --marketing-on-accent: #ffffff;
+  --marketing-content-width: 1440px;
+  min-height: 100vh;
+  background: var(--marketing-background);
+  color: var(--marketing-primary);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.marketing-page a,
+.registration-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.marketing-frame {
+  width: min(calc(100% - 32px), var(--marketing-content-width));
+  margin-inline: auto;
+  border-left: 1px solid var(--marketing-border);
+  border-right: 1px solid var(--marketing-border);
+}
+
+.marketing-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--marketing-background);
+  box-shadow: 0 1px 0 var(--marketing-border);
+}
+
+.marketing-navigation {
+  min-height: 96px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-bottom: 1px solid var(--marketing-border);
+  padding: 16px 32px;
+}
+
+.marketing-brand,
+.registration-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.marketing-brand-mark,
+.registration-brand span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--marketing-accent);
+  color: var(--marketing-on-accent);
+  font-size: 15px;
+}
+
+.marketing-navigation-grid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--marketing-border);
+  border-radius: 999px;
+  background: var(--marketing-surface);
+  padding: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.marketing-navigation-grid > a {
+  border-radius: 999px;
+  padding: 10px 15px;
+}
+
+.marketing-navigation-grid > a:hover {
+  color: var(--marketing-accent);
+}
+
+.marketing-navigation-call-to-action {
+  background: var(--marketing-accent);
+  color: var(--marketing-on-accent) !important;
+  padding-inline: 22px !important;
+}
+
+.marketing-menu-toggle {
+  display: none;
+}
+
+.marketing-hero {
+  position: relative;
+  min-height: 740px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--marketing-border);
+  padding: 32px;
+}
+
+.marketing-hero-meta,
+.marketing-section-index,
+.marketing-impact-header,
+.marketing-micro-label,
+.marketing-footer-bottom {
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.marketing-hero-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.marketing-hero-meta p:last-child {
+  text-align: right;
+}
+
+.marketing-hero-display {
+  display: flex;
+  width: 100%;
+  margin-top: clamp(48px, 7vw, 100px);
+  font-size: clamp(100px, 17.7vw, 255px);
+  font-weight: 900;
+  letter-spacing: -0.09em;
+  line-height: 0.72;
+  white-space: nowrap;
+}
+
+.marketing-accent-text,
+.marketing-section-heading h2 span,
+.marketing-process-introduction h2 span {
+  color: var(--marketing-accent);
+}
+
+.marketing-hero-content,
+.marketing-section-heading,
+.marketing-process-introduction {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: 64px;
+}
+
+.marketing-hero-content {
+  margin-top: clamp(72px, 9vw, 132px);
+}
+
+.marketing-hero-content h1 {
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.marketing-hero-introduction {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 32px;
+}
+
+.marketing-hero-introduction p,
+.marketing-section-heading p,
+.marketing-process-introduction p,
+.marketing-impact-summary {
+  color: var(--marketing-secondary);
+}
+
+.marketing-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marketing-button-primary {
+  background: var(--marketing-accent);
+  color: var(--marketing-on-accent) !important;
+}
+
+.marketing-button-large {
+  min-height: 60px;
+  padding-inline: 30px;
+  font-size: 16px;
+}
+
+.marketing-text-link {
+  color: var(--marketing-secondary) !important;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.marketing-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.marketing-hero-corner-label {
+  position: absolute;
+  right: 32px;
+  bottom: 24px;
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.marketing-statistics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--marketing-border);
+}
+
+.marketing-statistic-card,
+.marketing-statistics-message {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--marketing-border);
+  padding: 32px;
+}
+
+.marketing-statistics-message {
+  border-right: 0;
+  background: var(--marketing-surface);
+}
+
+.marketing-statistic-value {
+  display: flex;
+  align-items: flex-start;
+  color: var(--marketing-accent);
+}
+
+.marketing-statistic-value strong {
+  font-size: clamp(46px, 4.3vw, 66px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.marketing-statistic-label {
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketing-section,
+.marketing-impact-section {
+  border-bottom: 1px solid var(--marketing-border);
+  padding: 96px 32px;
+}
+
+.marketing-section-index {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 80px;
+}
+
+.marketing-section-heading,
+.marketing-process-introduction {
+  margin-bottom: 80px;
+}
+
+.marketing-section-heading h2,
+.marketing-process-introduction h2,
+.marketing-call-to-action h2 {
+  margin: 0;
+  font-size: clamp(42px, 6vw, 88px);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.95;
+}
+
+.marketing-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.marketing-feature-card {
+  min-height: 390px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-surface);
+  padding: 32px;
+}
+
+.marketing-feature-card-top,
+.marketing-feature-card > a {
+  display: flex;
+  justify-content: space-between;
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+}
+
+.marketing-feature-icon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--marketing-accent);
+  border-radius: 50%;
+  color: var(--marketing-accent);
+  font-family: Inter, sans-serif;
+  font-size: 20px;
+}
+
+.marketing-feature-card h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.marketing-feature-card p {
+  color: var(--marketing-secondary);
+  font-size: 14px;
+}
+
+.marketing-feature-card > a {
+  border-top: 1px solid var(--marketing-border);
+  padding-top: 16px;
+  text-transform: uppercase;
+}
+
+.marketing-process-timeline {
+  border-bottom: 1px solid var(--marketing-border);
+}
+
+.marketing-process-step {
+  min-height: 168px;
+  display: grid;
+  grid-template-columns: 160px minmax(240px, 1fr) minmax(240px, 0.8fr);
+  align-items: center;
+  gap: 32px;
+  border-top: 1px solid var(--marketing-border);
+}
+
+.marketing-process-step > span {
+  color: var(--marketing-secondary);
+  font-size: clamp(78px, 8vw, 116px);
+  font-weight: 800;
+  letter-spacing: -0.09em;
+  line-height: 0.8;
+}
+
+.marketing-process-step h3 {
+  margin: 0 0 0 -54px;
+  font-size: clamp(25px, 2.5vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+}
+
+.marketing-process-step p {
+  color: var(--marketing-secondary);
+}
+
+.marketing-application-window {
+  overflow: hidden;
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-background);
+  box-shadow: 0 18px 48px var(--marketing-border);
+}
+
+.marketing-application-toolbar {
+  height: 48px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--marketing-border);
+  padding-inline: 24px;
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.marketing-application-toolbar > span:last-child {
+  color: var(--marketing-accent);
+  text-align: right;
+}
+
+.marketing-toolbar-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.marketing-toolbar-dots i {
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--marketing-secondary);
+  border-radius: 50%;
+}
+
+.marketing-application-layout {
+  min-height: 520px;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+}
+
+.marketing-application-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid var(--marketing-border);
+  background: var(--marketing-surface);
+  padding: 24px 16px;
+}
+
+.marketing-application-logo,
+.marketing-application-profile {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.marketing-application-logo {
+  margin-bottom: 32px;
+  background: var(--marketing-accent);
+  color: var(--marketing-on-accent);
+}
+
+.marketing-application-profile {
+  position: absolute;
+  bottom: 24px;
+  border: 1px solid var(--marketing-border);
+  font-size: 8px;
+}
+
+.marketing-application-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 9px;
+  color: var(--marketing-secondary);
+  font-size: 10px;
+}
+
+.marketing-application-link.is-active {
+  border: 1px solid var(--marketing-accent);
+  color: var(--marketing-primary);
+}
+
+.marketing-application-content {
+  min-width: 0;
+  padding: 40px;
+}
+
+.marketing-application-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.marketing-application-welcome small,
+.marketing-live-badge,
+.marketing-ride-search span,
+.marketing-available-rides-title span,
+.marketing-map-label {
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.07em;
+}
+
+.marketing-application-welcome h3 {
+  margin: 3px 0 0;
+  font-size: 28px;
+}
+
+.marketing-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--marketing-border);
+  border-radius: 999px;
+  padding: 7px 10px;
+}
+
+.marketing-live-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--marketing-accent);
+}
+
+.marketing-ride-search {
+  display: grid;
+  grid-template-columns: 1fr auto 1.2fr auto;
+  align-items: center;
+  gap: 24px;
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  padding: 10px 10px 10px 24px;
+}
+
+.marketing-ride-search label {
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing-ride-search button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--marketing-accent);
+  color: var(--marketing-on-accent);
+  padding: 9px 16px;
+  font-size: 11px;
+}
+
+.marketing-rides-and-map {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.marketing-available-rides,
+.marketing-route-map {
+  min-height: 325px;
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-surface);
+  padding: 24px;
+}
+
+.marketing-available-rides-title,
+.marketing-ride-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.marketing-ride-result {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  border-top: 1px solid var(--marketing-border);
+  padding-block: 16px;
+}
+
+.marketing-ride-result > span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--marketing-accent);
+  border-radius: 50%;
+  color: var(--marketing-accent);
+  font-size: 8px;
+}
+
+.marketing-ride-result div {
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing-ride-result div:last-child {
+  align-items: flex-end;
+}
+
+.marketing-ride-result small {
+  color: var(--marketing-secondary);
+}
+
+.marketing-route-map {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.marketing-map-street,
+.marketing-map-route,
+.marketing-map-point,
+.marketing-map-label {
+  position: absolute;
+}
+
+.marketing-map-street {
+  width: 130%;
+  height: 1px;
+  background: var(--marketing-border);
+}
+
+.marketing-map-street.one { top: 28%; left: -8%; transform: rotate(17deg); }
+.marketing-map-street.two { top: 67%; left: -10%; transform: rotate(-21deg); }
+.marketing-map-street.three { top: 5%; left: 38%; transform: rotate(66deg); }
+
+.marketing-map-route {
+  top: 24%;
+  left: 28%;
+  width: 46%;
+  height: 48%;
+  border-right: 3px solid var(--marketing-accent);
+  border-bottom: 3px solid var(--marketing-accent);
+  border-radius: 0 0 52px 0;
+  transform: rotate(9deg);
+}
+
+.marketing-map-point {
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--marketing-background);
+  border-radius: 50%;
+}
+
+.marketing-map-point.start { top: 20%; left: 25%; background: var(--marketing-primary); }
+.marketing-map-point.end { right: 22%; bottom: 24%; background: var(--marketing-accent); }
+
+.marketing-map-label {
+  z-index: 2;
+  border: 1px solid var(--marketing-border);
+  border-radius: 4px;
+  background: var(--marketing-background);
+  padding: 3px 6px;
+}
+
+.marketing-map-label.start { top: 10%; left: 15%; }
+.marketing-map-label.end { right: 4%; bottom: 11%; }
+
+.marketing-impact-section {
+  min-height: 760px;
+  position: relative;
+  overflow: hidden;
+}
+
+.marketing-impact-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.marketing-impact-header span:last-child {
+  text-align: right;
+}
+
+.marketing-impact-words {
+  display: grid;
+  justify-items: center;
+  margin-top: 64px;
+  color: var(--marketing-border);
+  font-size: clamp(60px, 8vw, 124px);
+  font-weight: 800;
+  letter-spacing: -0.075em;
+  line-height: 0.88;
+}
+
+.marketing-impact-words span:hover {
+  color: var(--marketing-primary);
+}
+
+.marketing-impact-summary {
+  position: absolute;
+  right: 32px;
+  bottom: 96px;
+  width: min(300px, 28%);
+}
+
+.marketing-call-to-action {
+  min-height: 310px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 64px;
+  border-bottom: 1px solid var(--marketing-border);
+  background: var(--marketing-surface);
+  padding: 64px 32px;
+}
+
+.marketing-call-to-action h2 {
+  font-size: clamp(42px, 5vw, 74px);
+}
+
+.marketing-footer {
+  background: var(--marketing-surface);
+  padding: 48px 32px 24px;
+}
+
+.marketing-footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 64px;
+  padding-bottom: 64px;
+}
+
+.marketing-footer-top p:last-child {
+  color: var(--marketing-secondary);
+}
+
+.marketing-footer-circle-link {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--marketing-accent);
+  border-radius: 50%;
+  color: var(--marketing-accent) !important;
+  font-size: 20px;
+}
+
+.marketing-footer-wordmark {
+  overflow: hidden;
+  color: var(--marketing-primary);
+  font-size: clamp(100px, 19vw, 275px);
+  font-weight: 900;
+  letter-spacing: -0.095em;
+  line-height: 0.73;
+}
+
+.marketing-footer-bottom {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 32px;
+  margin-top: 40px;
+  border-top: 1px solid var(--marketing-border);
+  padding-top: 24px;
+}
+
+.marketing-footer-bottom span:last-child {
+  text-align: right;
+}
+
+.registration-page {
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.registration-brand {
+  margin-bottom: 48px;
+}
+
+.registration-shell {
+  width: min(1120px, 100%);
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 48px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.administrator-login-shell {
+  width: min(1040px, 100%);
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 56px;
+  margin: 56px auto 0;
+  align-items: start;
+}
+
+.registration-introduction h1 {
+  margin: 0 0 24px;
+  font-size: clamp(48px, 7vw, 86px);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 0.95;
+}
+
+.registration-introduction p:last-child {
+  color: var(--marketing-secondary);
+  font-size: 17px;
+}
+
+.administrator-login-statistics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.administrator-login-statistics div {
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-surface);
+  padding: 20px;
+}
+
+.administrator-login-statistics strong {
+  display: block;
+  color: var(--marketing-accent);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.administrator-login-statistics span,
+.administrator-demo-credentials {
+  color: var(--marketing-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.registration-panel,
+.password-change-panel {
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-surface);
+  padding: 32px;
+}
+
+.password-change-panel {
+  width: min(560px, 100%);
+  margin: 96px auto 0;
+}
+
+.registration-form,
+.registration-success {
+  display: grid;
+  gap: 20px;
+}
+
+.registration-form-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.registration-form-heading svg,
+.registration-success svg {
+  color: var(--marketing-accent);
+  flex: 0 0 auto;
+}
+
+.registration-form-heading h1,
+.registration-form-heading h2,
+.registration-success h2 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.registration-form-heading p,
+.registration-success p {
+  margin: 0;
+  color: var(--marketing-secondary);
+}
+
+.registration-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--marketing-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.registration-form input,
+.registration-form textarea {
+  width: 100%;
+  border: 1px solid var(--marketing-border);
+  border-radius: 8px;
+  background: var(--marketing-background);
+  color: var(--marketing-primary);
+  padding: 12px 14px;
+  outline: none;
+}
+
+.registration-form input:focus,
+.registration-form textarea:focus {
+  border-color: var(--marketing-accent);
+  box-shadow: 0 0 0 3px rgb(50 180 92 / 14%);
+}
+
+.administrator-password-input {
+  position: relative;
+}
+
+.administrator-password-input input {
+  padding-right: 46px;
+}
+
+.administrator-password-input button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--marketing-secondary);
+  transform: translateY(-50%);
+}
+
+.administrator-login-button {
+  width: 100%;
+}
+
+.administrator-demo-credentials {
+  margin: 24px 0 0;
+  text-align: center;
+}
+
+.registration-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.registration-error {
+  border: 1px solid #fda4af;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #be123c;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.registration-success dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.registration-success dl div {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 16px;
+  border-top: 1px solid var(--marketing-border);
+  padding-top: 12px;
+}
+
+.registration-success dt {
+  color: var(--marketing-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.registration-success dd {
+  margin: 0;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .marketing-navigation {
+    min-height: 72px;
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+  }
+
+  .marketing-menu-toggle {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--marketing-border);
+    border-radius: 50%;
+    background: var(--marketing-background);
+    padding: 11px;
+  }
+
+  .marketing-menu-toggle span {
+    height: 1px;
+    background: var(--marketing-primary);
+  }
+
+  .marketing-navigation-grid {
+    position: absolute;
+    top: 72px;
+    right: 8px;
+    left: 8px;
+    max-height: 0;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 0;
+    opacity: 0;
+  }
+
+  .marketing-navigation-grid.is-open {
+    max-height: calc(100vh - 72px);
+    padding: 24px;
+    opacity: 1;
+  }
+
+  .marketing-navigation-grid > a {
+    text-align: center;
+  }
+
+  .marketing-hero,
+  .marketing-section,
+  .marketing-impact-section,
+  .marketing-call-to-action,
+  .marketing-footer {
+    padding-inline: 16px;
+  }
+
+  .marketing-hero-content,
+  .marketing-section-heading,
+  .marketing-process-introduction,
+  .marketing-feature-grid,
+  .marketing-rides-and-map,
+  .administrator-login-shell,
+  .registration-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-hero-introduction {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-statistics {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-statistic-card,
+  .marketing-statistics-message {
+    min-height: 150px;
+    border-right: 0;
+    border-bottom: 1px solid var(--marketing-border);
+  }
+
+  .marketing-process-step {
+    grid-template-columns: 94px 1fr;
+    gap: 16px;
+  }
+
+  .marketing-process-step h3,
+  .marketing-process-step p {
+    margin-left: -30px;
+  }
+
+  .marketing-process-step p {
+    grid-column: 2;
+  }
+
+  .marketing-application-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .marketing-application-toolbar > span:first-of-type,
+  .marketing-application-sidebar,
+  .marketing-live-badge,
+  .marketing-impact-header span:nth-child(2) {
+    display: none;
+  }
+
+  .marketing-application-layout,
+  .marketing-ride-search {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-impact-section {
+    min-height: auto;
+  }
+
+  .marketing-impact-words {
+    align-items: start;
+    justify-items: start;
+    font-size: clamp(44px, 14vw, 78px);
+  }
+
+  .marketing-impact-summary {
+    position: static;
+    width: auto;
+    margin-top: 40px;
+  }
+
+  .marketing-call-to-action,
+  .marketing-footer-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .marketing-footer-bottom,
+  .administrator-login-statistics,
+  .dashboard-purpose-strip,
+  .dashboard-context-grid,
+  .registration-two-column,
+  .registration-success dl div {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dashboard-section-heading p {
+    text-align: left;
+  }
 }

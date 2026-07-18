@@ -93,12 +93,12 @@ export function AdministratorProfilePage() {
             <div>
               <label className="mb-1 block text-xs font-medium text-text-secondary">Full Name</label>
               <input {...registerProfile('full_name')} className="w-full rounded-xl border border-border-primary bg-surface-primary px-4 py-2.5 text-sm text-text-primary outline-none focus:border-raahi-500" />
-              {profileErrors.full_name && <p className="mt-1 text-xs text-rose-400">{profileErrors.full_name.message}</p>}
+              {profileErrors.full_name?.message && <p className="mt-1 text-xs text-rose-400">{String(profileErrors.full_name.message)}</p>}
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-text-secondary">Email Address</label>
               <input {...registerProfile('email')} className="w-full rounded-xl border border-border-primary bg-surface-primary px-4 py-2.5 text-sm text-text-primary outline-none focus:border-raahi-500" />
-              {profileErrors.email && <p className="mt-1 text-xs text-rose-400">{profileErrors.email.message}</p>}
+              {profileErrors.email?.message && <p className="mt-1 text-xs text-rose-400">{String(profileErrors.email.message)}</p>}
             </div>
             <button type="submit" disabled={!isDirty || updateProfileMutation.isPending} className="rounded-xl bg-raahi-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-raahi-700 disabled:opacity-50">
               {updateProfileMutation.isPending ? 'Saving...' : 'Save Profile'}

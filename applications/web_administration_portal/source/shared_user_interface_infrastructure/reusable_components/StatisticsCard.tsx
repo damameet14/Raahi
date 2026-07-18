@@ -11,6 +11,7 @@ interface StatisticsCardProperties {
   gradientClassName: string;
   changePercentage?: number;
   changeLabel?: string;
+  contextLabel?: string;
 }
 
 export function StatisticsCard({
@@ -20,6 +21,7 @@ export function StatisticsCard({
   gradientClassName,
   changePercentage,
   changeLabel,
+  contextLabel,
 }: StatisticsCardProperties) {
   return (
     <div className="glass-card p-5 animate-fade-in hover:scale-[1.02] transition-transform duration-200">
@@ -41,6 +43,9 @@ export function StatisticsCard({
                 <span className="text-xs text-text-muted">{changeLabel}</span>
               )}
             </div>
+          )}
+          {contextLabel && (
+            <p className="mt-3 text-xs leading-5 text-text-muted">{contextLabel}</p>
           )}
         </div>
         <div
