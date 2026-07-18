@@ -1,0 +1,148 @@
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-meta {
+  animation: hero-reveal 420ms ease-out both;
+}
+
+.hero-display {
+  animation: hero-reveal 460ms 80ms ease-out both;
+}
+
+.hero-content {
+  animation: hero-reveal 460ms 180ms ease-out both;
+}
+
+.hero-corner-label {
+  animation: hero-reveal 420ms 280ms ease-out both;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 350ms ease-out var(--delay, 0ms),
+    transform 350ms ease-out var(--delay, 0ms);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.statistics .statistic-card,
+.statistics .statistics-message {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.statistics.is-visible .statistic-card,
+.statistics.is-visible .statistics-message {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 460ms ease-out var(--statistics-delay),
+    transform 460ms ease-out var(--statistics-delay),
+    background 220ms ease;
+}
+
+.statistics.is-visible .statistic-card::before {
+  transform: scaleX(1);
+  transition: transform 620ms ease-out var(--statistics-delay);
+}
+
+.impact-section .impact-words > * {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.impact-section.is-visible .impact-words > * {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 500ms ease-out var(--impact-delay),
+    transform 500ms ease-out var(--impact-delay),
+    color 220ms ease;
+}
+
+.impact-section .impact-side-label,
+.impact-section .impact-summary {
+  opacity: 0;
+}
+
+.impact-section.is-visible .impact-side-label,
+.impact-section.is-visible .impact-summary {
+  opacity: 1;
+  transition: opacity 420ms 440ms ease-out;
+}
+
+.process-timeline .process-step {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+.process-timeline.is-visible .process-step {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 420ms ease-out var(--step-delay),
+    transform 420ms ease-out var(--step-delay),
+    background 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .process-timeline .process-step {
+    opacity: 1;
+    transform: none;
+  }
+
+  .statistics .statistic-card,
+  .statistics .statistics-message {
+    opacity: 1;
+    transform: none;
+  }
+
+  .statistics .statistic-card::before {
+    transform: scaleX(1);
+  }
+
+  .impact-section .impact-words > *,
+  .impact-section .impact-side-label,
+  .impact-section .impact-summary {
+    opacity: 1;
+    transform: none;
+  }
+
+  .impact-section.is-visible .impact-word:hover,
+  .impact-section.is-visible .impact-word:focus-visible,
+  .impact-section.is-visible .impact-word.is-active,
+  .impact-preview-card {
+    transform: none;
+  }
+}
