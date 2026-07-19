@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRouteGuard } from './shared_user_interface_infrastructure/protected_route/ProtectedRouteGuard';
 import { AdministrationPortalLayout } from './shared_user_interface_infrastructure/layout/AdministrationPortalLayout';
 import { AdministratorLoginPage } from './features/administrator_login/AdministratorLoginPage';
-import { LandingPage } from './features/public_landing/LandingPage';
 import { OrganizationRegistrationPage } from './features/organization_registration/OrganizationRegistrationPage';
 import { RequiredPasswordChangePage } from './features/required_password_change/RequiredPasswordChangePage';
 import { DashboardOverviewPage } from './features/dashboard_overview/DashboardOverviewPage';
@@ -24,8 +23,9 @@ export function ApplicationRouter() {
   return (
     <BrowserRouter basename="/admin">
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Public routes. The marketing landing is the static site served at the
+            top-level "/"; the admin portal root simply forwards to the login. */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/register-organization" element={<OrganizationRegistrationPage />} />
         <Route path="/login" element={<AdministratorLoginPage />} />
 
@@ -44,7 +44,7 @@ export function ApplicationRouter() {
         </Route>
 
         {/* Default redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

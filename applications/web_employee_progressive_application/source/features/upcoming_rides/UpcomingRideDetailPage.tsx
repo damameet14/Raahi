@@ -21,6 +21,7 @@ import {
 } from "../../shared_user_interface_infrastructure/backend_communication/employee_ride_api";
 import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
 import { useBookingLookup } from "./useBookingLookup";
+import { formatTravelDate } from "./upcomingRideSelectors";
 
 export function UpcomingRideDetailPage() {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ export function UpcomingRideDetailPage() {
       <div className="flex flex-col gap-4 px-4 py-4">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold">
-            {booking.travel_date} · {booking.departure_time}
+            {formatTravelDate(booking.travel_date)} · {booking.departure_time}
           </span>
           <TripStatusPill status={booking.trip_status} />
         </div>
@@ -181,7 +182,10 @@ export function UpcomingRideDetailPage() {
                 state: {
                   callPhone:
                     role === "passenger" ? booking.driver_phone : null,
-                  callName: booking.driver_full_name,
+                  callName:
+                    role === "passenger"
+                      ? booking.driver_full_name
+                      : booking.passenger_full_name,
                 },
               })
             }

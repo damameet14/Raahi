@@ -16,6 +16,7 @@ import { EmployeeAuthenticationProvider } from "./shared_user_interface_infrastr
 import { GoogleMapsApiLoaderProvider } from "./shared_user_interface_infrastructure/maps/GoogleMapsApiLoaderProvider";
 import { PlatformExperienceProvider } from "./shared_user_interface_infrastructure/layout/PlatformExperienceContext";
 import { EmployeeAppShell } from "./shared_user_interface_infrastructure/layout/EmployeeAppShell";
+import { ChatNotificationsListener } from "./features/journey_chat/ChatNotificationsListener";
 import { ApplicationRouter } from "./ApplicationRouter";
 import "./index.css";
 
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")!).render(
         <GoogleMapsApiLoaderProvider>
           <PlatformExperienceProvider>
             <BrowserRouter basename="/app">
+              <ChatNotificationsListener />
               <EmployeeAppShell>
                 <ApplicationRouter />
               </EmployeeAppShell>

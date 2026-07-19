@@ -104,11 +104,31 @@ export function EmployeeListPage() {
     },
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateEmployeeFormData>({
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<CreateEmployeeFormData>({
     resolver: zodResolver(createEmployeeSchema),
   });
 
-  const onCreateSubmit = (data: CreateEmployeeFormData) => createMutation.mutate(data);
+  const onCreateSubmit = async (data: CreateEmployeeFormData) => {
+    const employeeCode = data.employee_code.trim();
+    // Employee codes must be unique within the organization. The backend does
+    // not enforce this, so guard against duplicates here by looking up the
+    // exact code before creating the account.
+    try {
+      const params = new URLSearchParams({ page: '1', page_size: '25', search_query: employeeCode });
+      const lookup = await apiClient.get<PaginatedEmployeeResponse>(`/api/v1/employees?${params}`);
+      const alreadyExists = lookup.data.items.some(
+        (existing) => existing.employee_code.trim().toLowerCase() === employeeCode.toLowerCase(),
+      );
+      if (alreadyExists) {
+        setError('employee_code', { type: 'manual', message: 'This employee code is already in use' });
+        return;
+      }
+    } catch {
+      // If the lookup fails, fall through and let creation proceed; the server
+      // remains the final authority.
+    }
+    createMutation.mutate({ ...data, employee_code: employeeCode });
+  };
 
   const columns = [
     { headerLabel: 'Code', accessorKey: 'employee_code' as const, className: 'w-24' },

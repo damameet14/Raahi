@@ -177,7 +177,10 @@ export function OngoingRidePage() {
               navigate(`/journeys/${booking.ride_offer_id}/chat`, {
                 state: {
                   callPhone: role === "passenger" ? booking.driver_phone : null,
-                  callName: booking.driver_full_name,
+                  callName:
+                    role === "passenger"
+                      ? booking.driver_full_name
+                      : booking.passenger_full_name,
                 },
               })
             }

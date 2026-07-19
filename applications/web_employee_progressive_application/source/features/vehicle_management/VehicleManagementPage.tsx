@@ -16,6 +16,13 @@ import {
 } from "../../shared_user_interface_infrastructure/backend_communication/employee_account_api";
 import type { VehicleSummary } from "../../shared_user_interface_infrastructure/backend_communication/employee_api_types";
 import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
+import {
+  isValidVehicleRegistrationNumber,
+  normalizeVehicleRegistrationNumber,
+  VEHICLE_REGISTRATION_NUMBER_HELP,
+} from "../../shared_user_interface_infrastructure/validation/vehicleRegistrationNumber";
+
+const MAXIMUM_PASSENGER_CAPACITY = 8;
 
 interface VehicleFormState {
   make: string;
@@ -53,7 +60,7 @@ export function VehicleManagementPage() {
       const payload: RegisterVehiclePayload = {
         make: formState.make.trim(),
         model: formState.model.trim(),
-        vehicle_number: formState.vehicleNumber.trim(),
+        vehicle_number: normalizeVehicleRegistrationNumber(formState.vehicleNumber),
         maximum_passengers: Number(formState.maximumPassengers),
         fuel_type: formState.fuelType,
         color: formState.color.trim() || null,
@@ -121,8 +128,17 @@ export function VehicleManagementPage() {
       toast.error("Enter vehicle make, model, and registration number");
       return;
     }
-    if (Number(formState.maximumPassengers) < 1) {
+    if (!isValidVehicleRegistrationNumber(formState.vehicleNumber)) {
+      toast.error(VEHICLE_REGISTRATION_NUMBER_HELP);
+      return;
+    }
+    const passengerCapacity = Number(formState.maximumPassengers);
+    if (!Number.isInteger(passengerCapacity) || passengerCapacity < 1) {
       toast.error("Passenger capacity must be at least 1");
+      return;
+    }
+    if (passengerCapacity > MAXIMUM_PASSENGER_CAPACITY) {
+      toast.error(`Passenger capacity cannot exceed ${MAXIMUM_PASSENGER_CAPACITY}`);
       return;
     }
     saveVehicleMutation.mutate();
@@ -217,9 +233,12 @@ export function VehicleManagementPage() {
             <form onSubmit={handleSubmit} className="grid gap-3">
               <TextInput label="Make" value={formState.make} onChange={(make) => setFormState((current) => ({ ...current, make }))} />
               <TextInput label="Model" value={formState.model} onChange={(model) => setFormState((current) => ({ ...current, model }))} />
-              <TextInput label="Registration number" value={formState.vehicleNumber} onChange={(vehicleNumber) => setFormState((current) => ({ ...current, vehicleNumber }))} />
+              <div>
+                <TextInput label="Registration number" value={formState.vehicleNumber} onChange={(vehicleNumber) => setFormState((current) => ({ ...current, vehicleNumber: vehicleNumber.toUpperCase() }))} />
+                <p className="mt-1 text-[11px] text-text-muted">{VEHICLE_REGISTRATION_NUMBER_HELP}</p>
+              </div>
               <div className="grid grid-cols-2 gap-3">
-                <TextInput label="Seats" type="number" value={formState.maximumPassengers} onChange={(maximumPassengers) => setFormState((current) => ({ ...current, maximumPassengers }))} />
+                <TextInput label="Seats" type="number" min={1} max={MAXIMUM_PASSENGER_CAPACITY} value={formState.maximumPassengers} onChange={(maximumPassengers) => setFormState((current) => ({ ...current, maximumPassengers }))} />
                 <label className="grid gap-1 text-xs font-semibold text-text-secondary">
                   Fuel type
                   <select
@@ -255,11 +274,15 @@ function TextInput({
   value,
   onChange,
   type = "text",
+  min,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  min?: number;
+  max?: number;
 }) {
   return (
     <label className="grid gap-1 text-xs font-semibold text-text-secondary">
@@ -267,6 +290,8 @@ function TextInput({
       <input
         type={type}
         value={value}
+        min={min}
+        max={max}
         onChange={(event) => onChange(event.target.value)}
         className="rounded-xl border border-[color:var(--color-border-primary)] bg-white px-3 py-3 text-sm text-text-primary outline-none focus:border-raahi-500"
       />
