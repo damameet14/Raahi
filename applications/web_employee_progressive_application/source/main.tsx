@@ -31,7 +31,7 @@ createRoot(document.getElementById("root")!).render(
       <EmployeeAuthenticationProvider>
         <GoogleMapsApiLoaderProvider>
           <PlatformExperienceProvider>
-            <BrowserRouter>
+            <BrowserRouter basename="/app">
               <EmployeeAppShell>
                 <ApplicationRouter />
               </EmployeeAppShell>
