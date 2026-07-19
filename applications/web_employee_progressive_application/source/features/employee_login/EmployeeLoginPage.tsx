@@ -37,9 +37,10 @@ export function EmployeeLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col justify-center px-6 py-10">
-      <div className="mb-8">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-raahi-600 text-2xl font-black text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background-primary px-6 py-10">
+      <div className="w-full max-w-sm">
+        <div className="mb-8">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-raahi-600 text-2xl font-black text-white">
           R
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight">Welcome back</h1>
@@ -89,6 +90,7 @@ export function EmployeeLoginPage() {
           Sign in
         </PrimaryButton>
       </form>
+      </div>
     </div>
   );
 }
