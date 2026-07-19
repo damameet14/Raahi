@@ -1,0 +1,89 @@
+erDiagram
+    ORGANIZATIONS ||--o{ USERS : "has many"
+    ORGANIZATIONS ||--o{ RIDES : "scopes"
+
+    USERS ||--|| WALLETS : "owns"
+    USERS ||--o{ VEHICLES : "registers"
+    USERS ||--o{ RIDES : "drives"
+    USERS ||--o{ RIDE_REQUESTS : "requests seat as passenger"
+    USERS ||--o{ JOURNEY_MESSAGES : "sends"
+
+    VEHICLES ||--o{ RIDES : "used for"
+
+    WALLETS ||--o{ WALLET_TRANSACTIONS : "contains"
+    
+    RIDES ||--o{ RIDE_REQUESTS : "receives"
+    RIDES ||--o{ JOURNEY_MESSAGES : "hosts chat"
+    RIDES ||--o{ WALLET_TRANSACTIONS : "triggers settlement"
+
+    ORGANIZATIONS {
+        uuid id PK
+        string name
+        string email_domain
+        timestamp created_at
+    }
+
+    USERS {
+        uuid id PK
+        uuid organization_id FK
+        string email
+        string password_hash
+        string first_name
+        string last_name
+        string role
+        boolean is_verified
+    }
+
+    VEHICLES {
+        uuid id PK
+        uuid user_id FK
+        string make
+        string model
+        string license_plate
+        int capacity
+    }
+
+    WALLETS {
+        uuid id PK
+        uuid user_id FK
+        decimal balance
+    }
+
+    WALLET_TRANSACTIONS {
+        uuid id PK
+        uuid wallet_id FK
+        uuid ride_id FK "nullable"
+        string transaction_type
+        decimal amount
+        string status
+        timestamp created_at
+    }
+
+    RIDES {
+        uuid id PK
+        uuid driver_id FK
+        uuid vehicle_id FK
+        uuid organization_id FK
+        string start_location
+        string end_location
+        timestamp start_time
+        int seats_available
+        decimal price_per_seat
+        string status
+    }
+
+    RIDE_REQUESTS {
+        uuid id PK
+        uuid ride_id FK
+        uuid passenger_id FK
+        string status
+        timestamp created_at
+    }
+
+    JOURNEY_MESSAGES {
+        uuid id PK
+        uuid ride_id FK
+        uuid sender_id FK
+        string content
+        timestamp created_at
+    }

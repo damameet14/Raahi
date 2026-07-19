@@ -61,56 +61,48 @@ Raahi is structured as a scalable monorepo comprising distinct, specialized appl
 
 ---
 
+## Live Demo & Deployment
+
+The application is deployed live on a custom home server running a Linux distribution. It utilizes **Cloudflare Tunnels** combined with an internal **NGINX reverse proxy** to securely route traffic to the domain:
+
+🔗 **Live Website**: [https://raahi.d14.app](https://raahi.d14.app)
+
+*Note: Raahi is a mobile-first Progressive Web App (PWA). You can install it directly to your device's home screen via your mobile browser for a native app-like experience.*
+
+---
+
 ## Setup Instructions
 
+We utilize Docker Compose to orchestrate the entire stack. We designed a minimal API configuration to support seamless local development without complex host configurations or CORS issues.
+
 ### Prerequisites
-*   Python 3.10+
-*   Node.js 18+ & npm
-*   PostgreSQL Database
-*   Google Maps API Key (with Maps JS, Directions, Distance Matrix enabled)
-*   WhatsApp Business API Webhook Credentials
+*   Docker Engine & Docker Compose (v2)
+*   Google Maps API Key (with Maps JS, Directions, and Distance Matrix enabled)
+*   Razorpay API Keys
 
-### 1. Backend Setup
+### 1. Environment Configuration
+Create a `.env` file at the root of the project by copying the example file:
 ```bash
-cd applications/backend_application
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # Or venv\Scripts\activate on Windows
-# Install dependencies
-pip install -r requirements.txt
-# Configure environment (create .env based on expected config)
-# Execute database migrations and seeders if available
-python -m source.database_seed.seed_script # Example command
-# Start the backend server
-uvicorn source.application_startup.main:app --reload
+cp .env.example .env
+```
+Populate the `.env` file with your specific API keys.
+
+### 2. Local Development (Docker Compose)
+To spin up the entire ecosystem (PostgreSQL, Backend, Admin Portal, Employee PWA, WhatsApp Sidecar, and NGINX Reverse Proxy) simultaneously:
+
+```bash
+docker-compose up --build
 ```
 
-### 2. Employee PWA Setup
-```bash
-cd applications/web_employee_progressive_application
-# Install frontend dependencies
-npm install
-# Configure local environment variables (.env.local)
-# Start the development server
-npm run dev
-```
+The applications will be automatically exposed via the NGINX proxy on `http://localhost`:
+*   **Static Landing Page**: `http://localhost/`
+*   **Employee PWA**: `http://localhost/app/`
+*   **Admin Portal**: `http://localhost/admin/`
+*   **Backend API**: `http://localhost/api/`
+*   **API Documentation (Swagger)**: `http://localhost/docs`
 
-### 3. Administration Portal Setup
-```bash
-cd applications/web_administration_portal
-# Install frontend dependencies
-npm install
-# Configure local environment variables (.env.local)
-# Start the development server
-npm run dev
-```
-
-### 4. WhatsApp Server Setup
-```bash
-cd applications/whatsapp_server
-# Install microservice dependencies
-npm install
-# Configure WhatsApp webhook tokens and backend API URLs (.env)
-# Start the server
-npm start
-```
+### 3. Home Server Deployment Architecture
+For our live home server deployment on Linux, the stack is orchestrated using the same Docker Compose configuration, but exposed securely to the internet:
+1. **NGINX** acts as the internal reverse proxy routing path-based traffic (`/app/`, `/api/`, etc.) to the respective Docker containers.
+2. A **Cloudflare `cloudflared` Tunnel** connects the Linux home server securely to the Cloudflare edge network.
+3. Traffic to `raahi.d14.app` is encrypted via Cloudflare's edge SSL and tunneled directly into the internal NGINX container, completely bypassing the need for port forwarding or exposing the home server's public IP address.

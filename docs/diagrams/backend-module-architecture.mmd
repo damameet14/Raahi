@@ -1,0 +1,98 @@
+flowchart TD
+    %% Core Framework Layers
+    subgraph SharedInfrastructure[Shared Infrastructure]
+        Config[Configuration & Env Variables]
+        AuthMiddleware[JWT Auth Dependency]
+        DBPool[asyncpg Database Pool]
+        Exceptions[Global Exception Handlers]
+    end
+
+    %% Standard Module Pattern Overlay
+    subgraph ModulePattern[Typical Module Layering]
+        direction TB
+        Routes(HTTP Routes / API)
+        Schemas(Pydantic Schemas / DTOs)
+        Service(Business Service)
+        Repo(Repository)
+        
+        Routes --> Schemas
+        Routes --> Service
+        Service --> Repo
+    end
+
+    %% Modules
+    subgraph BackendModules[Business Modules]
+        
+        subgraph IdentityUsers[Identity & Users]
+            EmpSelfService[Employee Self Service]
+            EmpMgmt[Employee Management]
+            AdminAuth[Admin Authentication]
+            AdminProfile[Admin Profile]
+        end
+        
+        subgraph Organizations[Organizations]
+            OrgMgmt[Organization Management]
+            CompSettings[Company Settings]
+            PlatAdmin[Platform Administration]
+        end
+
+        subgraph RideDomain[Ride Lifecycle]
+            Vehicles[Vehicle Management]
+            RideCoord[Ride Coordination]
+            Chat[Journey Chat WS]
+        end
+
+        subgraph Finances[Financial Domain]
+            Wallet[Wallet]
+            Payments[Payment Processing]
+        end
+
+        subgraph Analytics[Analytics]
+            DashStats[Dashboard Statistics]
+            TripStats[Trip Statistics]
+        end
+        
+    end
+
+    %% Cross-Module Business Rules
+    EmpSelfService -.->|Verify Org| OrgMgmt
+    Vehicles -.->|Verify User| EmpSelfService
+    RideCoord -.->|Verify Ownership| Vehicles
+    RideCoord -.->|Hold & Settle Funds| Wallet
+    Payments -.->|Credit Top-ups| Wallet
+    Chat -.->|Verify Active Ride| RideCoord
+
+    %% Infrastructure Links
+    BackendModules -->|Relies on| SharedInfrastructure
+    Routes -.->|Secured by| AuthMiddleware
+    Repo -.->|Executes queries via| DBPool
+
+    %% Data Layer
+    subgraph DataLayer[Data Layer]
+        DB[(PostgreSQL 16)]
+    end
+    DBPool --> DB
+
+    %% External
+    subgraph External[External APIs]
+        Maps[Google Maps API]
+        Razorpay[Razorpay Gateway]
+    end
+
+    RideCoord -->|Detour Calculations| Maps
+    Payments <-->|Webhooks & Intents| Razorpay
+
+    %% Styling
+    classDef infra fill:#f1f5f9,stroke:#475569,stroke-width:2px;
+    classDef moduleGrp fill:#e0e7ff,stroke:#3730a3,stroke-width:2px;
+    classDef specificMod fill:#ffffff,stroke:#4f46e5,stroke-width:1px;
+    classDef db fill:#fef3c7,stroke:#b45309,stroke-width:2px;
+    classDef external fill:#fee2e2,stroke:#991b1b,stroke-width:2px;
+    classDef pattern fill:#fcfdfd,stroke:#0ea5e9,stroke-width:1px,stroke-dasharray: 5 5;
+
+    class SharedInfrastructure,Config,AuthMiddleware,DBPool,Exceptions infra;
+    class BackendModules,IdentityUsers,Organizations,RideDomain,Finances,Analytics moduleGrp;
+    class EmpSelfService,EmpMgmt,AdminAuth,AdminProfile,OrgMgmt,CompSettings,PlatAdmin,Vehicles,RideCoord,Chat,Wallet,Payments,DashStats,TripStats specificMod;
+    class DB db;
+    class Maps,Razorpay external;
+    class ModulePattern pattern;

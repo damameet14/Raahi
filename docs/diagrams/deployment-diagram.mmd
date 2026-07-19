@@ -1,0 +1,91 @@
+flowchart TD
+    %% ====================================================
+    %% Client Layer
+    %% ====================================================
+    subgraph Clients[Client Layer]
+        Browser[Web Browser / Installed PWA]
+    end
+
+    %% ====================================================
+    %% Docker Deployment Environment
+    %% ====================================================
+    subgraph DockerHost[Docker Host Engine - docker-compose]
+        
+        %% Reverse Proxy
+        subgraph ProxyLayer[Edge / Proxy Layer]
+            Nginx[NGINX Reverse Proxy Container<br/>Port: 80]
+        end
+        
+        %% Frontend Containers
+        subgraph FrontendLayer[Frontend Application Containers]
+            AdminVite[Admin Portal Container<br/>npm run dev :5173]
+            EmpVite[Employee PWA Container<br/>npm run dev :5174]
+            StaticFiles[(Static Landing Assets<br/>nginx.conf Bind Mount :ro)]
+        end
+
+        %% Backend Containers
+        subgraph BackendLayer[Backend Application Containers]
+            FastAPI[FastAPI Backend Container<br/>Uvicorn :8000]
+            WhatsApp[WhatsApp Sidecar Container<br/>Node.js :8090]
+        end
+        
+        %% Data & Persistence Layer
+        subgraph DataLayer[Data & Persistence Layer]
+            Postgres[(PostgreSQL 16 Container<br/>TCP :5432)]
+            DBVol[(postgres_data<br/>Named Docker Volume)]
+            WavVol[(whatsapp_session<br/>Named Docker Volume)]
+        end
+        
+    end
+
+    %% ====================================================
+    %% External Services
+    %% ====================================================
+    subgraph External[External Cloud Services]
+        Maps[Google Maps API]
+        Razorpay[Razorpay Payment Gateway]
+        SMTP[SMTP Email Provider]
+    end
+
+    %% ====================================================
+    %% Traffic Routing & Connections
+    %% ====================================================
+    
+    %% Client to Proxy
+    Browser -->|HTTP / WS request to<br/>raahi.d14.app| Nginx
+
+    %% Proxy to Frontends / Static
+    Nginx -->|Route: / | StaticFiles
+    Nginx -->|Route: /admin/| AdminVite
+    Nginx -->|Route: /app/| EmpVite
+    
+    %% Proxy to Backend
+    Nginx -->|Route: /api/ <br/>REST & WebSockets| FastAPI
+    
+    %% Backend to Database & Sidecars
+    FastAPI -->|SQLAlchemy / asyncpg| Postgres
+    FastAPI -->|HTTP REST| WhatsApp
+    
+    %% Persistence Volume Mapping
+    Postgres -->|Persists DB state to| DBVol
+    WhatsApp -->|Persists .wwebjs_auth to| WavVol
+
+    %% Backend to External APIs
+    FastAPI -.->|HTTPS Detours & Geocoding| Maps
+    FastAPI -.->|HTTPS Intents & Webhooks| Razorpay
+    FastAPI -.->|SMTP TCP:587 TLS| SMTP
+
+    %% ====================================================
+    %% Styling Classes
+    %% ====================================================
+    classDef client fill:#dcfce7,stroke:#166534,stroke-width:2px;
+    classDef proxy fill:#f3f4f6,stroke:#374151,stroke-width:2px;
+    classDef container fill:#e0e7ff,stroke:#3730a3,stroke-width:2px;
+    classDef volume fill:#fef3c7,stroke:#b45309,stroke-width:2px;
+    classDef external fill:#fee2e2,stroke:#991b1b,stroke-width:2px;
+
+    class Browser client;
+    class Nginx proxy;
+    class AdminVite,EmpVite,FastAPI,WhatsApp,Postgres container;
+    class StaticFiles,DBVol,WavVol volume;
+    class Maps,Razorpay,SMTP external;

@@ -1,0 +1,82 @@
+flowchart TD
+    %% ====================================================
+    %% Phase 1: Ride Creation
+    %% ====================================================
+    subgraph Creation[Phase 1: Ride Creation]
+        Login[Driver Authenticates] --> CheckVeh{Has Registered<br/>Vehicle?}
+        CheckVeh -- No --> Block1[Blocked:<br/>Must Register Vehicle]
+        CheckVeh -- Yes --> InputRide[Input Route & Schedule]
+        InputRide --> ValidateRide{Valid Future Time<br/>& Capacity > 0?}
+        ValidateRide -- No --> Block2[Blocked:<br/>Return 400 Bad Request]
+        ValidateRide -- Yes --> RideScheduled(((Ride Status:<br/>Scheduled)))
+    end
+
+    %% ====================================================
+    %% Phase 2: Discovery & Booking
+    %% ====================================================
+    subgraph Booking[Phase 2: Discovery & Booking]
+        RideScheduled --> PassSearch[Passenger Searches Route]
+        PassSearch --> FilterOrg{Same Corporate<br/>Organization ID?}
+        FilterOrg -- No --> Hide1[Ride Hidden:<br/>Security Boundary]
+        FilterOrg -- Yes --> DetourMath{Maps API:<br/>Detour Acceptable?}
+        
+        DetourMath -- No --> Hide2[Ride Hidden:<br/>Outside Threshold]
+        DetourMath -- Yes --> ViewRide[Passenger Views Ride]
+        
+        ViewRide --> ReqSeat[Passenger Requests Seat]
+        ReqSeat --> CheckWallet{Sufficient Wallet<br/>Balance?}
+        
+        CheckWallet -- No --> Block3[Blocked:<br/>400 Insufficient Funds]
+        CheckWallet -- Yes --> ReqPending(((Request Status:<br/>Pending)))
+        
+        ReqPending --> DrvReview[Driver Reviews Request]
+        DrvReview --> DecApprove{Approve or<br/>Reject?}
+        
+        DecApprove -- Reject --> ReqRejected(((Request Status:<br/>Rejected)))
+        DecApprove -- Approve --> CheckSeats{Race Condition:<br/>Seats > 0 ?}
+        
+        CheckSeats -- No --> Block4[Blocked:<br/>Ride is Full]
+        CheckSeats -- Yes --> DecSeat[Decrement Seat Count]
+        DecSeat --> ReqAccepted(((Request Status:<br/>Accepted)))
+    end
+
+    %% ====================================================
+    %% Phase 3: Execution & Coordination
+    %% ====================================================
+    subgraph Execution[Phase 3: Execution & Coordination]
+        ReqAccepted --> StartTime[Start Time Approaches]
+        StartTime --> Chat[WebSocket Journey Chat Enabled]
+        Chat --> DrvStart[Driver Starts Ride]
+        DrvStart --> RideActive(((Ride Status:<br/>Active)))
+        
+        RideActive --> TripProgress[Trip In Progress]
+        TripProgress --> DrvComplete[Driver Completes Trip]
+        DrvComplete --> RideComplete(((Ride Status:<br/>Completed)))
+    end
+
+    %% ====================================================
+    %% Phase 4: Financial Settlement
+    %% ====================================================
+    subgraph Settlement[Phase 4: Financial Settlement]
+        RideComplete --> InitTransfer[System Initiates Settlement]
+        InitTransfer --> AtomicDB{Atomic DB<br/>Transaction}
+        
+        AtomicDB -- Success --> Debit[Debit Passenger Wallet]
+        Debit --> Credit[Credit Driver Wallet]
+        Credit --> Final[Ledger Updated<br/>Trip Finalized]
+        
+        AtomicDB -- DB Constraint Error --> Rollback[Transaction Rollback<br/>Requires Manual Intervention]
+    end
+
+    %% ====================================================
+    %% Styling Classes
+    %% ====================================================
+    classDef state fill:#dbeafe,stroke:#1e40af,stroke-width:2px;
+    classDef error fill:#fee2e2,stroke:#991b1b,stroke-width:2px;
+    classDef decision fill:#fef3c7,stroke:#b45309,stroke-width:2px;
+    classDef action fill:#ffffff,stroke:#4f46e5,stroke-width:1px;
+
+    class RideScheduled,ReqPending,ReqRejected,ReqAccepted,RideActive,RideComplete state;
+    class Block1,Block2,Block3,Block4,Hide1,Hide2,Rollback error;
+    class CheckVeh,ValidateRide,FilterOrg,DetourMath,CheckWallet,DecApprove,CheckSeats,AtomicDB decision;
+    class Login,InputRide,PassSearch,ViewRide,ReqSeat,DrvReview,DecSeat,StartTime,Chat,DrvStart,TripProgress,DrvComplete,InitTransfer,Debit,Credit,Final action;

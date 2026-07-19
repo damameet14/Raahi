@@ -1,0 +1,120 @@
+sequenceDiagram
+    autonumber
+    
+    actor Passenger
+    actor Driver
+    participant PWA as Employee PWA
+    participant Nginx as NGINX Proxy
+    participant Auth as Auth Middleware
+    participant RideCtrl as Ride Coordination Router
+    participant RideSvc as Ride Service
+    participant WalletSvc as Wallet Service
+    participant DB as PostgreSQL Database
+    participant WhatsApp as WhatsApp Sidecar
+
+    %% ====================================================
+    %% PHASE 1: PASSENGER REQUESTS A SEAT
+    %% ====================================================
+    Note over Passenger, DB: Phase 1: Passenger Requests a Seat
+
+    Passenger->>PWA: Click "Request Seat"
+    PWA->>Nginx: POST /api/v1/rides/{id}/requests (Bearer JWT)
+    Nginx->>Auth: Verify JWT Signature & Expiry
+    
+    alt Authentication Failed
+        Auth-->>PWA: 401 Unauthorized
+    end
+    
+    Auth->>RideCtrl: Forward Request (User Context)
+    RideCtrl->>RideSvc: process_ride_request(ride_id, passenger)
+    
+    activate RideSvc
+    RideSvc->>DB: Query Ride Status, Organization & Seats
+    DB-->>RideSvc: Ride Entity
+    
+    alt Invalid Request (Wrong Org, Not Scheduled)
+        RideSvc-->>RideCtrl: Raise 400 Bad Request
+    end
+    
+    alt Driver attempts Self-Booking
+        RideSvc-->>RideCtrl: Raise 400 (Cannot book own ride)
+    end
+    
+    RideSvc->>DB: Query Ride_Requests for Passenger
+    DB-->>RideSvc: Return Existing Request (if any)
+    
+    alt Duplicate Booking
+        RideSvc-->>RideCtrl: Raise 400 (Already requested)
+    end
+
+    %% Check Financial Solvency (Wallet)
+    RideSvc->>WalletSvc: check_balance(passenger_id, price)
+    activate WalletSvc
+    WalletSvc->>DB: Query Wallet Balance
+    DB-->>WalletSvc: Current Balance
+    
+    alt Insufficient Balance
+        WalletSvc-->>RideSvc: Raise InsufficientFundsError
+        RideSvc-->>RideCtrl: Raise 400 Bad Request (Insufficient Balance)
+    end
+    WalletSvc-->>RideSvc: Balance OK
+    deactivate WalletSvc
+
+    %% Create Pending Request
+    RideSvc->>DB: INSERT into Ride_Requests (Status: 'pending')
+    DB-->>RideSvc: Request Created Successfully
+    
+    %% Async Notification
+    RideSvc->>WhatsApp: Send Notification: "New Seat Request"
+    WhatsApp-->>RideSvc: 202 Accepted
+    
+    RideSvc-->>RideCtrl: Request DTO
+    deactivate RideSvc
+    
+    RideCtrl-->>PWA: 201 Created
+    PWA-->>Passenger: Show UI: "Request Pending Approval"
+
+    %% ====================================================
+    %% PHASE 2: DRIVER APPROVES THE REQUEST
+    %% ====================================================
+    Note over Driver, DB: Phase 2: Driver Approves Request
+    
+    Driver->>PWA: Click "Approve Passenger"
+    PWA->>Nginx: POST /api/v1/rides/requests/{req_id}/approve (Bearer JWT)
+    Nginx->>Auth: Verify JWT Signature
+    Auth->>RideCtrl: Forward Request (User Context)
+    
+    RideCtrl->>RideSvc: approve_request(req_id, driver)
+    activate RideSvc
+    
+    RideSvc->>DB: Query Ride_Request & parent Ride
+    DB-->>RideSvc: Entities
+    
+    alt Unauthorized Approval
+        RideSvc-->>RideCtrl: Raise 403 Forbidden (Not the driver)
+    end
+    
+    alt Ride Full (Race Condition Check)
+        RideSvc-->>RideCtrl: Raise 400 Bad Request (No seats available)
+    end
+    
+    %% Atomic Database Transaction
+    RideSvc->>DB: BEGIN Transaction
+    RideSvc->>DB: UPDATE Ride_Requests SET status = 'accepted'
+    RideSvc->>DB: UPDATE Rides SET seats_available = seats_available - 1
+    DB-->>RideSvc: COMMIT Transaction
+    
+    alt Database Error
+        DB-->>RideSvc: IntegrityError (Constraint Failed)
+        RideSvc->>DB: ROLLBACK Transaction
+        RideSvc-->>RideCtrl: Raise 500 Internal Server Error
+    end
+    
+    %% Async Notification
+    RideSvc->>WhatsApp: Send Notification: "Request Approved"
+    
+    RideSvc-->>RideCtrl: Updated Request DTO
+    deactivate RideSvc
+    
+    RideCtrl-->>PWA: 200 OK
+    PWA-->>Driver: Show UI: "Seat Confirmed"
