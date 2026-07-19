@@ -1,0 +1,75 @@
+flowchart TD
+    %% Presentation Layer
+    subgraph Presentation[Presentation Layer]
+        Emp(Employee User) --> PWA[Employee PWA]
+        Adm(Organization Admin) --> AdminPortal[Admin Portal]
+    end
+
+    %% API Gateway / Proxy Layer
+    Proxy[NGINX Reverse Proxy]
+    
+    PWA -->|REST & WS| Proxy
+    AdminPortal -->|REST| Proxy
+
+    %% Backend Application Layer
+    subgraph Backend[Backend Application - FastAPI]
+        Auth[JWT Authentication Middleware]
+        
+        subgraph BusinessLogic[Business Logic Modules]
+            Identity[Employee & Org Management]
+            Vehicles[Vehicle Registration]
+            Rides[Ride Coordination & Discovery]
+            Wallets[Digital Wallet Ledger]
+            Payments[Payment Processing]
+            Chat[Journey Chat WebSockets]
+            Stats[Dashboard Statistics]
+        end
+    end
+
+    Proxy --> Auth
+    
+    Auth --> Identity
+    Auth --> Vehicles
+    Auth --> Rides
+    Auth --> Wallets
+    Auth --> Payments
+    Auth --> Chat
+    Auth --> Stats
+
+    %% Internal Module Dependencies
+    Rides -.->|Hold Funds & Settle| Wallets
+    Payments -.->|Credit Webhook Funds| Wallets
+    Rides -.->|Verify Ownership| Vehicles
+
+    %% Data Layer
+    subgraph DataLayer[Data Layer]
+        DB[(PostgreSQL 16)]
+    end
+
+    Identity & Vehicles & Rides & Wallets & Payments & Chat & Stats -->|SQLAlchemy / asyncpg| DB
+
+    %% External Services
+    subgraph External[External Services]
+        Maps[Google Maps API]
+        Razorpay[Razorpay Payment Gateway]
+        WhatsApp[WhatsApp Node.js Sidecar]
+    end
+
+    Rides -->|Detour Calculations| Maps
+    Payments <-->|Init & Webhooks| Razorpay
+    Backend -->|Outbound Notifications| WhatsApp
+
+    %% Styling classes
+    classDef client fill:#dcfce7,stroke:#166534,stroke-width:2px;
+    classDef proxy fill:#f3f4f6,stroke:#374151,stroke-width:2px;
+    classDef backend fill:#e0e7ff,stroke:#3730a3,stroke-width:2px;
+    classDef module fill:#ffffff,stroke:#4f46e5,stroke-width:1px;
+    classDef database fill:#fef3c7,stroke:#b45309,stroke-width:2px;
+    classDef external fill:#fee2e2,stroke:#991b1b,stroke-width:2px;
+
+    class Emp,Adm,PWA,AdminPortal client;
+    class Proxy proxy;
+    class Auth,Identity,Vehicles,Rides,Wallets,Payments,Chat,Stats module;
+    class Backend backend;
+    class DB database;
+    class Maps,Razorpay,WhatsApp external;

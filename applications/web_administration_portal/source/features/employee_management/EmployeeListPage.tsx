@@ -98,7 +98,10 @@ export function EmployeeListPage() {
         password: response.data.temporary_password,
       });
     },
-    onError: () => toast.error('Failed to create employee'),
+    onError: (error: any) => {
+      const detail = error.response?.data?.detail;
+      toast.error(typeof detail === 'string' ? detail : 'Failed to create employee');
+    },
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateEmployeeFormData>({
