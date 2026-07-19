@@ -52,6 +52,7 @@ export function EmployeeListPage() {
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+  const [createdEmployeeCredentials, setCreatedEmployeeCredentials] = useState<{ email: string, password: string } | null>(null);
 
   const employeeListQuery = useQuery({
     queryKey: ['employees', currentPage, searchText, departmentFilter, statusFilter],
@@ -88,10 +89,14 @@ export function EmployeeListPage() {
       ...data,
       is_driver: data.is_driver ?? false,
     }),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       setIsCreationModalOpen(false);
-      toast.success('Employee created successfully');
+      reset();
+      setCreatedEmployeeCredentials({
+        email: response.data.email,
+        password: response.data.temporary_password,
+      });
     },
     onError: () => toast.error('Failed to create employee'),
   });
@@ -270,6 +275,37 @@ export function EmployeeListPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Credentials modal ───────────────────────────── */}
+      {createdEmployeeCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-sm p-6 animate-fade-in mx-4">
+            <h2 className="mb-2 text-lg font-bold text-text-primary">Employee Created</h2>
+            <p className="mb-4 text-sm text-text-secondary">
+              Please share these temporary credentials with the employee. They will be prompted to change their password on first login.
+            </p>
+            <div className="mb-5 rounded-lg border border-border-primary bg-surface-primary p-4">
+              <div className="mb-3">
+                <span className="block text-xs font-semibold text-text-secondary">Email</span>
+                <span className="select-all text-sm font-medium text-text-primary">{createdEmployeeCredentials.email}</span>
+              </div>
+              <div>
+                <span className="block text-xs font-semibold text-text-secondary">Temporary Password</span>
+                <span className="select-all font-mono text-sm font-bold text-text-primary">{createdEmployeeCredentials.password}</span>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setCreatedEmployeeCredentials(null)}
+                className="rounded-xl bg-raahi-600 px-5 py-2 text-sm font-semibold text-white hover:bg-raahi-700"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
