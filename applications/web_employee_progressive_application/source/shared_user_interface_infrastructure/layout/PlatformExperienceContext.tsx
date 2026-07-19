@@ -73,11 +73,7 @@ function resolveInitialMode(platform: DevicePlatform): ExperienceMode {
   if (storedMode === "mobile" || storedMode === "desktop") {
     return storedMode;
   }
-  // Default: a wide, non-touch screen gets the desktop layout; phones get the
-  // mobile phone-column layout.
-  const isWideViewport =
-    typeof window !== "undefined" && window.innerWidth >= 1024;
-  if (platform === "desktop" && isWideViewport) {
+  if (platform === "desktop") {
     return "desktop";
   }
   return "mobile";

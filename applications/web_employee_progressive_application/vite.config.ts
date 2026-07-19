@@ -7,6 +7,7 @@ import path from 'path';
 // both can run side by side during development. Requests to /api are proxied
 // to the shared FastAPI backend.
 export default defineConfig({
+  base: '/app/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

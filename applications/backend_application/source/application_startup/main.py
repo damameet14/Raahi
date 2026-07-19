@@ -209,8 +209,6 @@ app.add_middleware(
         "http://localhost:5174",
         "http://localhost:3000",
         "https://raahi.d14.app",
-        "https://app.raahi.d14.app",
-        "https://admin.raahi.d14.app",
     ],
     # Any localhost/127.0.0.1 port is allowed in development so the admin
     # portal and employee PWA dev servers work regardless of chosen port.

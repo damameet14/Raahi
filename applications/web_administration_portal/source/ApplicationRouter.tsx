@@ -22,7 +22,7 @@ import { OnboardingRequestsPage } from './features/platform_onboarding/Onboardin
 
 export function ApplicationRouter() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
