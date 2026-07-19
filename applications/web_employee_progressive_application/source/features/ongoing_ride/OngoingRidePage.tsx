@@ -238,11 +238,20 @@ export function OngoingRidePage() {
           </PrimaryButton>
         )}
 
-        {tripStatus === "COMPLETED" && (
-          <PrimaryButton onClick={() => navigate("/home")}>
-            Back to home
-          </PrimaryButton>
-        )}
+        {tripStatus === "COMPLETED" &&
+          role === "passenger" &&
+          booking.payment_status === "UNPAID" && (
+            <PrimaryButton onClick={() => navigate("/payment-methods")}>
+              Pay fare ₹{booking.fare_amount.toFixed(0)}
+            </PrimaryButton>
+          )}
+
+        {tripStatus === "COMPLETED" &&
+          !(role === "passenger" && booking.payment_status === "UNPAID") && (
+            <PrimaryButton onClick={() => navigate("/home")}>
+              Back to home
+            </PrimaryButton>
+          )}
       </div>
     </div>
   );

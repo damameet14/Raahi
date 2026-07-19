@@ -81,6 +81,9 @@ from source.modules.payment_processing.payment_processing_http_routes import (
 from source.modules.journey_chat.journey_chat_http_routes import (
     journey_chat_router,
 )
+from source.modules.realtime_events.realtime_events_http_routes import (
+    realtime_events_router,
+)
 from source.modules.platform_administration.platform_administration_http_routes import (
     platform_administration_router,
 )
@@ -180,6 +183,16 @@ async def application_lifespan(app: FastAPI):
 
     ride_reminder_scheduler = start_ride_reminder_scheduler(configuration)
 
+    # Capture the running event loop so synchronous HTTP handlers (which run in
+    # a threadpool) can push real-time events onto the WebSocket connections.
+    import asyncio
+
+    from source.modules.realtime_events.public_interface import (
+        bind_realtime_event_loop,
+    )
+
+    bind_realtime_event_loop(asyncio.get_running_loop())
+
     print("[OK] Raahi backend application started successfully")
     print(f"  Database: {configuration.database_url[:50]}...")
     print(f"  Swagger docs: http://localhost:8001/docs")
@@ -233,6 +246,7 @@ app.include_router(ride_trip_router)
 app.include_router(wallet_router)
 app.include_router(payment_processing_router)
 app.include_router(journey_chat_router)
+app.include_router(realtime_events_router)
 app.include_router(platform_administration_router)
 
 

@@ -31,6 +31,7 @@ from source.modules.notifications.public_interface import (
     notify_payment_failed,
     notify_payment_succeeded,
 )
+from source.modules.realtime_events.public_interface import publish_employee_event
 from source.shared_infrastructure.application_configuration_dependency import (
     get_application_configuration,
 )
@@ -83,6 +84,20 @@ def _notify_payment_result(
     except Exception as notification_error:  # noqa: BLE001 - best-effort
         logger.warning(
             "Payment notification failed safely: %s", notification_error
+        )
+
+    # Push a real-time event to the driver who earned the fare.
+    if did_succeed and payment.payee_employee_id:
+        publish_employee_event(
+            [payment.payee_employee_id],
+            {
+                "type": "payment_received",
+                "title": "Payment received",
+                "message": f"{employee.full_name} paid ₹{payment.amount:.0f} "
+                           "for their ride.",
+                "ride_booking_id": payment.ride_booking_id,
+                "amount": payment.amount,
+            },
         )
 
 
