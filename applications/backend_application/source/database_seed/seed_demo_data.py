@@ -1,4 +1,10 @@
-"""Seed the database with demo data for development."""
+"""Seed the database with demo data for development.
+
+Seeds a Raahi platform super-admin and two APPROVED Gujarat tenant
+organizations, each with employees (and their login accounts), vehicles, a
+fleet of completed trips, and default company settings. The seed is idempotent
+— it checks for the platform organization before inserting anything.
+"""
 
 from sqlalchemy.orm import Session
 
@@ -12,166 +18,147 @@ from source.modules.company_settings.company_settings_record_model import Compan
 from source.shared_infrastructure.base_database_model import generate_unique_identifier
 from source.shared_infrastructure.user_account_role import UserAccountRole
 from source.database_seed.demo_data_definitions import (
-    DEMO_ORGANIZATION,
-    DEMO_ADMIN_USER,
-    DEMO_EMPLOYEES,
-    DEMO_VEHICLES,
-    DEMO_COMPANY_SETTINGS,
-    generate_demo_trip_records,
+    PLATFORM_ORGANIZATION,
+    SUPER_ADMIN_USER,
+    TENANT_DEFINITIONS,
+    build_company_settings,
+    generate_employees_for_tenant,
+    generate_vehicles_for_tenant,
+    generate_trips_for_tenant,
 )
 
-# Default password for all seeded employee accounts.
-# Employees must change this on first login (must_change_password=True).
+# Known demo passwords. must_change_password is left False so demo accounts can
+# sign in directly without the first-login password change.
+DEMO_ADMIN_PASSWORD = "admin123"
 DEMO_EMPLOYEE_PASSWORD = "employee123"
 
 
-def _backfill_employee_login_accounts(database_session: Session) -> None:
-    """Create missing EMPLOYEE login accounts for already-seeded employees.
+def _seed_platform_super_admin(database_session: Session) -> None:
+    """Create the platform organization and the Raahi super-admin account."""
+    platform_organization = OrganizationRecord(**PLATFORM_ORGANIZATION)
+    database_session.add(platform_organization)
+    database_session.flush()
 
-    Runs on every startup so that databases created before the employee-
-    account seed was added get the accounts without a full re-seed.
-    """
-    employees_without_account = (
-        database_session.query(EmployeeRecord)
-        .filter(
-            EmployeeRecord.organization_id == DEMO_ORGANIZATION["id"],
-            EmployeeRecord.user_account_id.is_(None),
-        )
-        .all()
-    )
-    if not employees_without_account:
-        return
-
-    password_hash = hash_plain_text_password(DEMO_EMPLOYEE_PASSWORD)
-    created_count = 0
-
-    for employee in employees_without_account:
-        # Skip if an account already exists for this email
-        existing_account = (
-            database_session.query(UserAccountRecord)
-            .filter(UserAccountRecord.email == employee.email)
-            .first()
-        )
-        if existing_account is not None:
-            employee.user_account_id = existing_account.id
-            continue
-
-        account = UserAccountRecord(
-            organization_id=DEMO_ORGANIZATION["id"],
-            email=employee.email,
-            password_hash=password_hash,
-            full_name=employee.full_name,
-            role=UserAccountRole.EMPLOYEE.value,
-            must_change_password=True,
-            is_active=True,
-        )
-        database_session.add(account)
-        database_session.flush()
-        employee.user_account_id = account.id
-        created_count += 1
-
-    database_session.commit()
-    if created_count > 0:
-        print(f"[Seed] Backfilled {created_count} employee login accounts.")
-        print(f"       Default password: {DEMO_EMPLOYEE_PASSWORD}")
-
-
-def seed_demo_data(database_session: Session) -> None:
-    """Seed the database with demo data if it is empty.
-
-    This function is idempotent — it checks whether the demo
-    organization already exists before inserting anything.
-    """
-    existing_organization = (
-        database_session.query(OrganizationRecord)
-        .filter(OrganizationRecord.id == DEMO_ORGANIZATION["id"])
-        .first()
-    )
-    if existing_organization is not None:
-        print("[Seed] Demo data already exists. Skipping full seed.")
-        # Backfill employee login accounts if missing
-        _backfill_employee_login_accounts(database_session)
-        return
-
-    print("[Seed] Seeding demo data...")
-
-    # 1. Organization
-    organization = OrganizationRecord(**DEMO_ORGANIZATION)
-    database_session.add(organization)
-    database_session.flush()  # Ensure org exists before FK-dependent inserts
-
-    # 2. Admin user
-    admin_data = {
+    super_admin_data = {
         key: value
-        for key, value in DEMO_ADMIN_USER.items()
+        for key, value in SUPER_ADMIN_USER.items()
         if key != "plain_text_password"
     }
-    admin_data["password_hash"] = hash_plain_text_password(
-        DEMO_ADMIN_USER["plain_text_password"]
+    super_admin_data["password_hash"] = hash_plain_text_password(
+        SUPER_ADMIN_USER["plain_text_password"]
     )
-    admin_user = UserAccountRecord(**admin_data)
-    database_session.add(admin_user)
-    database_session.flush()  # Ensure admin exists before employees
+    database_session.add(UserAccountRecord(**super_admin_data))
+    database_session.flush()
 
-    # 3. Employee login accounts + employee records
+
+def _seed_tenant(database_session: Session, tenant: dict) -> None:
+    """Seed one approved tenant: org, admin, settings, employees, vehicles, trips."""
+    organization = OrganizationRecord(**tenant["organization"])
+    database_session.add(organization)
+    database_session.flush()
+
+    # Company admin (active, ready to sign in).
+    admin_user = UserAccountRecord(
+        id=tenant["admin"]["id"],
+        organization_id=organization.id,
+        email=tenant["admin"]["email"],
+        password_hash=hash_plain_text_password(DEMO_ADMIN_PASSWORD),
+        full_name=tenant["admin"]["full_name"],
+        role=UserAccountRole.COMPANY_ADMIN.value,
+        must_change_password=False,
+        is_active=True,
+    )
+    database_session.add(admin_user)
+    database_session.flush()
+
+    # Company settings.
+    database_session.add(CompanySettingsRecord(**build_company_settings(tenant)))
+
+    # Employees + their EMPLOYEE login accounts.
     employee_password_hash = hash_plain_text_password(DEMO_EMPLOYEE_PASSWORD)
-    employee_ids = []
-    for employee_data in DEMO_EMPLOYEES:
-        # Create an EMPLOYEE login account
+    employee_definitions = generate_employees_for_tenant(tenant)
+    employee_ids: list[str] = []
+    driver_employee_ids: list[str] = []
+
+    for employee_data in employee_definitions:
         employee_account = UserAccountRecord(
-            organization_id=DEMO_ORGANIZATION["id"],
+            organization_id=organization.id,
             email=employee_data["email"],
             password_hash=employee_password_hash,
             full_name=employee_data["full_name"],
             role=UserAccountRole.EMPLOYEE.value,
-            must_change_password=True,
-            is_active=True,
+            must_change_password=False,
+            is_active=employee_data["status"] == "ACTIVE",
         )
         database_session.add(employee_account)
         database_session.flush()
 
-        # Create the employee record linked to the account
         employee_id = generate_unique_identifier()
         employee_ids.append(employee_id)
-        employee = EmployeeRecord(
-            id=employee_id,
-            organization_id=DEMO_ORGANIZATION["id"],
-            user_account_id=employee_account.id,
-            **employee_data,
-        )
-        database_session.add(employee)
+        if employee_data["is_driver"] and employee_data["status"] == "ACTIVE":
+            driver_employee_ids.append(employee_id)
 
+        database_session.add(
+            EmployeeRecord(
+                id=employee_id,
+                organization_id=organization.id,
+                user_account_id=employee_account.id,
+                **employee_data,
+            )
+        )
     database_session.flush()
 
-    # 4. Vehicles (assigned to driver employees)
-    driver_indices = [i for i, emp in enumerate(DEMO_EMPLOYEES) if emp["is_driver"]]
-    vehicle_ids = []
-    for idx, vehicle_data in enumerate(DEMO_VEHICLES):
+    # Vehicles, owned by driver employees.
+    vehicle_definitions = generate_vehicles_for_tenant(tenant)
+    vehicle_ids: list[str] = []
+    owner_pool = driver_employee_ids or employee_ids
+    for index, vehicle_data in enumerate(vehicle_definitions):
         vehicle_id = generate_unique_identifier()
         vehicle_ids.append(vehicle_id)
-        owner_index = driver_indices[idx % len(driver_indices)]
-        vehicle = VehicleRecord(
-            id=vehicle_id,
-            organization_id=DEMO_ORGANIZATION["id"],
-            owner_employee_id=employee_ids[owner_index],
-            **vehicle_data,
+        database_session.add(
+            VehicleRecord(
+                id=vehicle_id,
+                organization_id=organization.id,
+                owner_employee_id=owner_pool[index % len(owner_pool)],
+                **vehicle_data,
+            )
         )
-        database_session.add(vehicle)
-
     database_session.flush()
 
-    # 5. Trips
-    trip_records_data = generate_demo_trip_records(employee_ids, vehicle_ids)
-    for trip_data in trip_records_data:
-        trip = TripRecord(**trip_data)
-        database_session.add(trip)
+    # Completed trips for reporting.
+    trip_definitions = generate_trips_for_tenant(
+        tenant, employee_ids, driver_employee_ids, vehicle_ids
+    )
+    for trip_data in trip_definitions:
+        database_session.add(TripRecord(**trip_data))
 
-    # 6. Company settings
-    settings = CompanySettingsRecord(**DEMO_COMPANY_SETTINGS)
-    database_session.add(settings)
+    print(
+        f"[Seed]   {organization.name} ({organization.email_domain}): "
+        f"{len(employee_definitions)} employees, {len(vehicle_definitions)} vehicles, "
+        f"{len(trip_definitions)} trips."
+    )
+
+
+def seed_demo_data(database_session: Session) -> None:
+    """Seed the database with demo data if it is empty (idempotent)."""
+    existing_platform = (
+        database_session.query(OrganizationRecord)
+        .filter(OrganizationRecord.id == PLATFORM_ORGANIZATION["id"])
+        .first()
+    )
+    if existing_platform is not None:
+        print("[Seed] Demo data already exists. Skipping seed.")
+        return
+
+    print("[Seed] Seeding demo data (super-admin + 2 Gujarat tenants)...")
+    _seed_platform_super_admin(database_session)
+    for tenant in TENANT_DEFINITIONS:
+        _seed_tenant(database_session, tenant)
 
     database_session.commit()
-    print("[Seed] Demo data seeded successfully!")
-    print(f"       Admin login: {DEMO_ADMIN_USER['email']} / {DEMO_ADMIN_USER['plain_text_password']}")
-    print(f"       Employee login (all): <employee_email> / {DEMO_EMPLOYEE_PASSWORD}")
 
+    print("[Seed] Demo data seeded successfully!")
+    print(f"       Super-admin: {SUPER_ADMIN_USER['email']} / {SUPER_ADMIN_USER['plain_text_password']}")
+    for tenant in TENANT_DEFINITIONS:
+        print(f"       Company admin: {tenant['admin']['email']} / {DEMO_ADMIN_PASSWORD}")
+    print(f"       Employees (all): <employee_email> / {DEMO_EMPLOYEE_PASSWORD}")

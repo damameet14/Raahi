@@ -14,6 +14,8 @@ import { Toaster } from "react-hot-toast";
 
 import { EmployeeAuthenticationProvider } from "./shared_user_interface_infrastructure/authentication_state/EmployeeAuthenticationContext";
 import { GoogleMapsApiLoaderProvider } from "./shared_user_interface_infrastructure/maps/GoogleMapsApiLoaderProvider";
+import { PlatformExperienceProvider } from "./shared_user_interface_infrastructure/layout/PlatformExperienceContext";
+import { EmployeeAppShell } from "./shared_user_interface_infrastructure/layout/EmployeeAppShell";
 import { ApplicationRouter } from "./ApplicationRouter";
 import "./index.css";
 
@@ -28,11 +30,13 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <EmployeeAuthenticationProvider>
         <GoogleMapsApiLoaderProvider>
-          <BrowserRouter>
-            <div className="application-viewport">
-              <ApplicationRouter />
-            </div>
-          </BrowserRouter>
+          <PlatformExperienceProvider>
+            <BrowserRouter>
+              <EmployeeAppShell>
+                <ApplicationRouter />
+              </EmployeeAppShell>
+            </BrowserRouter>
+          </PlatformExperienceProvider>
         </GoogleMapsApiLoaderProvider>
       </EmployeeAuthenticationProvider>
       <Toaster

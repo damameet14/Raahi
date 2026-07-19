@@ -6,12 +6,14 @@ import { apiClient } from '@/shared_user_interface_infrastructure/backend_commun
 interface RegistrationResult {
   organization_name: string;
   administrator_email: string;
-  temporary_password: string;
+  email_domain: string;
+  approval_status: string;
   message: string;
 }
 
 export function OrganizationRegistrationPage() {
   const [organizationName, setOrganizationName] = useState('');
+  const [emailDomain, setEmailDomain] = useState('');
   const [industry, setIndustry] = useState('');
   const [address, setAddress] = useState('');
   const [administratorFullName, setAdministratorFullName] = useState('');
@@ -28,6 +30,7 @@ export function OrganizationRegistrationPage() {
     try {
       const response = await apiClient.post('/api/v1/organizations/register', {
         organization_name: organizationName,
+        email_domain: emailDomain,
         industry: industry || null,
         address: address || null,
         administrator_full_name: administratorFullName,
@@ -53,10 +56,11 @@ export function OrganizationRegistrationPage() {
       <main className="registration-shell">
         <section className="registration-introduction">
           <p className="marketing-micro-label">COMPANY ONBOARDING</p>
-          <h1>Create your organization.</h1>
+          <h1>Register your organization.</h1>
           <p>
-            Register the company workspace, receive the first admin login,
-            then change the temporary password before entering the dashboard.
+            Tell us about your company and its email domain. Once the Raahi
+            team approves your workspace, your administrator receives sign-in
+            credentials by email — then only teammates on your domain can join.
           </p>
         </section>
 
@@ -64,15 +68,16 @@ export function OrganizationRegistrationPage() {
           {registrationResult ? (
             <div className="registration-success">
               <CheckCircle2 aria-hidden="true" />
-              <h2>Admin account created</h2>
+              <h2>Registration received</h2>
               <p>{registrationResult.message}</p>
               <dl>
                 <div><dt>Organization</dt><dd>{registrationResult.organization_name}</dd></div>
+                <div><dt>Email domain</dt><dd>@{registrationResult.email_domain}</dd></div>
                 <div><dt>Admin email</dt><dd>{registrationResult.administrator_email}</dd></div>
-                <div><dt>Temporary password</dt><dd>{registrationResult.temporary_password}</dd></div>
+                <div><dt>Status</dt><dd>Awaiting Raahi approval</dd></div>
               </dl>
               <Link className="marketing-button marketing-button-primary" to="/login">
-                Go to admin login <span>↗</span>
+                Back to admin login <span>↗</span>
               </Link>
             </div>
           ) : (
@@ -81,7 +86,7 @@ export function OrganizationRegistrationPage() {
                 <Building2 aria-hidden="true" />
                 <div>
                   <h2>Organization details</h2>
-                  <p>These details create the company tenant and admin account.</p>
+                  <p>These details create your company tenant, pending Raahi approval.</p>
                 </div>
               </div>
 
@@ -92,6 +97,19 @@ export function OrganizationRegistrationPage() {
               <label>
                 Company or organization name
                 <input value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} required minLength={2} />
+              </label>
+
+              <label>
+                Company email domain
+                <input
+                  value={emailDomain}
+                  onChange={(event) => setEmailDomain(event.target.value)}
+                  required
+                  placeholder="acme.com"
+                />
+                <span className="registration-field-hint">
+                  Your admin email and all employee emails must belong to this domain.
+                </span>
               </label>
 
               <label>

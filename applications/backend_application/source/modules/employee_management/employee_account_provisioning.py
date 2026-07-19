@@ -14,6 +14,9 @@ from source.modules.administrator_authentication.public_interface import (
     does_user_account_exist_for_email,
 )
 from source.modules.employee_management.employee_record_model import EmployeeRecord
+from source.modules.organization_management.organization_record_model import (
+    OrganizationRecord,
+)
 
 
 class EmployeeEmailAlreadyRegisteredError(Exception):
@@ -22,6 +25,19 @@ class EmployeeEmailAlreadyRegisteredError(Exception):
 
 class EmployeeLoginAccountMissingError(Exception):
     """Raised when an employee has no linked login account to reset."""
+
+
+class EmployeeEmailDomainMismatchError(Exception):
+    """Raised when an employee email is outside the organization's domain.
+
+    Carries the expected domain so the caller can surface a clear message.
+    """
+
+    def __init__(self, expected_domain: str) -> None:
+        self.expected_domain = expected_domain
+        super().__init__(
+            f"Employee email must belong to the @{expected_domain} domain"
+        )
 
 
 def provision_employee_with_login_account(
@@ -39,6 +55,18 @@ def provision_employee_with_login_account(
     """
     employee_email = employee_data["email"]
     organization_id = employee_data["organization_id"]
+
+    # Enforce that the employee email belongs to the organization's verified
+    # domain, so only members of the registered company can be provisioned.
+    organization = (
+        database_session.query(OrganizationRecord)
+        .filter(OrganizationRecord.id == organization_id)
+        .first()
+    )
+    if organization is not None and organization.email_domain:
+        _, _, email_host = employee_email.strip().lower().partition("@")
+        if email_host != organization.email_domain.strip().lower():
+            raise EmployeeEmailDomainMismatchError(organization.email_domain)
 
     if does_user_account_exist_for_email(
         email_address=employee_email,

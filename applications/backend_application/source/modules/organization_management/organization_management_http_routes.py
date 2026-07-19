@@ -10,6 +10,10 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 from source.application_startup.database_connection import get_database_session
+from source.application_startup.application_configuration import (
+    ApplicationConfiguration,
+    create_application_configuration,
+)
 from source.modules.administrator_authentication.public_interface import (
     create_company_administrator_account,
     does_user_account_exist_for_email,
@@ -17,12 +21,18 @@ from source.modules.administrator_authentication.public_interface import (
 from source.modules.company_settings.public_interface import (
     create_default_company_settings,
 )
+from source.modules.notifications.public_interface import (
+    notify_organization_registration_received,
+)
 from source.shared_infrastructure.current_authenticated_user_dependency import (
     AuthenticatedUserContext,
     require_roles,
 )
 from source.shared_infrastructure.user_account_role import UserAccountRole
 from source.modules.organization_management.organization_record_model import OrganizationRecord
+from source.modules.organization_management.organization_approval_status import (
+    OrganizationApprovalStatus,
+)
 
 
 class OrganizationResponse(BaseModel):
@@ -31,9 +41,12 @@ class OrganizationResponse(BaseModel):
     id: str
     name: str
     slug: str
+    email_domain: str | None
     logo_url: str | None
     address: str | None
     industry: str | None
+    approval_status: str
+    rejection_reason: str | None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -54,6 +67,7 @@ class RegisterOrganizationRequest(BaseModel):
     """Public request to create an organization and company admin account."""
 
     organization_name: str = Field(..., min_length=2, max_length=255)
+    email_domain: str = Field(..., min_length=3, max_length=255)
     industry: str | None = Field(default=None, max_length=100)
     address: str | None = Field(default=None, max_length=500)
     administrator_full_name: str = Field(..., min_length=2, max_length=255)
@@ -61,13 +75,17 @@ class RegisterOrganizationRequest(BaseModel):
 
 
 class RegisterOrganizationResponse(BaseModel):
-    """Response with initial administrator credentials for a new organization."""
+    """Response acknowledging a registration that is awaiting review.
+
+    No sign-in credentials are issued here — the administrator receives a
+    temporary password by email only once a super-admin approves the tenant.
+    """
 
     organization_id: str
     organization_name: str
+    email_domain: str
     administrator_email: str
-    temporary_password: str
-    must_change_password: bool
+    approval_status: str
     message: str
 
 
@@ -103,6 +121,29 @@ def create_unique_organization_slug(
     return candidate_slug
 
 
+def normalize_email_domain(raw_domain: str) -> str:
+    """Normalize a submitted email domain to a bare lowercase host.
+
+    Accepts values like "Acme.com", "@acme.com", or "https://acme.com/" and
+    returns "acme.com". Raises ValueError when the result is not a plausible
+    domain (must contain a dot and only domain-safe characters).
+    """
+    domain = raw_domain.strip().lower()
+    domain = domain.split("//")[-1]  # drop any scheme
+    domain = domain.lstrip("@").strip("/")
+    domain = domain.split("/")[0]  # drop any path
+    domain = domain.split("@")[-1]  # drop any local-part
+    if not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", domain):
+        raise ValueError("Invalid email domain")
+    return domain
+
+
+def email_belongs_to_domain(email_address: str, email_domain: str) -> bool:
+    """Return whether an email address is under the given domain."""
+    _, _, host = email_address.strip().lower().partition("@")
+    return host == email_domain.strip().lower()
+
+
 def generate_temporary_administrator_password() -> str:
     """Generate a readable temporary password for first admin login."""
     alphabet = string.ascii_letters + string.digits
@@ -119,9 +160,30 @@ def generate_temporary_administrator_password() -> str:
 def register_organization(
     request: RegisterOrganizationRequest,
     database_session: Session = Depends(get_database_session),
+    configuration: ApplicationConfiguration = Depends(create_application_configuration),
 ):
-    """Create a company tenant, default settings, and its first admin account."""
+    """Submit a company tenant for onboarding review.
+
+    Creates the organization (PENDING), its first admin account (inactive
+    until approval), and default settings. The administrator receives sign-in
+    credentials by email only after a super-admin approves the tenant.
+    """
     normalized_email_address = request.administrator_email.strip().lower()
+
+    try:
+        normalized_domain = normalize_email_domain(request.email_domain)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please provide a valid company email domain, e.g. acme.com",
+        )
+
+    if not email_belongs_to_domain(normalized_email_address, normalized_domain):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"The administrator email must belong to the @{normalized_domain} domain",
+        )
+
     if does_user_account_exist_for_email(
         email_address=normalized_email_address,
         database_session=database_session,
@@ -131,16 +193,31 @@ def register_organization(
             detail="An administrator account already exists for this email",
         )
 
-    temporary_password = generate_temporary_administrator_password()
+    existing_domain_organization = (
+        database_session.query(OrganizationRecord)
+        .filter(OrganizationRecord.email_domain == normalized_domain)
+        .first()
+    )
+    if existing_domain_organization is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"An organization is already registered for @{normalized_domain}",
+        )
+
+    # A generated password is stored now but never returned; it is reset to a
+    # fresh temporary password (and emailed) at approval time.
+    placeholder_password = generate_temporary_administrator_password()
     organization = OrganizationRecord(
         name=request.organization_name.strip(),
         slug=create_unique_organization_slug(
             request.organization_name,
             database_session,
         ),
+        email_domain=normalized_domain,
         address=request.address,
         industry=request.industry,
-        is_active=True,
+        approval_status=OrganizationApprovalStatus.PENDING.value,
+        is_active=False,
     )
     database_session.add(organization)
     database_session.flush()
@@ -149,9 +226,11 @@ def register_organization(
         organization_id=organization.id,
         administrator_email=normalized_email_address,
         administrator_full_name=request.administrator_full_name.strip(),
-        temporary_password=temporary_password,
+        temporary_password=placeholder_password,
         database_session=database_session,
     )
+    # Keep the admin account dormant until the organization is approved.
+    administrator_account.is_active = False
     create_default_company_settings(
         organization_id=organization.id,
         database_session=database_session,
@@ -166,13 +245,23 @@ def register_organization(
             detail="Organization or administrator account already exists",
         )
 
+    notify_organization_registration_received(
+        configuration=configuration,
+        administrator_name=request.administrator_full_name.strip(),
+        administrator_email=administrator_account.email,
+        organization_name=organization.name,
+    )
+
     return RegisterOrganizationResponse(
         organization_id=organization.id,
         organization_name=organization.name,
+        email_domain=organization.email_domain,
         administrator_email=administrator_account.email,
-        temporary_password=temporary_password,
-        must_change_password=True,
-        message="Organization registered. Use the temporary password for first login.",
+        approval_status=organization.approval_status,
+        message=(
+            "Registration received. Your organization is awaiting Raahi review. "
+            "You will receive sign-in credentials by email once it is approved."
+        ),
     )
 
 

@@ -1463,6 +1463,12 @@ body {
   box-shadow: 0 0 0 3px rgb(50 180 92 / 14%);
 }
 
+.registration-field-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--marketing-muted, #8a968f);
+}
+
 .administrator-password-input {
   position: relative;
 }

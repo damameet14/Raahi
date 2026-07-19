@@ -39,6 +39,7 @@ from source.modules.employee_management.employee_account_provisioning import (
     provision_employee_with_login_account,
     reset_employee_login_password,
     EmployeeEmailAlreadyRegisteredError,
+    EmployeeEmailDomainMismatchError,
     EmployeeLoginAccountMissingError,
 )
 
@@ -142,6 +143,12 @@ def create_employee(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A login account already exists for this email address",
+        )
+    except EmployeeEmailDomainMismatchError as domain_error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Employee email must belong to the "
+            f"@{domain_error.expected_domain} company domain",
         )
     _notify_employee_temporary_password(
         configuration=configuration,

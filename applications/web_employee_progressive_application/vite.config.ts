@@ -15,6 +15,9 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    // Allow the production domains (served behind the nginx reverse proxy /
+    // Cloudflare tunnel) in addition to localhost.
+    allowedHosts: ['localhost', '.d14.app'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:8001',

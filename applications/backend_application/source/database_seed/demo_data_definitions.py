@@ -1,108 +1,313 @@
-"""Demo data definitions for seeding the development database."""
+"""Demo data definitions for seeding the development database.
+
+Seeds a Raahi platform super-admin plus two fully-onboarded (APPROVED) tenant
+organizations based in Gujarat, India, with enough employees, vehicles, and
+completed trips to comfortably exceed 100 demo records for the reports and
+analytics dashboards.
+"""
 
 from datetime import date, datetime, timedelta, timezone
 import random
 
-DEMO_ORGANIZATION = {
-    "id": "org-raahi-demo-001",
-    "name": "Raahi Technologies",
-    "slug": "raahi-technologies",
-    "address": "Sector 62, Noida, Uttar Pradesh 201309, India",
-    "industry": "Information Technology",
+# Deterministic generation so repeated fresh seeds produce the same demo data.
+_DEMO_RANDOM = random.Random(20260718)
+
+
+# ── Platform super-admin (Raahi) ─────────────────────────────
+# The super-admin belongs to a dedicated platform organization so the
+# NOT NULL organization_id constraint is satisfied; it never operates as a
+# tenant and is always APPROVED/active.
+PLATFORM_ORGANIZATION = {
+    "id": "org-raahi-platform",
+    "name": "Raahi Platform",
+    "slug": "raahi-platform",
+    "email_domain": "raahi.d14.app",
+    "address": "Raahi HQ, Ahmedabad, Gujarat, India",
+    "industry": "Mobility Platform",
+    "approval_status": "APPROVED",
     "is_active": True,
 }
 
-DEMO_ADMIN_USER = {
-    "id": "user-admin-001",
-    "organization_id": "org-raahi-demo-001",
-    "email": "admin@raahi.com",
-    "full_name": "Priya Sharma",
-    "role": "COMPANY_ADMIN",
+SUPER_ADMIN_USER = {
+    "id": "user-superadmin-001",
+    "organization_id": "org-raahi-platform",
+    "email": "superadmin@raahi.d14.app",
+    "full_name": "Raahi Platform Admin",
+    "role": "SUPER_ADMIN",
     "is_active": True,
-    # Password: admin123 (will be hashed during seeding)
-    "plain_text_password": "admin123",
+    "must_change_password": False,
+    # Password: raahi-super-123 (hashed during seeding)
+    "plain_text_password": "raahi-super-123",
 }
 
-DEMO_EMPLOYEES = [
-    {"employee_code": "EMP001", "full_name": "Arjun Mehta", "email": "arjun.mehta@raahi.com", "phone": "+91-9876543001", "department": "Engineering", "designation": "Senior Developer", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP002", "full_name": "Sneha Patel", "email": "sneha.patel@raahi.com", "phone": "+91-9876543002", "department": "Engineering", "designation": "Frontend Developer", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP003", "full_name": "Rahul Kumar", "email": "rahul.kumar@raahi.com", "phone": "+91-9876543003", "department": "Product", "designation": "Product Manager", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP004", "full_name": "Ananya Singh", "email": "ananya.singh@raahi.com", "phone": "+91-9876543004", "department": "Design", "designation": "UI/UX Designer", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP005", "full_name": "Vikram Joshi", "email": "vikram.joshi@raahi.com", "phone": "+91-9876543005", "department": "Engineering", "designation": "Backend Developer", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP006", "full_name": "Kavya Reddy", "email": "kavya.reddy@raahi.com", "phone": "+91-9876543006", "department": "HR", "designation": "HR Manager", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP007", "full_name": "Rohit Agarwal", "email": "rohit.agarwal@raahi.com", "phone": "+91-9876543007", "department": "Finance", "designation": "Financial Analyst", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP008", "full_name": "Meera Nair", "email": "meera.nair@raahi.com", "phone": "+91-9876543008", "department": "Engineering", "designation": "QA Engineer", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP009", "full_name": "Aditya Verma", "email": "aditya.verma@raahi.com", "phone": "+91-9876543009", "department": "Marketing", "designation": "Marketing Lead", "status": "INACTIVE", "is_driver": False},
-    {"employee_code": "EMP010", "full_name": "Prachi Gupta", "email": "prachi.gupta@raahi.com", "phone": "+91-9876543010", "department": "Engineering", "designation": "DevOps Engineer", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP011", "full_name": "Siddharth Rao", "email": "siddharth.rao@raahi.com", "phone": "+91-9876543011", "department": "Sales", "designation": "Sales Executive", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP012", "full_name": "Divya Iyer", "email": "divya.iyer@raahi.com", "phone": "+91-9876543012", "department": "Engineering", "designation": "Tech Lead", "status": "ACTIVE", "is_driver": True},
-    {"employee_code": "EMP013", "full_name": "Karan Malhotra", "email": "karan.malhotra@raahi.com", "phone": "+91-9876543013", "department": "Operations", "designation": "Operations Manager", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP014", "full_name": "Neha Chatterjee", "email": "neha.chatterjee@raahi.com", "phone": "+91-9876543014", "department": "Legal", "designation": "Legal Advisor", "status": "ACTIVE", "is_driver": False},
-    {"employee_code": "EMP015", "full_name": "Amit Saxena", "email": "amit.saxena@raahi.com", "phone": "+91-9876543015", "department": "Engineering", "designation": "Mobile Developer", "status": "ACTIVE", "is_driver": True},
-]
 
-DEMO_VEHICLES = [
-    {"vehicle_number": "UP-16-AB-1234", "make": "Maruti Suzuki", "model": "Swift Dzire", "year": 2023, "color": "White", "capacity": 4, "fuel_type": "PETROL", "status": "ACTIVE", "insurance_expiry_date": date(2027, 3, 15)},
-    {"vehicle_number": "DL-01-CD-5678", "make": "Hyundai", "model": "Creta", "year": 2024, "color": "Blue", "capacity": 5, "fuel_type": "DIESEL", "status": "ACTIVE", "insurance_expiry_date": date(2027, 6, 20)},
-    {"vehicle_number": "UP-16-EF-9012", "make": "Tata", "model": "Nexon EV", "year": 2024, "color": "Teal", "capacity": 5, "fuel_type": "ELECTRIC", "status": "ACTIVE", "insurance_expiry_date": date(2027, 1, 10)},
-    {"vehicle_number": "DL-03-GH-3456", "make": "Honda", "model": "City", "year": 2022, "color": "Silver", "capacity": 4, "fuel_type": "PETROL", "status": "ACTIVE", "insurance_expiry_date": date(2026, 11, 5)},
-    {"vehicle_number": "UP-14-IJ-7890", "make": "Toyota", "model": "Innova Crysta", "year": 2023, "color": "Grey", "capacity": 7, "fuel_type": "DIESEL", "status": "ACTIVE", "insurance_expiry_date": date(2027, 8, 30)},
-    {"vehicle_number": "DL-02-KL-2345", "make": "Mahindra", "model": "XUV700", "year": 2024, "color": "Red", "capacity": 7, "fuel_type": "DIESEL", "status": "MAINTENANCE", "insurance_expiry_date": date(2027, 4, 25)},
-    {"vehicle_number": "UP-16-MN-6789", "make": "Kia", "model": "Seltos", "year": 2023, "color": "Black", "capacity": 5, "fuel_type": "PETROL", "status": "ACTIVE", "insurance_expiry_date": date(2026, 12, 18)},
-    {"vehicle_number": "DL-05-OP-0123", "make": "MG", "model": "ZS EV", "year": 2024, "color": "White", "capacity": 5, "fuel_type": "ELECTRIC", "status": "ACTIVE", "insurance_expiry_date": date(2027, 9, 12)},
-]
-
-DEMO_COMPANY_SETTINGS = {
-    "id": "settings-raahi-001",
-    "organization_id": "org-raahi-demo-001",
-    "fuel_cost_per_liter": 104.50,
-    "travel_cost_per_kilometer": 12.0,
-    "office_latitude": 28.6274,
-    "office_longitude": 77.3754,
-    "ride_radius_kilometers": 30.0,
-    "default_currency": "INR",
-    "company_logo_url": None,
+# ── Gujarat location pools (name, latitude, longitude) ───────
+GUJARAT_LOCATIONS_BY_CITY: dict[str, list[tuple[str, float, float]]] = {
+    "ahmedabad": [
+        ("SG Highway, Ahmedabad", 23.0300, 72.5100),
+        ("Satellite, Ahmedabad", 23.0300, 72.5200),
+        ("Bodakdev, Ahmedabad", 23.0370, 72.5060),
+        ("Vastrapur, Ahmedabad", 23.0390, 72.5270),
+        ("Prahlad Nagar, Ahmedabad", 23.0120, 72.5070),
+        ("Naranpura, Ahmedabad", 23.0530, 72.5560),
+        ("Maninagar, Ahmedabad", 22.9960, 72.6000),
+        ("Chandkheda, Ahmedabad", 23.1100, 72.5810),
+        ("GIFT City, Gandhinagar", 23.1600, 72.6840),
+        ("Sector 21, Gandhinagar", 23.2230, 72.6500),
+    ],
+    "vadodara": [
+        ("Alkapuri, Vadodara", 22.3100, 73.1720),
+        ("Sayajigunj, Vadodara", 22.3120, 73.1900),
+        ("Gotri, Vadodara", 22.3260, 73.1420),
+        ("Akota, Vadodara", 22.2960, 73.1720),
+        ("Manjalpur, Vadodara", 22.2680, 73.1870),
+        ("Nizampura, Vadodara", 22.3320, 73.1830),
+        ("Karelibaug, Vadodara", 22.3230, 73.2060),
+        ("Subhanpura, Vadodara", 22.3230, 73.1600),
+        ("Vasna Road, Vadodara", 22.2900, 73.1560),
+        ("Waghodia Road, Vadodara", 22.3200, 73.2300),
+    ],
 }
 
-# Trip locations around Noida/Delhi NCR
-TRIP_LOCATIONS = [
-    ("Sector 62, Noida", 28.6274, 77.3754),
-    ("Sector 18, Noida", 28.5706, 77.3219),
-    ("Connaught Place, Delhi", 28.6315, 77.2167),
-    ("Gurugram Cyber City", 28.4945, 77.0889),
-    ("Sector 44, Noida", 28.5592, 77.3503),
-    ("Greater Noida", 28.4744, 77.5040),
-    ("Rajiv Chowk, Delhi", 28.6328, 77.2197),
-    ("Indirapuram, Ghaziabad", 28.6353, 77.3579),
-    ("Vasant Kunj, Delhi", 28.5227, 77.1571),
-    ("Dwarka, Delhi", 28.5921, 77.0460),
+
+# ── Name pools (Gujarati) ────────────────────────────────────
+_FIRST_NAMES = [
+    "Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Krish", "Ishaan", "Dhruv",
+    "Kabir", "Harsh", "Jainam", "Meet", "Parth", "Rudra", "Yash", "Dev",
+    "Manan", "Tirth", "Smit", "Rohan", "Priya", "Diya", "Aanya", "Isha",
+    "Kavya", "Riya", "Khushi", "Nidhi", "Krupa", "Foram", "Janvi", "Mansi",
+    "Hetvi", "Dhara", "Bhavya", "Rutvi", "Vidhi", "Aesha", "Nisha", "Zeel",
+]
+
+_LAST_NAMES = [
+    "Patel", "Shah", "Desai", "Mehta", "Trivedi", "Joshi", "Modi", "Amin",
+    "Parekh", "Vyas", "Dave", "Bhatt", "Gandhi", "Thakkar", "Pandya", "Rana",
+    "Chauhan", "Solanki", "Makwana", "Prajapati", "Panchal", "Raval", "Vaghela",
+    "Kotadia",
+]
+
+_DEPARTMENTS = [
+    ("Engineering", ["Software Engineer", "Senior Developer", "Tech Lead", "QA Engineer", "DevOps Engineer"]),
+    ("Product", ["Product Manager", "Business Analyst", "Product Designer"]),
+    ("Design", ["UI/UX Designer", "Graphic Designer"]),
+    ("Human Resources", ["HR Manager", "Recruiter"]),
+    ("Finance", ["Financial Analyst", "Accountant"]),
+    ("Sales", ["Sales Executive", "Account Manager"]),
+    ("Operations", ["Operations Manager", "Support Specialist"]),
+]
+
+_VEHICLE_MODELS = [
+    ("Maruti Suzuki", "Swift Dzire", "PETROL", 4),
+    ("Hyundai", "Creta", "DIESEL", 5),
+    ("Tata", "Nexon EV", "ELECTRIC", 5),
+    ("Honda", "City", "PETROL", 4),
+    ("Toyota", "Innova Crysta", "DIESEL", 7),
+    ("Mahindra", "XUV700", "DIESEL", 7),
+    ("Kia", "Seltos", "PETROL", 5),
+    ("MG", "ZS EV", "ELECTRIC", 5),
+    ("Tata", "Punch", "PETROL", 5),
+    ("Maruti Suzuki", "Ertiga", "PETROL", 7),
+]
+_VEHICLE_COLORS = ["White", "Silver", "Blue", "Grey", "Black", "Red", "Teal"]
+
+
+# ── Tenant definitions ───────────────────────────────────────
+# Each tenant is an APPROVED organization with a verified email domain, a
+# company admin, and a Gujarat city that anchors its offices and trip routes.
+TENANT_DEFINITIONS = [
+    {
+        "organization": {
+            "id": "org-sabarmati-tech",
+            "name": "Sabarmati Systems",
+            "slug": "sabarmati-systems",
+            "email_domain": "sabarmati.tech",
+            "address": "Prahlad Nagar, Ahmedabad, Gujarat 380015, India",
+            "industry": "Information Technology",
+            "approval_status": "APPROVED",
+            "is_active": True,
+        },
+        "admin": {
+            "id": "user-admin-sabarmati",
+            "email": "admin@sabarmati.tech",
+            "full_name": "Priya Desai",
+        },
+        "city": "ahmedabad",
+        "vehicle_series": "GJ-01",
+        "office": ("Sabarmati Systems HQ, Prahlad Nagar", 23.0120, 72.5070),
+        "employee_count": 26,
+        "vehicle_count": 9,
+        "trip_count": 65,
+    },
+    {
+        "organization": {
+            "id": "org-vishwamitri-io",
+            "name": "Vishwamitri Analytics",
+            "slug": "vishwamitri-analytics",
+            "email_domain": "vishwamitri.io",
+            "address": "Alkapuri, Vadodara, Gujarat 390007, India",
+            "industry": "Data & Analytics",
+            "approval_status": "APPROVED",
+            "is_active": True,
+        },
+        "admin": {
+            "id": "user-admin-vishwamitri",
+            "email": "admin@vishwamitri.io",
+            "full_name": "Rohan Trivedi",
+        },
+        "city": "vadodara",
+        "vehicle_series": "GJ-06",
+        "office": ("Vishwamitri Analytics HQ, Alkapuri", 22.3100, 73.1720),
+        "employee_count": 24,
+        "vehicle_count": 8,
+        "trip_count": 60,
+    },
 ]
 
 
-def generate_demo_trip_records(employee_ids: list[str], vehicle_ids: list[str]) -> list[dict]:
-    """Generate 50 realistic demo trip records spread over 6 months."""
-    trips = []
-    driver_indices = [0, 2, 4, 6, 9, 11, 14]  # Employees that are drivers
+def _slugify_name(full_name: str) -> str:
+    """Turn a full name into an email local-part like 'priya.desai'."""
+    return ".".join(part.lower() for part in full_name.split())
 
-    for i in range(50):
-        driver_index = random.choice(driver_indices)
-        vehicle_index = i % len(vehicle_ids)
 
-        start_loc = random.choice(TRIP_LOCATIONS)
-        end_loc = random.choice([loc for loc in TRIP_LOCATIONS if loc != start_loc])
+def build_company_settings(tenant: dict) -> dict:
+    """Default company settings anchored at the tenant's office coordinates."""
+    _, office_lat, office_lng = tenant["office"]
+    return {
+        "id": f"settings-{tenant['organization']['id']}",
+        "organization_id": tenant["organization"]["id"],
+        "fuel_cost_per_liter": 96.50,
+        "travel_cost_per_kilometer": 11.0,
+        "office_latitude": office_lat,
+        "office_longitude": office_lng,
+        "ride_radius_kilometers": 30.0,
+        "default_currency": "INR",
+        "company_logo_url": None,
+    }
 
-        days_ago = random.randint(1, 180)
-        trip_start = datetime.now(timezone.utc) - timedelta(days=days_ago, hours=random.randint(6, 10))
-        trip_end = trip_start + timedelta(minutes=random.randint(20, 90))
 
-        distance = round(random.uniform(5.0, 45.0), 1)
-        fuel = round(distance / random.uniform(12.0, 18.0), 2)
-        cost = round(distance * 12.0, 2)
+def generate_employees_for_tenant(tenant: dict) -> list[dict]:
+    """Generate a tenant's employee dicts with domain-matched emails."""
+    domain = tenant["organization"]["email_domain"]
+    count = tenant["employee_count"]
+    used_emails: set[str] = set()
+    employees: list[dict] = []
+
+    for index in range(count):
+        first = _DEMO_RANDOM.choice(_FIRST_NAMES)
+        last = _DEMO_RANDOM.choice(_LAST_NAMES)
+        full_name = f"{first} {last}"
+        local_part = _slugify_name(full_name)
+        email = f"{local_part}@{domain}"
+        # Disambiguate accidental collisions from the random name pool.
+        disambiguator = 2
+        while email in used_emails:
+            email = f"{local_part}{disambiguator}@{domain}"
+            disambiguator += 1
+        used_emails.add(email)
+
+        department, designations = _DEMO_RANDOM.choice(_DEPARTMENTS)
+        # Roughly 45% of employees drive; the rest are passengers.
+        is_driver = _DEMO_RANDOM.random() < 0.45
+        # A small number of inactive employees for realistic reporting.
+        status = "INACTIVE" if _DEMO_RANDOM.random() < 0.08 else "ACTIVE"
+
+        # Home near a random city location; office at the tenant HQ. This makes
+        # seeded employees immediately usable for ride matching in the PWA.
+        home_name, home_lat, home_lng = _DEMO_RANDOM.choice(
+            GUJARAT_LOCATIONS_BY_CITY[tenant["city"]]
+        )
+        office_name, office_lat, office_lng = tenant["office"]
+
+        employees.append({
+            "employee_code": f"{tenant['vehicle_series'].replace('-', '')}{index + 1:03d}",
+            "full_name": full_name,
+            "email": email,
+            "phone": f"+91-9{_DEMO_RANDOM.randint(700000000, 799999999)}",
+            "department": department,
+            "designation": _DEMO_RANDOM.choice(designations),
+            "status": status,
+            "is_driver": is_driver,
+            "home_latitude": round(home_lat + _DEMO_RANDOM.uniform(-0.01, 0.01), 6),
+            "home_longitude": round(home_lng + _DEMO_RANDOM.uniform(-0.01, 0.01), 6),
+            "home_address_label": home_name,
+            "office_latitude": office_lat,
+            "office_longitude": office_lng,
+            "office_address_label": office_name,
+            "onboarding_completed": True,
+        })
+
+    # Guarantee at least a few drivers exist even if randomness under-selects.
+    driver_present = [emp for emp in employees if emp["is_driver"] and emp["status"] == "ACTIVE"]
+    if len(driver_present) < 4:
+        for emp in employees:
+            if emp["status"] == "ACTIVE" and not emp["is_driver"]:
+                emp["is_driver"] = True
+                driver_present.append(emp)
+            if len(driver_present) >= 4:
+                break
+
+    return employees
+
+
+def generate_vehicles_for_tenant(tenant: dict) -> list[dict]:
+    """Generate a tenant's vehicle dicts with Gujarat registration plates."""
+    series = tenant["vehicle_series"]
+    vehicles: list[dict] = []
+    for index in range(tenant["vehicle_count"]):
+        make, model, fuel_type, capacity = _DEMO_RANDOM.choice(_VEHICLE_MODELS)
+        letters = "".join(_DEMO_RANDOM.choice("ABCDEFGHJKLMNPQRSTUVWXYZ") for _ in range(2))
+        number = _DEMO_RANDOM.randint(1000, 9999)
+        vehicles.append({
+            "vehicle_number": f"{series}-{letters}-{number}",
+            "make": make,
+            "model": model,
+            "year": _DEMO_RANDOM.randint(2020, 2025),
+            "color": _DEMO_RANDOM.choice(_VEHICLE_COLORS),
+            "capacity": capacity,
+            "fuel_type": fuel_type,
+            "status": "ACTIVE",
+            "insurance_expiry_date": date(
+                _DEMO_RANDOM.randint(2026, 2028),
+                _DEMO_RANDOM.randint(1, 12),
+                _DEMO_RANDOM.randint(1, 28),
+            ),
+        })
+    return vehicles
+
+
+def generate_trips_for_tenant(
+    tenant: dict,
+    employee_ids: list[str],
+    driver_employee_ids: list[str],
+    vehicle_ids: list[str],
+) -> list[dict]:
+    """Generate completed trips over the last 6 months around the tenant city."""
+    locations = GUJARAT_LOCATIONS_BY_CITY[tenant["city"]]
+    trips: list[dict] = []
+    if not driver_employee_ids or not vehicle_ids:
+        return trips
+
+    for index in range(tenant["trip_count"]):
+        driver_id = _DEMO_RANDOM.choice(driver_employee_ids)
+        vehicle_id = vehicle_ids[index % len(vehicle_ids)]
+
+        start_loc = _DEMO_RANDOM.choice(locations)
+        end_loc = _DEMO_RANDOM.choice([loc for loc in locations if loc != start_loc])
+
+        days_ago = _DEMO_RANDOM.randint(1, 180)
+        trip_start = datetime.now(timezone.utc) - timedelta(
+            days=days_ago, hours=_DEMO_RANDOM.randint(6, 10)
+        )
+        trip_end = trip_start + timedelta(minutes=_DEMO_RANDOM.randint(20, 90))
+
+        distance = round(_DEMO_RANDOM.uniform(5.0, 42.0), 1)
+        fuel = round(distance / _DEMO_RANDOM.uniform(12.0, 18.0), 2)
+        cost = round(distance * 11.0, 2)
 
         trips.append({
-            "organization_id": "org-raahi-demo-001",
-            "driver_employee_id": employee_ids[driver_index],
-            "vehicle_id": vehicle_ids[vehicle_index],
+            "organization_id": tenant["organization"]["id"],
+            "driver_employee_id": driver_id,
+            "vehicle_id": vehicle_id,
             "start_location_name": start_loc[0],
             "start_latitude": start_loc[1],
             "start_longitude": start_loc[2],
@@ -112,7 +317,7 @@ def generate_demo_trip_records(employee_ids: list[str], vehicle_ids: list[str]) 
             "distance_kilometers": distance,
             "fuel_consumed_liters": fuel,
             "trip_cost": cost,
-            "passenger_count": random.randint(1, 4),
+            "passenger_count": _DEMO_RANDOM.randint(1, min(4, len(employee_ids))),
             "status": "COMPLETED",
             "started_at": trip_start,
             "completed_at": trip_end,

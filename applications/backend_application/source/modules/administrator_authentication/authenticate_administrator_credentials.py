@@ -20,6 +20,13 @@ from source.modules.administrator_authentication.access_token_generation import 
     generate_refresh_token,
     decode_refresh_token,
 )
+from source.shared_infrastructure.user_account_role import UserAccountRole
+from source.modules.organization_management.organization_record_model import (
+    OrganizationRecord,
+)
+from source.modules.organization_management.organization_approval_status import (
+    OrganizationApprovalStatus,
+)
 from source.application_startup.application_configuration import ApplicationConfiguration
 
 
@@ -46,6 +53,29 @@ def authenticate_administrator_credentials(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+
+    # A company administrator cannot sign in until a Raahi super-admin has
+    # approved their organization. Checked before the generic is_active gate so
+    # pending/rejected admins get a clear, actionable message.
+    if user_account.role == UserAccountRole.COMPANY_ADMIN.value:
+        organization = (
+            database_session.query(OrganizationRecord)
+            .filter(OrganizationRecord.id == user_account.organization_id)
+            .first()
+        )
+        if organization is not None:
+            if organization.approval_status == OrganizationApprovalStatus.PENDING.value:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your organization is awaiting Raahi approval. "
+                    "You will receive an email once it is approved.",
+                )
+            if organization.approval_status == OrganizationApprovalStatus.REJECTED.value:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your organization's registration was not approved. "
+                    "Please contact Raahi support.",
+                )
 
     if not user_account.is_active:
         raise HTTPException(

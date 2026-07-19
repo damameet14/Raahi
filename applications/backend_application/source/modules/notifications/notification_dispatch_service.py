@@ -17,6 +17,9 @@ from source.modules.notifications.notification_contracts import (
     RideNotificationDetails,
 )
 from source.modules.notifications.notification_templates import (
+    build_organization_approved_email,
+    build_organization_registration_received_email,
+    build_organization_rejected_email,
     build_payment_failed_email,
     build_payment_success_email,
     build_payment_success_whatsapp_message,
@@ -46,6 +49,69 @@ def send_employee_temporary_password_notification(
         platform_name=configuration.razorpay_company_name,
     )
     send_email(configuration=configuration, email=email)
+
+
+# ── Organization onboarding notifications (email) ─────────────
+def notify_organization_registration_received(
+    *,
+    configuration: ApplicationConfiguration,
+    administrator_name: str,
+    administrator_email: str,
+    organization_name: str,
+) -> None:
+    """Acknowledge a new company registration awaiting super-admin review."""
+    send_email(
+        configuration=configuration,
+        email=build_organization_registration_received_email(
+            administrator_name=administrator_name,
+            administrator_email=administrator_email,
+            organization_name=organization_name,
+            platform_name=configuration.razorpay_company_name,
+        ),
+    )
+
+
+def notify_organization_approved(
+    *,
+    configuration: ApplicationConfiguration,
+    administrator_name: str,
+    login_email: str,
+    organization_name: str,
+    temporary_password: str,
+) -> None:
+    """Notify a company admin their org is approved, with sign-in credentials."""
+    send_email(
+        configuration=configuration,
+        email=build_organization_approved_email(
+            administrator_name=administrator_name,
+            login_email=login_email,
+            organization_name=organization_name,
+            temporary_password=temporary_password,
+            login_url=configuration.frontend_url,
+            platform_name=configuration.razorpay_company_name,
+        ),
+    )
+
+
+def notify_organization_rejected(
+    *,
+    configuration: ApplicationConfiguration,
+    administrator_name: str,
+    administrator_email: str,
+    organization_name: str,
+    rejection_reason: str,
+) -> None:
+    """Notify a company admin their onboarding request was declined."""
+    send_email(
+        configuration=configuration,
+        email=build_organization_rejected_email(
+            administrator_name=administrator_name,
+            administrator_email=administrator_email,
+            organization_name=organization_name,
+            rejection_reason=rejection_reason,
+            platform_name=configuration.razorpay_company_name,
+        ),
+    )
 
 
 # ── Ride-lifecycle WhatsApp notifications ─────────────────────

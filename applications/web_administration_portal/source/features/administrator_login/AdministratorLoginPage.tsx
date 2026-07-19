@@ -49,7 +49,12 @@ export function AdministratorLoginPage() {
         mustChangePassword: must_change_password,
       });
 
-      navigate(must_change_password ? '/change-password' : '/dashboard');
+      const postLoginPath = must_change_password
+        ? '/change-password'
+        : role === 'SUPER_ADMIN'
+          ? '/platform/onboarding'
+          : '/dashboard';
+      navigate(postLoginPath);
     } catch (error: any) {
       setAuthenticationErrorMessage(
         error.response?.data?.detail || 'Authentication failed. Please try again.'
@@ -147,7 +152,8 @@ export function AdministratorLoginPage() {
           </form>
 
           <p className="administrator-demo-credentials">
-            Demo credentials: admin@raahi.com / admin123
+            Demo — Company admin: admin@sabarmati.tech / admin123 · Super-admin:
+            superadmin@raahi.d14.app / raahi-super-123
           </p>
         </section>
       </main>

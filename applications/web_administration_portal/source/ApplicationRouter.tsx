@@ -18,6 +18,7 @@ import { VehicleListPage } from './features/vehicle_management/VehicleListPage';
 import { ReportsOverviewPage } from './features/reports_and_analytics/ReportsOverviewPage';
 import { CompanySettingsPage } from './features/company_settings/CompanySettingsPage';
 import { AdministratorProfilePage } from './features/administrator_profile/AdministratorProfilePage';
+import { OnboardingRequestsPage } from './features/platform_onboarding/OnboardingRequestsPage';
 
 export function ApplicationRouter() {
   return (
@@ -31,6 +32,7 @@ export function ApplicationRouter() {
         {/* Protected admin routes */}
         <Route element={<ProtectedRouteGuard />}>
           <Route element={<AdministrationPortalLayout />}>
+            <Route path="/platform/onboarding" element={<OnboardingRequestsPage />} />
             <Route path="/dashboard" element={<DashboardOverviewPage />} />
             <Route path="/employees" element={<EmployeeListPage />} />
             <Route path="/vehicles" element={<VehicleListPage />} />

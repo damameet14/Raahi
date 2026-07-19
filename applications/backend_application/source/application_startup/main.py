@@ -81,6 +81,9 @@ from source.modules.payment_processing.payment_processing_http_routes import (
 from source.modules.journey_chat.journey_chat_http_routes import (
     journey_chat_router,
 )
+from source.modules.platform_administration.platform_administration_http_routes import (
+    platform_administration_router,
+)
 from source.modules.ride_coordination.ride_reminder_scheduler import (
     start_ride_reminder_scheduler,
 )
@@ -96,6 +99,11 @@ configuration = create_application_configuration()
 # missing column is added so pre-existing development databases keep working
 # without a full migration tool. Production should use Alembic instead.
 _DEVELOPMENT_SCHEMA_ADDITIONS: dict[str, dict[str, str]] = {
+    "organization_records": {
+        "email_domain": "VARCHAR(255)",
+        "approval_status": "VARCHAR(20) NOT NULL DEFAULT 'APPROVED'",
+        "rejection_reason": "VARCHAR(500)",
+    },
     "user_account_records": {
         "must_change_password": "BOOLEAN NOT NULL DEFAULT FALSE",
     },
@@ -200,7 +208,13 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:3000",
+        "https://raahi.d14.app",
+        "https://app.raahi.d14.app",
+        "https://admin.raahi.d14.app",
     ],
+    # Any localhost/127.0.0.1 port is allowed in development so the admin
+    # portal and employee PWA dev servers work regardless of chosen port.
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -221,6 +235,7 @@ app.include_router(ride_trip_router)
 app.include_router(wallet_router)
 app.include_router(payment_processing_router)
 app.include_router(journey_chat_router)
+app.include_router(platform_administration_router)
 
 
 @app.get("/api/v1/health", tags=["Health"])

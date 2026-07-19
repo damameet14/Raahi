@@ -24,18 +24,12 @@ import {
   Menu,
   LogOut,
   UserRound,
-  Home,
-  Search,
-  Car,
-  ListChecks,
-  WalletCards,
-  History,
-  MapPinned,
-  BarChart3,
-  MessageCircle,
+  Monitor,
 } from "lucide-react";
 
 import { useEmployeeAuthentication } from "../authentication_state/EmployeeAuthenticationContext";
+import { EMPLOYEE_NAVIGATION_ITEMS } from "./employee_navigation_items";
+import { usePlatformExperience } from "./PlatformExperienceContext";
 
 export type EmployeeAppHeaderLeftAction = "menu" | "back" | "close";
 
@@ -45,18 +39,7 @@ interface EmployeeAppHeaderProps {
   onLeftAction?: () => void;
 }
 
-const DRAWER_NAVIGATION_ITEMS = [
-  { to: "/home", label: "Home", icon: Home },
-  { to: "/find-ride", label: "Find a Ride", icon: Search },
-  { to: "/offer-ride", label: "Offer a Ride", icon: Car },
-  { to: "/rides", label: "My Rides", icon: ListChecks },
-  { to: "/vehicles", label: "My Vehicle", icon: Car },
-  { to: "/payment-methods", label: "Payment Methods", icon: WalletCards },
-  { to: "/ride-history", label: "Ride History", icon: History },
-  { to: "/saved-places", label: "Saved Places", icon: MapPinned },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/chat", label: "Chat", icon: MessageCircle },
-];
+const DRAWER_NAVIGATION_ITEMS = EMPLOYEE_NAVIGATION_ITEMS;
 
 export function EmployeeAppHeader({
   title,
@@ -65,8 +48,14 @@ export function EmployeeAppHeader({
 }: EmployeeAppHeaderProps) {
   const navigate = useNavigate();
   const { session, signOut } = useEmployeeAuthentication();
+  const { platform, mode, setMode } = usePlatformExperience();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // In the desktop layout the persistent sidebar already provides navigation,
+  // so the header's hamburger is hidden to avoid a redundant second menu.
+  const isDesktopChrome = mode === "desktop";
+  const showMenuButton = leftAction === "menu" && !isDesktopChrome;
 
   const initials = (session?.fullName ?? "?")
     .split(" ")
@@ -99,31 +88,48 @@ export function EmployeeAppHeader({
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color:var(--color-border-primary)] bg-white/95 px-4 py-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={handleLeftActionClick}
-          className="rounded-lg p-1 text-text-primary hover:bg-surface-secondary"
-          aria-label={
-            leftAction === "menu"
-              ? "Open menu"
-              : leftAction === "close"
-                ? "Close"
-                : "Go back"
-          }
-        >
-          {leftAction === "menu" && <Menu size={22} />}
-          {leftAction === "back" && <ArrowLeft size={22} />}
-          {leftAction === "close" && <X size={22} />}
-        </button>
+        {leftAction === "menu" && !showMenuButton ? (
+          <span className="h-8 w-8" aria-hidden />
+        ) : (
+          <button
+            type="button"
+            onClick={handleLeftActionClick}
+            className="rounded-lg p-1 text-text-primary hover:bg-surface-secondary"
+            aria-label={
+              leftAction === "menu"
+                ? "Open menu"
+                : leftAction === "close"
+                  ? "Close"
+                  : "Go back"
+            }
+          >
+            {leftAction === "menu" && <Menu size={22} />}
+            {leftAction === "back" && <ArrowLeft size={22} />}
+            {leftAction === "close" && <X size={22} />}
+          </button>
+        )}
         <h1 className="text-base font-bold">{title}</h1>
-        <button
-          type="button"
-          onClick={() => setIsProfileOpen((current) => !current)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-raahi-600 text-xs font-bold text-white"
-          aria-label="Profile"
-        >
-          {initials}
-        </button>
+        <div className="flex items-center gap-1">
+          {platform === "desktop" && !isDesktopChrome && (
+            <button
+              type="button"
+              onClick={() => setMode("desktop")}
+              className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-secondary"
+              aria-label="Switch to desktop view"
+              title="Switch to desktop view"
+            >
+              <Monitor size={18} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen((current) => !current)}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-raahi-600 text-xs font-bold text-white"
+            aria-label="Profile"
+          >
+            {initials}
+          </button>
+        </div>
 
         {isProfileOpen && (
           <>

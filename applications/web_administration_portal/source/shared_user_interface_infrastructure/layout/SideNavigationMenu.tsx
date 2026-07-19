@@ -11,10 +11,11 @@ import {
   Settings,
   UserCircle,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuthenticatedUser } from '../authentication_state/AuthenticationContextProvider';
 
-const navigationMenuItems = [
+const companyAdminMenuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/employees', label: 'Employees', icon: Users },
   { path: '/vehicles', label: 'Vehicles', icon: Car },
@@ -23,8 +24,17 @@ const navigationMenuItems = [
   { path: '/profile', label: 'Profile', icon: UserCircle },
 ];
 
+const superAdminMenuItems = [
+  { path: '/platform/onboarding', label: 'Onboarding', icon: ShieldCheck },
+  { path: '/profile', label: 'Profile', icon: UserCircle },
+];
+
 export function SideNavigationMenu() {
   const { clearAuthenticationState, authenticatedUser } = useAuthenticatedUser();
+  const isSuperAdmin = authenticatedUser?.role === 'SUPER_ADMIN';
+  const navigationMenuItems = isSuperAdmin
+    ? superAdminMenuItems
+    : companyAdminMenuItems;
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border-primary bg-surface-secondary">
@@ -34,7 +44,9 @@ export function SideNavigationMenu() {
         </div>
         <div>
           <h1 className="text-base font-bold text-text-primary tracking-tight">Raahi</h1>
-          <p className="text-[10px] font-medium text-text-muted uppercase tracking-widest">Admin Portal</p>
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-widest">
+            {isSuperAdmin ? 'Platform Admin' : 'Admin Portal'}
+          </p>
         </div>
       </div>
 
