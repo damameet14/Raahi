@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useAuthenticatedUser } from '../authentication_state/AuthenticationContextProvider';
+import { RaahiBrandLockup } from '../branding/RaahiBrandLockup';
 
 const companyAdminMenuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -38,12 +39,9 @@ export function SideNavigationMenu() {
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border-primary bg-surface-secondary">
-      <div className="flex h-20 items-center gap-3 border-b border-border-primary px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-raahi-500 text-sm font-bold text-white">
-          R
-        </div>
-        <div>
-          <h1 className="text-base font-bold text-text-primary tracking-tight">Raahi</h1>
+      <div className="flex h-20 items-center border-b border-border-primary px-6">
+        <div className="flex flex-col items-start gap-1">
+          <RaahiBrandLockup compact />
           <p className="text-[10px] font-medium text-text-muted uppercase tracking-widest">
             {isSuperAdmin ? 'Platform Admin' : 'Admin Portal'}
           </p>

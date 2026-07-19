@@ -12,6 +12,13 @@ import type { RazorpayCheckoutResult } from "../../shared_user_interface_infrast
 const RAZORPAY_CHECKOUT_SCRIPT_URL =
   "https://checkout.razorpay.com/v1/checkout.js";
 
+function createRaahiLogoAbsoluteUrl(): string {
+  return new URL(
+    `${import.meta.env.BASE_URL}assets/raahi-logo.png?v=2`,
+    window.location.origin,
+  ).toString();
+}
+
 interface RazorpayCheckoutInstance {
   open: () => void;
 }
@@ -78,6 +85,7 @@ export async function openRazorpayCheckout(
     currency: order.currency,
     name: order.company_name,
     description: order.description,
+    image: createRaahiLogoAbsoluteUrl(),
     order_id: order.razorpay_order_id,
     theme: { color: order.theme_color },
     prefill: {

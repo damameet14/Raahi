@@ -9,6 +9,7 @@ import { loginEmployee } from "../../shared_user_interface_infrastructure/backen
 import { useEmployeeAuthentication } from "../../shared_user_interface_infrastructure/authentication_state/EmployeeAuthenticationContext";
 import { PrimaryButton } from "../../shared_user_interface_infrastructure/reusable_components/PrimaryButton";
 import { extractApiErrorMessage } from "../../shared_user_interface_infrastructure/backend_communication/extractApiErrorMessage";
+import { RaahiBrandLockup } from "../../shared_user_interface_infrastructure/branding/RaahiBrandLockup";
 
 export function EmployeeLoginPage() {
   const navigate = useNavigate();
@@ -40,9 +41,7 @@ export function EmployeeLoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background-primary px-6 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-raahi-600 text-2xl font-black text-white">
-          R
-        </div>
+        <RaahiBrandLockup className="mb-5" />
         <h1 className="text-2xl font-extrabold tracking-tight">Welcome back</h1>
         <p className="mt-1 text-sm text-text-secondary">
           Sign in with the credentials your administrator gave you.

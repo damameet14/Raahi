@@ -2,18 +2,18 @@
   "name": "Raahi — Employee Carpooling",
   "short_name": "Raahi",
   "description": "Find and offer rides with your colleagues.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/app/",
+  "scope": "/app/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#249448",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "assets/raahi-logo.png?v=2",
+      "sizes": "846x846",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

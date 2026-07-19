@@ -158,11 +158,48 @@ export function LandingPage() {
         >
           <div className="marketing-preloader-content">
             <p>Enterprise carpooling platform</p>
-            <div className="marketing-preloader-wordmark" aria-hidden="true">
-              <span>RAA</span>
-              <span>HI</span>
-              <i style={{ transform: `translateY(${110 - preloaderProgress * 130}px)` }} />
-            </div>
+            <svg
+              className="marketing-preloader-wordmark"
+              viewBox="0 0 1200 300"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <defs>
+                <mask
+                  id="marketing-preloader-wave-mask"
+                  x="0"
+                  y="0"
+                  width="1200"
+                  height="300"
+                  maskUnits="userSpaceOnUse"
+                >
+                  <rect width="1200" height="300" fill="black" />
+                  <g
+                    className="marketing-preloader-wave-level"
+                    style={{ transform: `translateY(${220 - preloaderProgress * 330}px)` }}
+                  >
+                    <path
+                      className="marketing-preloader-wave-shape"
+                      fill="white"
+                      d="M-800 104 C-650 44 -500 164 -350 104 S-50 44 100 104 S400 164 550 104 S850 44 1000 104 S1300 164 1450 104 S1750 44 1900 104 L1900 420 L-800 420 Z"
+                    />
+                  </g>
+                </mask>
+              </defs>
+              <text className="marketing-preloader-wordmark-base" x="600" y="226" textAnchor="middle">
+                RAAHI
+              </text>
+              <text
+                className="marketing-preloader-wordmark-filled"
+                x="600"
+                y="226"
+                textAnchor="middle"
+                mask="url(#marketing-preloader-wave-mask)"
+              >
+                <tspan className="marketing-preloader-wordmark-primary">RAA</tspan>
+                <tspan className="marketing-preloader-wordmark-accent">HI</tspan>
+              </text>
+            </svg>
             <div className="marketing-preloader-status">
               <span>LOADING</span>
               <span>{Math.round(preloaderProgress * 100)}%</span>
@@ -175,7 +212,7 @@ export function LandingPage() {
         <nav className="marketing-navigation marketing-frame" aria-label="Main navigation">
           <a className="marketing-brand" href="#top" aria-label="Raahi home">
             <span className="marketing-brand-mark" aria-hidden="true">
-              <img src="/assets/raahi-logo.png" alt="" />
+              <img src={`${import.meta.env.BASE_URL}assets/raahi-logo.png`} alt="" />
             </span>
             <span className="marketing-brand-wordmark">
               <span>RAA</span><span>HI</span>
@@ -333,7 +370,7 @@ export function LandingPage() {
             </div>
             <div className="marketing-application-layout">
               <aside className="marketing-application-sidebar">
-                <span className="marketing-application-logo">R</span>
+                <span className="marketing-application-logo"><img src={`${import.meta.env.BASE_URL}assets/raahi-logo.png`} alt="Raahi" /></span>
                 <span className="marketing-application-link is-active">⌖ <span>Overview</span></span>
                 <span className="marketing-application-link">→ <span>Team routes</span></span>
                 <span className="marketing-application-link">◎ <span>Reports</span></span>

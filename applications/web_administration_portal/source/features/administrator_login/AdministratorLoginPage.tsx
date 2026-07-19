@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { apiClient } from '@/shared_user_interface_infrastructure/backend_communication/api_client';
 import { useAuthenticatedUser } from '@/shared_user_interface_infrastructure/authentication_state/AuthenticationContextProvider';
+import { RaahiBrandLockup } from '@/shared_user_interface_infrastructure/branding/RaahiBrandLockup';
 
 export function AdministratorLoginPage() {
   const navigate = useNavigate();
@@ -67,8 +68,7 @@ export function AdministratorLoginPage() {
   return (
     <div className="registration-page">
       <Link className="registration-brand" to="/">
-        <span>R</span>
-        Raahi
+        <RaahiBrandLockup />
       </Link>
 
       <main className="administrator-login-shell">

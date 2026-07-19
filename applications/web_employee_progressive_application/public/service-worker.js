@@ -6,8 +6,13 @@
  * live. This is intentionally simple; richer caching can be layered later.
  */
 
-const APPLICATION_SHELL_CACHE = 'raahi-employee-shell-v1';
-const APPLICATION_SHELL_URLS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+const APPLICATION_SHELL_CACHE = 'raahi-employee-shell-v2';
+const APPLICATION_SHELL_URLS = [
+  '/app/',
+  '/app/index.html',
+  '/app/manifest.webmanifest',
+  '/app/assets/raahi-logo.png?v=2',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -46,7 +51,7 @@ self.addEventListener('fetch', (event) => {
   // Navigation requests fall back to the cached shell when offline.
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/index.html')),
+      fetch(event.request).catch(() => caches.match('/app/index.html')),
     );
     return;
   }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, CheckCircle2 } from 'lucide-react';
 import { apiClient } from '@/shared_user_interface_infrastructure/backend_communication/api_client';
+import { RaahiBrandLockup } from '@/shared_user_interface_infrastructure/branding/RaahiBrandLockup';
 
 interface RegistrationResult {
   organization_name: string;
@@ -49,8 +50,7 @@ export function OrganizationRegistrationPage() {
   return (
     <div className="registration-page">
       <Link className="registration-brand" to="/">
-        <span>R</span>
-        Raahi
+        <RaahiBrandLockup />
       </Link>
 
       <main className="registration-shell">

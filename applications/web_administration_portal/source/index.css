@@ -272,26 +272,43 @@ body {
 }
 
 .marketing-preloader-wordmark {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-  color: var(--marketing-primary);
-  font-size: clamp(86px, 17vw, 250px);
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.marketing-preloader-wordmark text {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 260px;
   font-weight: 900;
   letter-spacing: -0.09em;
-  line-height: 0.8;
 }
 
-.marketing-preloader-wordmark span:nth-child(2) {
-  color: var(--marketing-accent);
+.marketing-preloader-wordmark-base {
+  fill: var(--marketing-secondary);
+  opacity: 0.24;
 }
 
-.marketing-preloader-wordmark i {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 0 48%, rgb(50 180 92 / 0.16) 48% 100%);
-  transition: transform 80ms linear;
+.marketing-preloader-wordmark-primary {
+  fill: var(--marketing-primary);
+}
+
+.marketing-preloader-wordmark-accent {
+  fill: var(--marketing-accent);
+}
+
+.marketing-preloader-wave-level {
+  transform-box: view-box;
+  transform-origin: center;
+  transition: transform 60ms linear;
+  will-change: transform;
+}
+
+.marketing-preloader-wave-shape {
+  animation: marketingPreloaderWaveDrift 900ms ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .marketing-preloader-status {
@@ -392,17 +409,6 @@ body {
 
 .marketing-brand-wordmark span:last-child {
   color: var(--marketing-accent);
-}
-
-.registration-brand span {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--marketing-accent);
-  color: var(--marketing-on-accent);
-  font-size: 15px;
 }
 
 .marketing-navigation-grid {
@@ -798,8 +804,28 @@ body {
 
 .marketing-application-logo {
   margin-bottom: 32px;
-  background: var(--marketing-accent);
-  color: var(--marketing-on-accent);
+  overflow: hidden;
+}
+
+@keyframes marketingPreloaderWaveDrift {
+  from {
+    transform: translateX(-70px);
+  }
+  to {
+    transform: translateX(70px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-preloader-wave-shape {
+    animation: none;
+  }
+}
+
+.marketing-application-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .marketing-application-profile {

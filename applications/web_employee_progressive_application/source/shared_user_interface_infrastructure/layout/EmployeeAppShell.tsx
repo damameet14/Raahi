@@ -19,6 +19,7 @@ import { useEmployeeAuthentication } from "../authentication_state/EmployeeAuthe
 import { EMPLOYEE_NAVIGATION_ITEMS } from "./employee_navigation_items";
 import { usePlatformExperience } from "./PlatformExperienceContext";
 import { PwaInstallBanner } from "./PwaInstallBanner";
+import { RaahiBrandLockup } from "../branding/RaahiBrandLockup";
 
 function DesktopSidebar() {
   const navigate = useNavigate();
@@ -40,10 +41,7 @@ function DesktopSidebar() {
   return (
     <aside className="employee-desktop-sidebar">
       <div className="flex items-center gap-2 px-2 py-1">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-raahi-600 text-sm font-extrabold text-white">
-          R
-        </div>
-        <span className="text-lg font-extrabold">Raahi</span>
+        <RaahiBrandLockup />
       </div>
 
       <nav className="mt-6 flex flex-1 flex-col gap-1 overflow-y-auto">

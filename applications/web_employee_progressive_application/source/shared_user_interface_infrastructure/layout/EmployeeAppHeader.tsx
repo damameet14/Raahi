@@ -30,6 +30,7 @@ import {
 import { useEmployeeAuthentication } from "../authentication_state/EmployeeAuthenticationContext";
 import { EMPLOYEE_NAVIGATION_ITEMS } from "./employee_navigation_items";
 import { usePlatformExperience } from "./PlatformExperienceContext";
+import { RaahiBrandLockup } from "../branding/RaahiBrandLockup";
 
 export type EmployeeAppHeaderLeftAction = "menu" | "back" | "close";
 
@@ -108,7 +109,7 @@ export function EmployeeAppHeader({
             {leftAction === "close" && <X size={22} />}
           </button>
         )}
-        <h1 className="text-base font-bold">{title}</h1>
+        {title === "Raahi" ? <RaahiBrandLockup compact /> : <h1 className="text-base font-bold">{title}</h1>}
         <div className="flex items-center gap-1">
           {platform === "desktop" && !isDesktopChrome && (
             <button
@@ -181,7 +182,7 @@ export function EmployeeAppHeader({
               style={{ backgroundColor: "#ffffff" }}
             >
               <div className="mb-6 flex items-center justify-between">
-                <span className="text-lg font-extrabold">Raahi</span>
+                <RaahiBrandLockup />
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(false)}
